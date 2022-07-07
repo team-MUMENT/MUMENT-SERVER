@@ -13,7 +13,11 @@
     "prettier/@typescript-eslint"
   ],
   "root": true,
-  "ignorePatterns": [".eslintrc.js"],
+  "ignorePatterns": [
+    ".eslintrc.js",
+    "dist/",
+    "node_modules/"
+  ],
   "plugins": ["@typescript-eslint/eslint-plugin"],
   "rules": {
     "@typescript-eslint/interface-name-prefix": "off",
