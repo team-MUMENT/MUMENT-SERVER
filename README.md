@@ -33,6 +33,7 @@
 <br>
 
 ## API
+[▶️ API 명세서](https://destiny-plum-124.notion.site/API-8e6aba4083374f7f8b3ff628046eb946)
 | Method |  View | description               | 🎤담당  | progress   | issue |
 | :----: | :------: | ------------------------- | :-----: | :-------:  | :---: |
 | `POST` | 로그인    | 로그인                    |         | `🚏 대기`   |       |
