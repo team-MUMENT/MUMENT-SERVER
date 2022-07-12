@@ -1,8 +1,10 @@
 import { PostBaseResponseDto } from "../interfaces/common/PostBaseResponseDto";
 import { MumentCreateDto } from "../interfaces/mument/MumentCreateDto";
+import { MumentResponseDto } from "../interfaces/mument/MumentResponseDto";
 import Mument from "../models/Mument"
 import Music from "../models/Music";
 import User from "../models/User";
+import Like from "../models/Like";
 
 const createMument =async (userId: string, musicId: string, mumentCreateDto: MumentCreateDto): Promise<PostBaseResponseDto | null> => {
     try {
@@ -41,6 +43,65 @@ const createMument =async (userId: string, musicId: string, mumentCreateDto: Mum
     }
 };
 
+const getMument =async (mumentId: string, userId: string): Promise<MumentResponseDto | null> => {
+    try {
+        const mument = await Mument.findById(mumentId);
+        if (!mument) return null;
+
+        const music = await Music.findById(mument.music._id);
+        if (!music) return null;
+
+        const loginUser = await User.findById(userId);
+        if (!loginUser) return null;
+
+        const isLiked = await Like.findOne({ 
+            user: {
+                _id: userId
+            },
+            mument: {
+                _id: mumentId
+            }
+        });
+
+        const historyCount = await Mument.countDocuments({
+            music: {
+                _id: mument.music._id
+            },
+            user: {
+                _id: mument.user._id
+            }
+        });
+
+        const data: MumentResponseDto = {
+            user: {
+                _id: mument.user._id,
+                image: mument.user.image,
+                name: mument.user.name
+            },
+            music: {
+                _id: mument.music._id,
+                name: music.name,
+                artist: music.artist,
+                image: music.image
+            },
+            isFirst: mument.isFirst,
+            impressionTag: mument.impressionTag,
+            feelingTag: mument.feelingTag,
+            content: mument.content,
+            likeCount: mument.likeCount,
+            isLiked: !(isLiked) ? false : true, 
+            createdAt: "2022.05.31 4:30 PM",
+            count: historyCount
+        };
+
+        return data;
+    } catch (error) {
+        console.log(error);
+        throw error;
+    } 
+}
+
 export default {
     createMument,
+    getMument
 }
