@@ -35,12 +35,13 @@ const createMument = async (req: Request, res: Response) => {
  */
 const getMument = async (req: Request, res: Response) => {
     const { mumentId, userId } =  req.params;
-    //mumentId 안보내면 400
+    console.log('컨트롤러', mumentId, userId);
+    
     if (!mumentId) return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.BAD_REQUEST));
 
     try {
         const data = await MumentService.getMument(mumentId, userId);
-        //존재하지 않는 mumentId/music._id 일 시 404
+        
         if (!data) res.status(statusCode.NOT_FOUND).send(util.fail(statusCode.NOT_FOUND, message.NOT_FOUND));
 
         res.status(statusCode.OK).send(util.success(statusCode.OK, message.READ_MUMENT_SUCEESS, data));
