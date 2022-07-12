@@ -5,6 +5,7 @@ import Mument from "../models/Mument"
 import Music from "../models/Music";
 import User from "../models/User";
 import Like from "../models/Like";
+import dayjs from 'dayjs';
 
 const createMument =async (userId: string, musicId: string, mumentCreateDto: MumentCreateDto): Promise<PostBaseResponseDto | null> => {
     try {
@@ -45,9 +46,10 @@ const createMument =async (userId: string, musicId: string, mumentCreateDto: Mum
 
 const getMument =async (mumentId: string, userId: string): Promise<MumentResponseDto | null> => {
     try {
+        console.log(mumentId, userId);
         const mument = await Mument.findById(mumentId);
         if (!mument) return null;
-
+        
         const music = await Music.findById(mument.music._id);
         if (!music) return null;
 
@@ -66,12 +68,11 @@ const getMument =async (mumentId: string, userId: string): Promise<MumentRespons
         const historyCount = await Mument.countDocuments({
             music: {
                 _id: mument.music._id
-            },
-            user: {
-                _id: mument.user._id
             }
         });
 
+        const createdTime = dayjs(mument.createdAt).format('YYYY.MM.DD h:mm A');
+        
         const data: MumentResponseDto = {
             user: {
                 _id: mument.user._id,
@@ -90,7 +91,7 @@ const getMument =async (mumentId: string, userId: string): Promise<MumentRespons
             content: mument.content,
             likeCount: mument.likeCount,
             isLiked: !(isLiked) ? false : true, 
-            createdAt: "2022.05.31 4:30 PM",
+            createdAt: createdTime,
             count: historyCount
         };
 

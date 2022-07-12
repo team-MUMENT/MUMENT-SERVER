@@ -12,6 +12,7 @@ export interface MumentInfo {
     isPrivate: boolean;
     likeCount: number;
     isDeleted: boolean;
+    createdAt?: Date;
 }
 
 export interface UserMumentInfo {
