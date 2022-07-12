@@ -39,8 +39,7 @@ const LikeSchema = new mongoose.Schema({
         },
         isFirst: {
             type: Boolean,
-            required: true,
-            default: true
+            required: true
         },
         impressionTag: [Number],
         feelingTag: [Number],

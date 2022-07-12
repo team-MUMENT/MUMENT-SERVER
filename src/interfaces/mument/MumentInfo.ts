@@ -1,7 +1,9 @@
 import mongoose from "mongoose";
 
 export interface MumentInfo {
-    music: mongoose.Types.ObjectId;
+    music: {
+        _id: mongoose.Types.ObjectId;
+    };
     user: UserMumentInfo;
     isFirst: boolean;
     impressionTag: number[];

@@ -3,9 +3,11 @@ import { MumentInfo } from "../interfaces/mument/MumentInfo";
 
 const MumentSchema = new mongoose.Schema({
     music: {
-        type: mongoose.Types.ObjectId,
-        required: true,
-        ref: "Music"
+        _id: {
+            type: mongoose.Types.ObjectId,
+            required: true,
+            ref: "Music"
+        }
     },
     user: {
         _id: {
@@ -23,8 +25,7 @@ const MumentSchema = new mongoose.Schema({
     },
     isFirst: {
         type: Boolean,
-        required: true,
-        default: true
+        required: true
     },
     impressionTag: [Number],
     feelingTag: [Number],
