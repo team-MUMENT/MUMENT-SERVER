@@ -3,9 +3,11 @@ import { LikeInfo } from "../interfaces/like/LikeInfo";
 
 const LikeSchema = new mongoose.Schema({
     user: {
-        type: mongoose.Types.ObjectId,
-        required: true,
-        ref: "User"
+        _id: {
+            type: mongoose.Types.ObjectId,
+            required: true,
+            ref: "User"
+        }    
     },
     mument: [{
         _id: {

@@ -2,7 +2,9 @@ import mongoose from "mongoose";
 import { MusicInfo } from "../music/MusicInfo";
 
 export interface LikeInfo {
-    user: mongoose.Types.ObjectId;
+    user: {
+        _id: mongoose.Types.ObjectId;
+    };
     mument: LikeMumentInfo[];
 }
 
