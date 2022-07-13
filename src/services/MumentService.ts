@@ -1,3 +1,3 @@
-import Mument from "../models/Mument"
+import Mument from '../models/Mument';
 
-export default {}
+export default {};
