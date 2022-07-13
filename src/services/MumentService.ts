@@ -56,10 +56,17 @@ const getMument = async (mumentId: string, userId: string): Promise<MumentRespon
     if (!loginUser) return null;
 
     const isLiked = await Like.findOne({
-      user: {
-        _id: userId,
-      },
+      $and: [
+        {
+          mument: { $elemMatch: { _id: mumentId } },
+        },
+        {
+          'user._id': { $eq: userId },
+        },
+      ],
     });
+    //$eq: mument.music._id}
+    console.log(isLiked);
 
     const historyCount = await Mument.countDocuments({
       $and: [
