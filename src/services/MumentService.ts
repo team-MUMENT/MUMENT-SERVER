@@ -6,15 +6,15 @@ import Music from "../models/Music";
 import User from "../models/User";
 import Like from "../models/Like";
 import dayjs from 'dayjs';
+import mongoose from "mongoose";
 
 const createMument =async (userId: string, musicId: string, mumentCreateDto: MumentCreateDto): Promise<PostBaseResponseDto | null> => {
-    try {
-    
+    try {        
         const user = await User.findById(userId);
         if (!user) return null;
 
         const music = await Music.findById(musicId);
-        if (!music) return null; 
+        if (!music) return null;
 
         const mument = new Mument({
             music: {
@@ -33,6 +33,7 @@ const createMument =async (userId: string, musicId: string, mumentCreateDto: Mum
         });
         
         await mument.save();
+
         const data = {
             _id: mument._id
         };
