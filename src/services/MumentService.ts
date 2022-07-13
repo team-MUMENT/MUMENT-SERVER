@@ -59,19 +59,15 @@ const getMument = async (mumentId: string, userId: string): Promise<MumentRespon
       user: {
         _id: userId,
       },
-      mument: {
-        _id: mumentId,
-      },
     });
-    console.log(isLiked);
 
     const historyCount = await Mument.countDocuments({
-      $or: [
+      $and: [
         {
-          music: { _id: mument.music._id },
+          'music._id': { $eq: mument.music._id },
         },
         {
-          user: { _id: mument.user._id },
+          'user._id': { $eq: mument.user._id },
         },
       ],
     });
