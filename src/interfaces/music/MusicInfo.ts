@@ -1,5 +1,5 @@
 export interface MusicInfo {
-    name: string;
-    artist: string;
-    image: string;
+  name: string;
+  artist: string;
+  image: string;
 }
