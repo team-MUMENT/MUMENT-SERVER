@@ -1,110 +1,113 @@
-import { PostBaseResponseDto } from "../interfaces/common/PostBaseResponseDto";
-import { MumentCreateDto } from "../interfaces/mument/MumentCreateDto";
-import { MumentResponseDto } from "../interfaces/mument/MumentResponseDto";
-import Mument from "../models/Mument"
-import Music from "../models/Music";
-import User from "../models/User";
-import Like from "../models/Like";
+import { PostBaseResponseDto } from '../interfaces/common/PostBaseResponseDto';
+import { MumentCreateDto } from '../interfaces/mument/MumentCreateDto';
+import { MumentResponseDto } from '../interfaces/mument/MumentResponseDto';
+import Mument from '../models/Mument';
+import Music from '../models/Music';
+import User from '../models/User';
+import Like from '../models/Like';
 import dayjs from 'dayjs';
-import mongoose from "mongoose";
 
-const createMument =async (userId: string, musicId: string, mumentCreateDto: MumentCreateDto): Promise<PostBaseResponseDto | null> => {
-    try {        
-        const user = await User.findById(userId);
-        if (!user) return null;
+const createMument = async (userId: string, musicId: string, mumentCreateDto: MumentCreateDto): Promise<PostBaseResponseDto | null> => {
+  try {
+    const user = await User.findById(userId);
+    if (!user) return null;
 
-        const music = await Music.findById(musicId);
-        if (!music) return null;
+    const music = await Music.findById(musicId);
+    if (!music) return null;
 
-        const mument = new Mument({
-            music: {
-                _id: musicId
-            },
-            user: {
-                _id: userId,
-                name: user.name,
-                image: user.image
-            },
-            isFirst: mumentCreateDto.isFirst,
-            impressionTag: mumentCreateDto.impressionTag,
-            feelingTag: mumentCreateDto.feelingTag,
-            content: mumentCreateDto.content ? mumentCreateDto.content : null,
-            isPrivate: mumentCreateDto.isPrivate,
-        });
-        
-        await mument.save();
+    const mument = new Mument({
+      music: {
+        _id: musicId,
+      },
+      user: {
+        _id: userId,
+        name: user.name,
+        image: user.image,
+      },
+      isFirst: mumentCreateDto.isFirst,
+      impressionTag: mumentCreateDto.impressionTag,
+      feelingTag: mumentCreateDto.feelingTag,
+      content: mumentCreateDto.content ? mumentCreateDto.content : null,
+      isPrivate: mumentCreateDto.isPrivate,
+    });
 
-        const data = {
-            _id: mument._id
-        };
+    await mument.save();
 
-        return data;
-    } catch (error) {
-        console.log(error);
-        throw error;
-    }
+    const data = {
+      _id: mument._id,
+    };
+
+    return data;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
 };
 
-const getMument =async (mumentId: string, userId: string): Promise<MumentResponseDto | null> => {
-    try {
-        const mument = await Mument.findById(mumentId);
-        if (!mument) return null;
-        
-        const music = await Music.findById(mument.music._id);
-        if (!music) return null;
+const getMument = async (mumentId: string, userId: string): Promise<MumentResponseDto | null> => {
+  try {
+    const mument = await Mument.findById(mumentId);
+    if (!mument) return null;
 
-        const loginUser = await User.findById(userId);
-        if (!loginUser) return null;
+    const music = await Music.findById(mument.music._id);
+    if (!music) return null;
 
-        const isLiked = await Like.findOne({ 
-            user: {
-                _id: userId
-            },
-            mument: {
-                _id: mumentId
-            }
-        });
-        console.log(isLiked);
+    const loginUser = await User.findById(userId);
+    if (!loginUser) return null;
 
-        const historyCount = await Mument.countDocuments({ $or: [{
-            music: {_id: mument.music._id}
-        }, 
+    const isLiked = await Like.findOne({
+      user: {
+        _id: userId,
+      },
+      mument: {
+        _id: mumentId,
+      },
+    });
+    console.log(isLiked);
+
+    const historyCount = await Mument.countDocuments({
+      $or: [
         {
-            user: { _id: mument.user._id } 
-        }]});
+          music: { _id: mument.music._id },
+        },
+        {
+          user: { _id: mument.user._id },
+        },
+      ],
+    });
 
-        const createdTime = dayjs(mument.createdAt).format('YYYY.MM.DD h:mm A');
-        
-        const data: MumentResponseDto = {
-            user: {
-                _id: mument.user._id,
-                image: mument.user.image,
-                name: mument.user.name
-            },
-            music: {
-                _id: mument.music._id,
-                name: music.name,
-                artist: music.artist,
-                image: music.image
-            },
-            isFirst: mument.isFirst,
-            impressionTag: mument.impressionTag,
-            feelingTag: mument.feelingTag,
-            content: mument.content,
-            likeCount: mument.likeCount,
-            isLiked: !(isLiked) ? false : true, 
-            createdAt: createdTime,
-            count: historyCount
-        };
+    const createdTime = dayjs(mument.createdAt).format('YYYY.MM.DD h:mm A');
 
-        return data;
-    } catch (error) {
-        console.log(error);
-        throw error;
-    } 
-}
+    const data: MumentResponseDto = {
+      user: {
+        _id: mument.user._id,
+        image: mument.user.image,
+        name: mument.user.name,
+      },
+      music: {
+        _id: mument.music._id,
+        name: music.name,
+        artist: music.artist,
+        image: music.image,
+      },
+      isFirst: mument.isFirst,
+      impressionTag: mument.impressionTag,
+      feelingTag: mument.feelingTag,
+      content: mument.content,
+      likeCount: mument.likeCount,
+      isLiked: !isLiked ? false : true,
+      createdAt: createdTime,
+      count: historyCount,
+    };
+
+    return data;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+};
 
 export default {
-    createMument,
-    getMument
-}
+  createMument,
+  getMument,
+};
