@@ -1,7 +1,8 @@
-import express, { Request, Response, NextFunction } from 'express';
+import express, { Request, Response } from 'express';
 const app = express();
 import connectDB from './loaders/db';
 import routes from './routes';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 require('dotenv').config();
 
 connectDB();
@@ -17,7 +18,7 @@ interface ErrorType {
   status: number;
 }
 
-app.use(function (err: ErrorType, req: Request, res: Response, next: NextFunction) {
+app.use(function (err: ErrorType, req: Request, res: Response) {
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'production' ? err : {};
 
