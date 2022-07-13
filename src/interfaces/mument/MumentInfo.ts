@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 export interface MumentInfo {
     music: {
@@ -20,7 +20,7 @@ export interface MumentInfo {
 }
 
 export interface UserMumentInfo {
-    _id: mongoose.Types.ObjectId;
-    name: string;
-    image: string;
+  _id: mongoose.Types.ObjectId;
+  name: string;
+  image: string;
 }
