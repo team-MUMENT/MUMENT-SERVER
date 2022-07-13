@@ -57,6 +57,7 @@
 
 
 ## Collection
+[▶️ db 콜렉션 스키마](https://destiny-plum-124.notion.site/DB-50509752267446ca9f81dde9f0358d89)
 <br>
 
 ## Foldering
