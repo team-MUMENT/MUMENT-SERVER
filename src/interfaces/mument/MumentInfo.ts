@@ -4,7 +4,11 @@ export interface MumentInfo {
     music: {
         _id: mongoose.Types.ObjectId;
     };
-    user: UserMumentInfo;
+    user: {
+        _id: mongoose.Types.ObjectId;
+        name: string;
+        image: string;
+    };
     isFirst: boolean;
     impressionTag: number[];
     feelingTag: number[];
