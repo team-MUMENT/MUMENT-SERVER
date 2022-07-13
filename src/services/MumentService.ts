@@ -46,7 +46,6 @@ const createMument =async (userId: string, musicId: string, mumentCreateDto: Mum
 
 const getMument =async (mumentId: string, userId: string): Promise<MumentResponseDto | null> => {
     try {
-        console.log(mumentId, userId);
         const mument = await Mument.findById(mumentId);
         if (!mument) return null;
         
@@ -64,12 +63,14 @@ const getMument =async (mumentId: string, userId: string): Promise<MumentRespons
                 _id: mumentId
             }
         });
+        console.log(isLiked);
 
-        const historyCount = await Mument.countDocuments({
-            music: {
-                _id: mument.music._id
-            }
-        });
+        const historyCount = await Mument.countDocuments({ $or: [{
+            music: {_id: mument.music._id}
+        }, 
+        {
+            user: { _id: mument.user._id } 
+        }]});
 
         const createdTime = dayjs(mument.createdAt).format('YYYY.MM.DD h:mm A');
         
