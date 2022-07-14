@@ -1,9 +1,8 @@
 import { UserMumentListResponseDto } from '../interfaces/user/UserMumentListResponseDto';
 import Mument from '../models/Mument';
 import User from '../models/User';
-import { MumentResponseDto } from '../interfaces/mument/MumentResponseDto';
-import { MumentInfo } from '../interfaces/mument/MumentInfo';
 import Music from '../models/Music';
+import dayjs from 'dayjs';
 
 const getMyMumentList = async (userId: string): Promise<UserMumentListResponseDto | null> => {
   try {
@@ -43,11 +42,11 @@ const getMyMumentList = async (userId: string): Promise<UserMumentListResponseDt
           content: mument.content,
           isPrivate: mument.isPrivate,
           likeCount: mument.likeCount,
-          isLiked: true,
-          createdAt: mument.createdAt,
-          count: null,
-          year: 2022,
-          month: 7,
+          isLiked: true, //to-do
+          createdAt: mument.createdAt, //to-do
+          count: null, //to-do
+          year: 2022, //to-do
+          month: 7, //to-do
         };
 
         return result;
