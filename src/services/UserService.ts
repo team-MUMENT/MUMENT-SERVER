@@ -20,7 +20,7 @@ const getMyMumentList = async (userId: string): Promise<UserMumentListResponseDt
           isDeleted: { $eq: false },
         },
       ],
-    });
+    }).sort({ createdAt: -1 });
 
     if (!myMumentList) {
       return {
