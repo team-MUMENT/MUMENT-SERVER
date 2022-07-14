@@ -44,16 +44,18 @@ const createMument = async (userId: string, musicId: string, mumentCreateDto: Mu
   }
 };
 
-const getMument = async (mumentId: string, userId: string): Promise<MumentResponseDto | null> => {
+const getMument = async (mumentId: string, userId: string): Promise<MumentResponseDto | null | true> => {
   try {
     const mument = await Mument.findById(mumentId);
     if (!mument) return null;
 
-    const music = await Music.findById(mument.music._id);
-    if (!music) return null;
-
     const loginUser = await User.findById(userId);
     if (!loginUser) return null;
+
+    if (mument.user._id.toString() !== userId) return true;
+
+    const music = await Music.findById(mument.music._id);
+    if (!music) return null;
 
     const isLiked = await Like.findOne({
       $and: [
