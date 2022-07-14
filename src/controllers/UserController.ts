@@ -15,7 +15,8 @@ const getMyMumentList = async (req: Request, res: Response) => {
   try {
     const data = await UserService.getMyMumentList(userId);
 
-    if (!data) res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.NOT_FOUND_ID));
+    if (!data) res.status(statusCode.NOT_FOUND).send(util.fail(statusCode.NOT_FOUND, message.NOT_FOUND));
+    res.status(statusCode.OK).send(util.success(statusCode.OK, message.READ_MY_MUMENT_LIST_SUCCESS, data));
   } catch (error) {
     console.log(error);
 

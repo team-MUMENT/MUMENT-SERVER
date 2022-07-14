@@ -14,7 +14,7 @@ export interface MumentResponseDto {
   likeCount: number;
   isLiked: boolean;
   createdAt: string;
-  count: number;
+  count?: number;
   year?: number;
   month?: number;
 }
