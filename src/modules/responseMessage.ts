@@ -12,6 +12,7 @@ const message = {
   // mument
   CREATE_MUMENT_SUCCESS: '뮤멘트 기록하기 성공',
   READ_MUMENT_SUCEESS: '뮤멘트 상세보기 성공',
+  NOT_YOUR_MUMENT: '비밀글 입니다',
 
   // music
 };
