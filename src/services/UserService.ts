@@ -8,9 +8,6 @@ import { MumentResponseDto } from '../interfaces/mument/MumentResponseDto';
 
 const getMyMumentList = async (userId: string): Promise<UserMumentListResponseDto | null> => {
   try {
-    const loginUser = await User.findById(userId);
-    if (!loginUser) return null;
-
     const myMumentList = await Mument.find({
       $and: [
         {

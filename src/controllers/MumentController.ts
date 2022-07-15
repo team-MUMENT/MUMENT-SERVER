@@ -44,7 +44,6 @@ const getMument = async (req: Request, res: Response) => {
     } else {
       res.status(statusCode.OK).send(util.success(statusCode.OK, message.READ_MUMENT_SUCEESS, data));
     }
-
   } catch (error) {
     console.log(error);
 
