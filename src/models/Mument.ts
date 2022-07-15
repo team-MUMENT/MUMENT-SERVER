@@ -54,7 +54,4 @@ const MumentSchema = new mongoose.Schema(
     },
 );
 
-export default mongoose.model<MumentInfo & mongoose.Document>(
-    'Mument',
-    MumentSchema,
-);
+export default mongoose.model<MumentInfo & mongoose.Document>('Mument', MumentSchema);
