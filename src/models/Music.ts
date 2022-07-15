@@ -16,7 +16,4 @@ const MusicSchema = new mongoose.Schema({
     },
 });
 
-export default mongoose.model<MusicInfo & mongoose.Document>(
-    'Music',
-    MusicSchema,
-);
+export default mongoose.model<MusicInfo & mongoose.Document>('Music', MusicSchema);

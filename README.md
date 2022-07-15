@@ -42,8 +42,8 @@
 | `GET`  |          | 다시 들은 곡의 뮤멘트       | 🌊유정  | `🚏 대기`    |       | 
 | `GET`  |          | 랜덤 태그, 랜덤 뮤멘트      | 🌊유정  | `🚏 대기`    |       |
 | `GET`  |          | 곡 검색                    | 🎶채은  | `🚏 대기`    |       |
-| `GET`  |          | 곡 상세 페이지 - 곡, 나의 뮤멘트 | 🌊유정  | `🚏 대기`    |       |
-| `GET`  |          | 곡 상세 페이지 - 모든 뮤멘트 조회 | 🌊유정  | `🚏 대기`    |       |
+| `GET`  |          | 곡 상세 페이지 - 곡, 나의 뮤멘트 | 🌊유정  | `🚍 진행중`    | [#7](https://github.com/team-MUMENT/MUMENT-SERVER/issues/7) |
+| `GET`  |          | 곡 상세 페이지 - 모든 뮤멘트 조회 | 🌊유정  | `🚍 진행중`    | [#7](https://github.com/team-MUMENT/MUMENT-SERVER/issues/7) |
 | `GET`  | 기록하기  | 처음/다시 들어요 선택       | 🎶채은  | `🚏 대기`    |     |
 | `POST` |          | 뮤멘트 기록하기             | 🎶채은  | `🚍 진행중` | [#4](https://github.com/team-MUMENT/MUMENT-SERVER/issues/4) |
 | `PUT`  |          | 뮤멘트 수정하기             | 🎶채은  | `🚏 대기` |     |
@@ -57,6 +57,7 @@
 
 
 ## Collection
+[▶️ db 콜렉션 스키마](https://destiny-plum-124.notion.site/DB-50509752267446ca9f81dde9f0358d89)
 <br>
 
 ## Foldering
