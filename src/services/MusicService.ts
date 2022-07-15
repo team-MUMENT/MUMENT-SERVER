@@ -20,6 +20,7 @@ const getMusicAndMyMument = async (musicId: string, userId: string): Promise<MyM
         const latestMument = await Mument.findOne({
             'user._id': userId,
             'music._id': musicId,
+            isDeleted: false,
         }).sort({
             createdAt: -1,
         });
