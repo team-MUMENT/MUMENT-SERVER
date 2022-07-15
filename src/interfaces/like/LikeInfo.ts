@@ -1,5 +1,5 @@
-import mongoose from "mongoose";
-import { MusicInfo } from "../music/MusicInfo";
+import mongoose from 'mongoose';
+import { MusicInfo } from '../music/MusicInfo';
 
 export interface LikeInfo {
     user: {
@@ -10,8 +10,8 @@ export interface LikeInfo {
 
 export interface LikeMumentInfo {
     _id: mongoose.Types.ObjectId;
-    user: LikeMumentUserInfo,
-    music: MusicInfo,
+    user: LikeMumentUserInfo;
+    music: MusicInfo;
     isFirst: boolean;
     impressionTag: number[];
     feelingTag: number[];

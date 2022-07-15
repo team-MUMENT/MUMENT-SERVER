@@ -1,9 +1,5 @@
-import UserController from "./UserController"
-import MumentController from "./MumentController"
-import MusicController from "./MusicController"
+import UserController from './UserController';
+import MumentController from './MumentController';
+import MusicController from './MusicController';
 
-export {
-    UserController,
-    MumentController,
-    MusicController
-}
+export { UserController, MumentController, MusicController };
