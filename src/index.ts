@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-import express, { Request, Response, NextFunction } from 'express';
-=======
 import express, { Request, Response } from 'express';
->>>>>>> b43c189e33e450ccd9a3b476732e6a601e917ff0
 const app = express();
 import connectDB from './loaders/db';
 import routes from './routes';

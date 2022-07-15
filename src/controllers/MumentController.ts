@@ -17,7 +17,7 @@ const createMument = async (req: Request, res: Response) => {
     try {
         const data: PostBaseResponseDto | null = await MumentService.createMument(userId, musicId, mumentCreateDto);
 
-        if (!data) return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.BAD_REQUEST));
+        if (!data) res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.BAD_REQUEST));
 
         res.status(statusCode.CREATED).send(util.success(statusCode.CREATED, message.CREATE_MUMENT_SUCCESS, data));
     } catch (error) {
