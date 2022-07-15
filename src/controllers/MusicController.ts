@@ -31,6 +31,37 @@ const getMusicAndMyMument = async (req: Request, res: Response) => {
     }
 };
 
+/**
+ * @ROUTE /music/:musicId/:userId/order?default=
+ * @DESC 곡 상세보기 뷰에서 모든 뮤멘트 조회
+ */
+const getMumentList = async(req: Request, res: Response) => {
+    const { userId, musicId } = req.params;
+    const { default: orderOption } = req.query;
+
+    const error = validationResult(req);
+    if (!error.isEmpty()) {
+        res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.WRONG_PARAMS));
+    };
+
+    // 리팩토링 고민 좀 해보기
+    let isLikeOrder: boolean;
+    switch (orderOption) {
+        case ('Y'): {
+            isLikeOrder = true;
+        }
+        case ('N'): {
+            isLikeOrder = false;
+        }
+    }
+
+    try {
+        const data = await MusicService.getMumentList(musicId, userId, isLikeOrder);
+    }
+
+}
+
 export default {
     getMusicAndMyMument,
+    getMumentList,
 };
