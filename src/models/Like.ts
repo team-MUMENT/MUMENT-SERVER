@@ -1,62 +1,64 @@
-import mongoose from "mongoose";
-import { LikeInfo } from "../interfaces/like/LikeInfo";
+import mongoose from 'mongoose';
+import { LikeInfo } from '../interfaces/like/LikeInfo';
 
 const LikeSchema = new mongoose.Schema({
     user: {
         _id: {
             type: mongoose.Types.ObjectId,
             required: true,
-            ref: "User"
-        }    
+            ref: 'User',
+        },
     },
-    mument: [{
-        _id: {
-            type: mongoose.Types.ObjectId,
-            required: true,
-            ref: "Mument"
-        },
-        user: {
-            name: {
-                type: String,
-                required: true
+    mument: [
+        {
+            _id: {
+                type: mongoose.Types.ObjectId,
+                required: true,
+                ref: 'Mument',
             },
-            image: {
-                type: String,
-                required: true
-            }
-        },
-        music: {
-            name: {
-                type: String,
-                required: true
+            user: {
+                name: {
+                    type: String,
+                    required: true,
+                },
+                image: {
+                    type: String,
+                    required: true,
+                },
             },
-            artist: {
-                type: String,
-                required: true
+            music: {
+                name: {
+                    type: String,
+                    required: true,
+                },
+                artist: {
+                    type: String,
+                    required: true,
+                },
+                image: {
+                    type: String,
+                    required: true,
+                },
             },
-            image: {
+            isFirst: {
+                type: Boolean,
+                required: true,
+            },
+            impressionTag: [Number],
+            feelingTag: [Number],
+            content: {
                 type: String,
-                required: true
-            }
+            },
+            isPrivate: {
+                type: Boolean,
+                required: true,
+                default: false,
+            },
         },
-        isFirst: {
-            type: Boolean,
-            required: true
+        {
+            timestamps: true,
         },
-        impressionTag: [Number],
-        feelingTag: [Number],
-        content: {
-            type: String
-        },
-        isPrivate: {
-            type: Boolean,
-            required: true,
-            default: false
-        }
-    },
-    {
-        timestamps: true
-    }]
+    ],
 });
 
-export default mongoose.model<LikeInfo & mongoose.Document>("Like", LikeSchema);
+export default mongoose.model<LikeInfo & mongoose.Document>('Like', LikeSchema);

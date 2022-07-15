@@ -1,3 +1,3 @@
-import Music from "../models/Music"
+import Music from '../models/Music';
 
-export default {}
+export default {};
