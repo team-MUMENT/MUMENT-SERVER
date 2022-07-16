@@ -60,12 +60,15 @@ const getMumentList = async (req: Request, res: Response) => {
     try {
         const data = await MusicService.getMumentList(musicId, userId, isLikeOrder);
 
+        // 지우기
+        console.log('controller data: ', data);
+
         // 조회 성공했으나, 결과값 없을 때 204 리턴
         if (!data) {
             res.status(statusCode.NO_CONTENT).send(util.success(statusCode.NO_CONTENT, message.READ_MUSIC_MUMENTLIST_SUCCESS));
         }
 
-        res.status(statusCode.OK).send(util.success(statusCode.OK, message.READ_MUSIC_MUMENTLIST_SUCCESS));
+        res.status(statusCode.OK).send(util.success(statusCode.OK, message.READ_MUSIC_MUMENTLIST_SUCCESS, data));
     } catch (error) {
         console.log(error);
         res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
