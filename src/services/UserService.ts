@@ -5,7 +5,7 @@ import Music from '../models/Music';
 import dayjs from 'dayjs';
 import Like from '../models/Like';
 import { MumentResponseDto } from '../interfaces/mument/MumentResponseDto';
-import { LikeMumentInfo } from '../interfaces/like/LikeInfo';
+import { LikeInfo } from '../interfaces/like/LikeInfo';
 
 const getMyMumentList = async (userId: string): Promise<UserMumentListResponseDto | null> => {
     try {
@@ -81,7 +81,7 @@ const getMyMumentList = async (userId: string): Promise<UserMumentListResponseDt
 
 const getLikeMumentList = async (userId: string): Promise<UserMumentListResponseDto | null> => {
     try {
-        const myMumentList = await Like.findOne({
+        const myMumentList: LikeInfo | null = await Like.findOne({
             'user._id': userId,
         });
 
@@ -91,6 +91,12 @@ const getLikeMumentList = async (userId: string): Promise<UserMumentListResponse
                 muments: [],
             };
         }
+
+        myMumentList.mument.sort((a, b) => {
+            return +new Date(a.createdAt) - +new Date(b.createdAt);
+        });
+
+        console.log(myMumentList.mument);
 
         const data = await Promise.all(
             myMumentList.mument.map((mument: any) => {
