@@ -178,7 +178,7 @@ const getMumentHistory = async (userId: string, musicId: string, isLatestOrder:b
         };
 
         // 최종 리턴될 data
-        let mumentHistory: MumentCardViewInterface[];
+        const mumentHistory: MumentCardViewInterface[] = [];
         originalMumentList.reduce((ac, cur, index) => {
             mumentHistory[index] = {
                 ...cur.toObject(),
@@ -192,9 +192,6 @@ const getMumentHistory = async (userId: string, musicId: string, isLatestOrder:b
             music,
             mumentHistory,
         };
-        
-        // 지우기
-        console.log(data);
 
         return data;
 
