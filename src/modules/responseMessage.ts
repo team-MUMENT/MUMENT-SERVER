@@ -14,6 +14,7 @@ const message = {
     CREATE_MUMENT_SUCCESS: '뮤멘트 기록하기 성공',
     READ_MUMENT_SUCEESS: '뮤멘트 상세보기 성공',
     NOT_YOUR_MUMENT: '비밀글 입니다',
+    READ_ISFIRST_SUCCESS: '뮤멘트 처음/다시 조회 성공',
 
     // music
     FIND_MUSIC_MYMUMENT_SUCCESS: '곡 상세, 나의 뮤멘트 조회 성공',
