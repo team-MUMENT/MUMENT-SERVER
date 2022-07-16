@@ -35,31 +35,42 @@ const getMusicAndMyMument = async (req: Request, res: Response) => {
  * @ROUTE /music/:musicId/:userId/order?default=
  * @DESC 곡 상세보기 뷰에서 모든 뮤멘트 조회
  */
-const getMumentList = async(req: Request, res: Response) => {
+const getMumentList = async (req: Request, res: Response) => {
     const { userId, musicId } = req.params;
     const { default: orderOption } = req.query;
 
     const error = validationResult(req);
     if (!error.isEmpty()) {
         res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.WRONG_PARAMS));
-    };
+    }
 
     // 리팩토링 고민 좀 해보기
     let isLikeOrder: boolean;
     switch (orderOption) {
-        case ('Y'): {
+        case 'Y': {
             isLikeOrder = true;
+            break;
         }
-        case ('N'): {
+        case 'N': {
             isLikeOrder = false;
+            break;
         }
     }
 
     try {
         const data = await MusicService.getMumentList(musicId, userId, isLikeOrder);
-    }
 
-}
+        // 조회 성공했으나, 결과값 없을 때 204 리턴
+        if (!data) {
+            res.status(statusCode.NO_CONTENT).send(util.success(statusCode.NO_CONTENT, message.READ_MUSIC_MUMENTLIST_SUCCESS));
+        }
+
+        res.status(statusCode.OK).send(util.success(statusCode.OK, message.READ_MUSIC_MUMENTLIST_SUCCESS));
+    } catch (error) {
+        console.log(error);
+        res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
+    }
+};
 
 export default {
     getMusicAndMyMument,

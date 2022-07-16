@@ -107,7 +107,7 @@ const getMumentList = async(musicId: string, userId: string, isLikeOrder: boolea
         // 해당 유저아이디의 document에서 mumentIdList find
         const likeList = await Like.find({
             'user._id': userId,
-            'mument._id': { $in: mumentIdList }
+            'mument._id': { $in: mumentIdList },
         });
 
         // 지우기
