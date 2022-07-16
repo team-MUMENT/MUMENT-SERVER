@@ -76,7 +76,7 @@ const getMumentList = async(musicId: string, userId: string, isLikeOrder: boolea
                    'music._id': musicId,
                    isDeleted: false, 
                 }).sort({
-                    likeCount: -1
+                    likeCount: -1,
                 });
                 break;
             }
@@ -86,7 +86,7 @@ const getMumentList = async(musicId: string, userId: string, isLikeOrder: boolea
                     'music._id': musicId,
                     isDeleted: false,
                 }).sort({
-                    createdAt: -1
+                    createdAt: -1,
                 });
                 break;
             }
@@ -95,8 +95,11 @@ const getMumentList = async(musicId: string, userId: string, isLikeOrder: boolea
         // 지우기
         console.log('original mument list: ', originalMumentList);
 
+        // 결과값이 없을 경우
+        if (originalMumentList.length === 0) return null;
+
         // mumentId array 리턴
-        const mumentIdList = originalMumentList.map (mument => mument._id);
+        const mumentIdList = originalMumentList.map(mument => mument._id);
 
         // 지우기
         console.log('mument id list: ', mumentIdList);
@@ -111,7 +114,7 @@ const getMumentList = async(musicId: string, userId: string, isLikeOrder: boolea
         console.log('like list: ', likeList);
 
         // map 함수 사용을 위해 날짜 가공해주는 함수
-        const createDate = (createdAt: date): string => {
+        const createDate = (createdAt: Date): string => {
             const date = dayjs(createdAt).format('D MMM, YYYY');
             return date;
         };
