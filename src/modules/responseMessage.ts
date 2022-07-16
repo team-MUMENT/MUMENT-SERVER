@@ -4,6 +4,7 @@ const message = {
     BAD_REQUEST: '잘못된 요청',
     INTERNAL_SERVER_ERROR: '서버 내부 오류',
     NOT_FOUND_ID: '존재하지 않는 id 입니다',
+    WRONG_PARAMS: '파라미터값이 잘못되었습니다',
 
     // user
     READ_MY_MUMENT_LIST_SUCCESS: '나의 뮤멘트 리스트 조회 성공',
@@ -15,6 +16,8 @@ const message = {
     NOT_YOUR_MUMENT: '비밀글 입니다',
 
     // music
+    FIND_MUSIC_MYMUMENT_SUCCESS: '곡 상세, 나의 뮤멘트 조회 성공',
+    READ_MUSIC_MUMENTLIST_SUCCESS: '뮤멘트 리스트 조회 성공',
 };
 
 export default message;
