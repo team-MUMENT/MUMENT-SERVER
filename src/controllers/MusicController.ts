@@ -44,7 +44,6 @@ const getMumentList = async (req: Request, res: Response) => {
         res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.WRONG_PARAMS));
     }
 
-    // 리팩토링 고민 좀 해보기
     let isLikeOrder: boolean;
     switch (orderOption) {
         case 'Y': {
@@ -59,9 +58,6 @@ const getMumentList = async (req: Request, res: Response) => {
 
     try {
         const data = await MusicService.getMumentList(musicId, userId, isLikeOrder);
-
-        // 지우기
-        console.log('controller data: ', data);
 
         // 조회 성공했으나, 결과값 없을 때 204 리턴
         if (!data) {
