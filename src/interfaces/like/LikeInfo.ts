@@ -17,6 +17,7 @@ export interface LikeMumentInfo {
     feelingTag: number[];
     content: string;
     isPrivate: boolean;
+    createdAt: Date;
 }
 
 export interface LikeMumentUserInfo {
