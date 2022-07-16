@@ -53,7 +53,7 @@ const getMument = async (req: Request, res: Response) => {
 };
 
 /**
- * @ROUTE /mument/:userId/:musicId/history?default=
+ * @ROUTE GET /mument/:userId/:musicId/history?default=
  * @DESC get mument history
  */
 const getMumentHistory = async (req: Request, res: Response) => {
@@ -92,8 +92,60 @@ const getMumentHistory = async (req: Request, res: Response) => {
     }
 };
 
+/**
+ * @ROUTE POST /mument/:mumentId/:userId/like
+ * @DESC 좋아요 등록
+ */
+const createLike = async (req: Request, res: Response) => {
+    const { mumentId, userId } = req.params;
+
+    const error = validationResult(req);
+    if (!error.isEmpty()) {
+        res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.WRONG_PARAMS));
+    }
+
+    try {
+        const data = await MumentService.createLike(mumentId, userId);
+
+        // 업데이트가 안됐거나, musicId가 없을 때
+        if (!data) {
+            res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.BAD_REQUEST));
+        }
+
+        res.status(statusCode.OK).send(util.success(statusCode.OK, message.CREATE_LIKE_SUCCESS, data));
+    } catch (error) {
+        console.log(error);
+        res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
+    }
+};
+
+/**
+ * @ROUTE DELETE /mument/:mumentId/:userId/like
+ * @DESC 좋아요 취소
+ */
+const deleteLike = async (req: Request, res: Response) => {
+    const { mumentId, userId } = req.params;
+
+    const error = validationResult(req);
+    if (!error.isEmpty()) {
+        res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.WRONG_PARAMS));
+    }
+
+    try {
+        const data = await MumentService.deleteLike(mumentId, userId);
+
+        res.status(statusCode.OK).send(util.success(statusCode.OK, message.CREATE_MUMENT_SUCCESS, data));
+
+    } catch (error) {
+        console.log(error);
+        res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
+    }
+};
+
 export default {
     createMument,
     getMument,
     getMumentHistory,
+    createLike,
+    deleteLike,
 };
