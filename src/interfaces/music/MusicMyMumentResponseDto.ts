@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { MumentCardViewInterface } from '../mument/MumentCardViewInterface';
 
 export interface MusicMyMumentResponseDto {
     music: {
@@ -7,24 +8,5 @@ export interface MusicMyMumentResponseDto {
         artist: string;
         image?: string;
     };
-    myMument?: {
-        _id: mongoose.Schema.Types.ObjectId;
-        music: {
-            _id: mongoose.Schema.Types.ObjectId;
-        };
-        user: {
-            _id: mongoose.Schema.Types.ObjectId;
-            name: string;
-            image?: string;
-        };
-        isFirst: boolean;
-        impressionTag: number[];
-        feelingTag: number[];
-        content?: string;
-        isPrivate: boolean;
-        likeCount: number;
-        isDeleted: boolean;
-        date: string;
-        isLiked: boolean;
-    };
+    myMument?: MumentCardViewInterface;
 }
