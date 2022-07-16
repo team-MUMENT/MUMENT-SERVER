@@ -3,6 +3,7 @@ import { MumentInfo } from '../interfaces/mument/MumentInfo';
 import { MusicMumentListResponseDto } from '../interfaces/music/MusicMumentListResponseDto';
 
 import { MusicMyMumentResponseDto } from '../interfaces/music/MusicMyMumentResponseDto';
+import { MusicResponseDto } from '../interfaces/music/MusicResponseDto';
 import Like from '../models/Like';
 import Mument from '../models/Mument';
 import Music from '../models/Music';
@@ -130,7 +131,30 @@ const getMumentList = async(musicId: string, userId: string, isLikeOrder: boolea
     }
 };
 
+const getMusicListBySearch = async (keyword: string): Promise<MusicResponseDto[]> => {
+    const regex = (pattern: string) => new RegExp(`.*${pattern}.*`);
+
+    try {
+        const musicRegex = regex(keyword);
+
+        const musicList = await Music.find({
+            $or: [
+                {
+                    name: { $regex: musicRegex },
+                },
+                {
+                    artist: { $regex: musicRegex },
+                },
+            ],
+        });
+        return musicList;
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+};
 export default {
     getMusicAndMyMument,
     getMumentList,
+    getMusicListBySearch,
 };
