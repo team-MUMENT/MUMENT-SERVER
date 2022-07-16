@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 
 export interface MumentInfo {
+    _id: mongoose.Types.ObjectId;
     music: {
         _id: mongoose.Types.ObjectId;
     };
@@ -16,7 +17,7 @@ export interface MumentInfo {
     isPrivate: boolean;
     likeCount: number;
     isDeleted: boolean;
-    createdAt?: Date;
+    createdAt: Date;
 }
 
 export interface UserMumentInfo {
