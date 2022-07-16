@@ -54,9 +54,10 @@ const LikeSchema = new mongoose.Schema({
                 required: true,
                 default: false,
             },
-        },
-        {
-            timestamps: true,
+            createdAt: {
+                type: Date,
+                required: true,
+            },
         },
     ],
 });

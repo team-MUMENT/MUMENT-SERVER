@@ -43,14 +43,14 @@
 | `GET`  |          | 랜덤 태그, 랜덤 뮤멘트      | 🌊유정  | `🚏 대기`    |       |
 | `GET`  |          | 곡 검색                    | 🎶채은  | `🚏 대기`    |       |
 | `GET`  |          | 곡 상세 페이지 - 곡, 나의 뮤멘트 | 🌊유정  | `🚍 진행중`    | [#7](https://github.com/team-MUMENT/MUMENT-SERVER/issues/7) |
-| `GET`  |          | 곡 상세 페이지 - 모든 뮤멘트 조회 | 🌊유정  | `🚍 진행중`    | [#7](https://github.com/team-MUMENT/MUMENT-SERVER/issues/7) |
+| `GET`  |          | 곡 상세 페이지 - 모든 뮤멘트 조회 | 🌊유정  | `🚍 진행중`    | [#12](https://github.com/team-MUMENT/MUMENT-SERVER/issues/12) |
 | `GET`  | 기록하기  | 처음/다시 들어요 선택       | 🎶채은  | `🚏 대기`    |     |
 | `POST` |          | 뮤멘트 기록하기             | 🎶채은  | `🚍 진행중` | [#4](https://github.com/team-MUMENT/MUMENT-SERVER/issues/4) |
 | `PUT`  |          | 뮤멘트 수정하기             | 🎶채은  | `🚏 대기` |     |
 | `GET`  |          | 뮤멘트 상세보기             | 🎶채은  | `🚍 진행중` | [#6](https://github.com/team-MUMENT/MUMENT-SERVER/issues/6) |
 |`DELETE`|          | 뮤멘트 삭제하기             | 🎶채은  | `🚏 대기`    |     |
 | `GET`  |          | 나의 히스토리               | 🌊유정  | `🚏 대기`    |     |
-| `GET`  | 보관함    | 내가 작성한 뮤멘트 리스트   | 🎶채은  | `🚏 대기`    |     |
+| `GET`  | 보관함    | 내가 작성한 뮤멘트 리스트   | 🎶채은  | `🚍 진행중`    | [#10](https://github.com/team-MUMENT/MUMENT-SERVER/issues/10)    |
 | `GET`  |           | 좋아요한 뮤멘트 리스트      | 🎶채은  | `🚏 대기`    |     |
 | `POST` | 좋아요    | 뮤멘트 좋아요 등록          | 🎶채은  | `🚏 대기`    |     |
 |`DELETE`|           | 뮤멘트 좋아요 취소         | 🎶채은  | `🚏 대기`    |     |
