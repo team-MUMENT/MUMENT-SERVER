@@ -15,4 +15,6 @@ router.get('/:musicId/:userId/order', [
     query('default').isString().isIn(['Y', 'N']),
 ], MusicController.getMumentList);
 
+router.get('/search', MusicController.getMusicListBySearch);
+
 export default router;
