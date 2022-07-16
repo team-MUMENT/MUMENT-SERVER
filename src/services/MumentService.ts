@@ -10,6 +10,8 @@ import Music from '../models/Music';
 import User from '../models/User';
 import Like from '../models/Like';
 import dayjs from 'dayjs';
+import { LikeCountResponeDto } from '../interfaces/like/LikeCountResponseDto';
+import { LikeMumentInfo } from '../interfaces/like/LikeInfo';
 
 const createMument = async (userId: string, musicId: string, mumentCreateDto: MumentCreateDto): Promise<PostBaseResponseDto | null> => {
     try {
@@ -201,8 +203,88 @@ const getMumentHistory = async (userId: string, musicId: string, isLatestOrder:b
     }
 };
 
+// 좋아요 등록
+const createLike = async (mumentId: string, userId: string): Promise<LikeCountResponeDto | null> => {
+    try {
+        // 해당 뮤멘트의 likeCount를 +1 해주고, 업데이트 이후의 값을 리턴
+        const updatedMument = await Mument.findOneAndUpdate({ _id: mumentId }, { $inc: { likeCount: +1 } }, { returnDocument: 'after' });
+
+        // 업데이트에 문제가 생겼을 경우 return null
+        if (!updatedMument) {
+            return null;
+        }
+
+        // 지우기
+        console.log('updated mument document: ', updatedMument);
+
+        // like 콜렉션에 추가하기 위해 music 정보 조회
+        const music = await Music.findById(updatedMument.music._id);
+
+        /**
+         * music 정보가 없으면 return null
+         * 전체 플로우를 고려해서 로직의 필요 유무 생각해보기
+         */
+        if (!music) {
+            return null;
+        }
+
+        // 지우기
+        console.log(music);
+
+        // like 콜렉션에 추가할 뮤멘트
+        const likedMument: LikeMumentInfo = {
+            _id: updatedMument._id,
+            user: {
+                _id: updatedMument.user._id,
+                name: updatedMument.user.name,
+                image: updatedMument.user.image,
+            },
+            music: {
+                name: music.name,
+                artist: music.artist,
+                image: music.image,
+            },
+            isFirst: updatedMument.isFirst,
+            impressionTag: updatedMument.impressionTag,
+            feelingTag: updatedMument.feelingTag,
+            content: updatedMument.content,
+            isPrivate: updatedMument.isPrivate,
+            createdAt: updatedMument.createdAt,
+        };
+
+        // like 콜렉션에 해당 뮤멘트 추가
+        await Like.findOne({
+            'user._id': userId,
+        }).updateOne({}, { $pull: { mument: likedMument } });
+
+        // 리턴 데이터
+        const data: LikeCountResponeDto = {
+            mumentId: updatedMument._id,
+            likeCount: updatedMument.likeCount,
+        };
+
+        return data;
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+};
+
+// 좋아요 취소
+const deleteLike = async (mumentId: string, userId: string) => {
+    try {
+
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+
+};
+
 export default {
     createMument,
     getMument,
     getMumentHistory,
+    createLike,
+    deleteLike
 };
