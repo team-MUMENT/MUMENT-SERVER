@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import statusCode from '../modules/statusCode';
 import message from '../modules/responseMessage';
 import util from '../modules/util';
+import { validationResult } from 'express-validator';
 import { MumentService } from '../services';
 import { MumentCreateDto } from '../interfaces/mument/MumentCreateDto';
 import { PostBaseResponseDto } from '../interfaces/common/PostBaseResponseDto';
@@ -51,7 +52,48 @@ const getMument = async (req: Request, res: Response) => {
     }
 };
 
+/**
+ * @ROUTE /mument/:userId/:musicId/history?default=
+ * @DESC get mument history
+ */
+const getMumentHistory = async (req: Request, res: Response) => {
+    const { musicId, userId } = req.params;
+    const { default: orderOption } = req.query;
+
+    const error = validationResult(req);
+    if (!error.isEmpty()) {
+        res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.WRONG_PARAMS));
+    }
+
+    let isLatestOrder: boolean;
+    switch (orderOption) {
+        case 'Y': {
+            isLatestOrder = true;
+            break;
+        }
+        case 'N': {
+            isLatestOrder = false;
+            break;
+        }
+    }
+
+    try {
+        const data = await MumentService.getMumentHistory(userId, musicId, isLatestOrder);
+
+        // 곡 검색 결과가 없을 경우
+        if (!data) {
+            res.status(statusCode.NOT_FOUND).send(util.fail(statusCode.NOT_FOUND, message.NOT_FOUND));
+        }
+
+        res.status(statusCode.OK).send(util.success(statusCode.OK, message.READ_MUMENT_HISTORY_SUCCESS));
+    } catch (error) {
+        console.log(error);
+        res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
+    }
+};
+
 export default {
     createMument,
     getMument,
+    getMumentHistory,
 };
