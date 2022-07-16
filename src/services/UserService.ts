@@ -5,7 +5,7 @@ import Music from '../models/Music';
 import dayjs from 'dayjs';
 import Like from '../models/Like';
 import { MumentResponseDto } from '../interfaces/mument/MumentResponseDto';
-import { LikeMumentInfo } from '../interfaces/like/LikeInfo';
+import { LikeInfo } from '../interfaces/like/LikeInfo';
 
 const getMyMumentList = async (userId: string): Promise<UserMumentListResponseDto | null> => {
     try {
@@ -50,9 +50,9 @@ const getMyMumentList = async (userId: string): Promise<UserMumentListResponseDt
                     },
                     music: {
                         _id: !music ? null : music._id,
-                        name: !music ? '존재하지 않는 음악' : music.name,
-                        artist: !music ? '존재하지 않는 음악' : music.artist,
-                        image: !music ? '존재하지 않는 음악' : music.image,
+                        name: !music ? 'nonexistence' : music.name,
+                        artist: !music ? 'onexistence' : music.artist,
+                        image: !music ? 'nonexistence' : music.image,
                     },
                     isFirst: mument.isFirst,
                     impressionTag: mument.impressionTag,
@@ -81,7 +81,7 @@ const getMyMumentList = async (userId: string): Promise<UserMumentListResponseDt
 
 const getLikeMumentList = async (userId: string): Promise<UserMumentListResponseDto | null> => {
     try {
-        const myMumentList = await Like.findOne({
+        const myMumentList: LikeInfo | null = await Like.findOne({
             'user._id': userId,
         });
 
@@ -92,8 +92,13 @@ const getLikeMumentList = async (userId: string): Promise<UserMumentListResponse
             };
         }
 
+        myMumentList.mument.sort((a, b) => {
+            return +new Date(a.createdAt) - +new Date(b.createdAt);
+        });
+
         const data = await Promise.all(
             myMumentList.mument.map((mument: any) => {
+
                 const result: MumentResponseDto = {
                     _id: mument._id,
                     user: {
@@ -102,6 +107,7 @@ const getLikeMumentList = async (userId: string): Promise<UserMumentListResponse
                         name: mument.user.name,
                     },
                     music: {
+                        _id: mument.music._id,
                         name: mument.music.name,
                         artist: mument.music.artist,
                         image: mument.music.image,
@@ -111,7 +117,7 @@ const getLikeMumentList = async (userId: string): Promise<UserMumentListResponse
                     feelingTag: mument.feelingTag,
                     content: mument.content,
                     isPrivate: mument.isPrivate,
-                    likeCount: mument.likeCount,
+                    likeCount: 0, //쓰이지 않음
                     isLiked: true,
                     createdAt: dayjs(mument.createdAt).format('D MMM, YYYY'),
                     year: Number(dayjs(mument.createdAt).format('YYYY')),

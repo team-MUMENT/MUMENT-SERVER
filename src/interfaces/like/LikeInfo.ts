@@ -21,6 +21,7 @@ export interface LikeMumentInfo {
 }
 
 export interface LikeMumentUserInfo {
+    _id: mongoose.Types.ObjectId;
     name: string;
     image: string;
 }
