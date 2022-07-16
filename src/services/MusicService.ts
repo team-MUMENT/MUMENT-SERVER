@@ -42,10 +42,10 @@ const getMusicAndMyMument = async (musicId: string, userId: string): Promise<Mus
 
         // isLiked 조회
         const isLiked = Boolean(
-            ...(await Like.find({
-                user: { _id: userId },
-                mument: { _id: latestMument._id },
-            })),
+            await Like.findOne({
+            user: { _id: userId },
+            mument: { _id: latestMument._id },
+            }),
         );
 
         const data = {
@@ -66,12 +66,9 @@ const getMusicAndMyMument = async (musicId: string, userId: string): Promise<Mus
 
 const getMumentList = async(musicId: string, userId: string, isLikeOrder: boolean): Promise<MusicMumentListResponseDto | null> => {    
     try {
-        // 있는 곡인지 조회
-        const music = await Music.findById(musicId);
-        if (!music) return null;
+        let originalMumentList;
 
-        let originalMumentList: MumentInfo [];
-
+        // mumentList 조회
         switch (isLikeOrder) {
             case (true): {
                 // 좋아요순 정렬
@@ -81,6 +78,7 @@ const getMumentList = async(musicId: string, userId: string, isLikeOrder: boolea
                 }).sort({
                     'likeCount': -1
                 });
+                break;
             }
             case (false): {
                 // 최신순 정렬
@@ -90,23 +88,52 @@ const getMumentList = async(musicId: string, userId: string, isLikeOrder: boolea
                 }).sort({
                     'createdAt': -1
                 });
+                break;
             }
+        };
+        
+        // 지우기
+        console.log('original mument list: ', originalMumentList);
 
-            const createDate = (createdAt: string): string => {
-                const date = dayjs(createdAt).format('D MMM, YYYY');
-                return date;
+        // mumentId array 리턴
+        const mumentIdList = originalMumentList.map (mument => mument._id);
+
+        // 지우기
+        console.log('mument id list: ', mumentIdList);
+
+        // 해당 유저아이디의 document에서 mumentIdList find
+        const likeList = await Like.find({
+            'user._id': userId,
+            'mument._id': {$in: mumentIdList}
+        });
+
+        // 지우기
+        console.log('like list: ', likeList);
+
+        // map 함수 사용을 위해 날짜 가공해주는 함수
+        const createDate = (createdAt: string): string => {
+            const date = dayjs(createdAt).format('D MMM, YYYY');
+            return date;
+        };
+
+        // 최종 리턴될 data
+        const data: MusicMumentListResponseDto[] = originalMumentList;
+        originalMumentList.reduce((ac, cur, index) => {
+            data[index] = {
+                ...cur.toObject(),
+                date: createDate(cur.createdAt),
+                isLiked: Boolean(mumentIdList[index] in likeList),
             };
+            return data;
+        });
 
-            const getIsLiked = (mumentId: string, userId: string) 
+        // 지우기
+        console.log('result data: ', data);
 
-            function 
-
-            const mumentList: MusicMumentListResponseDto[] = originalMumentList.map(()
-
-            )
-        }
-
-
+        return data;
+    } catch (error) {
+        console.log(error);
+        throw error;
     }
 }
 
