@@ -44,34 +44,37 @@ const createMument = async (userId: string, musicId: string, mumentCreateDto: Mu
     }
 };
 
-const getMument = async (mumentId: string, userId: string): Promise<MumentResponseDto | null> => {
+const getMument = async (mumentId: string, userId: string): Promise<MumentResponseDto | null | true> => {
     try {
         const mument = await Mument.findById(mumentId);
         if (!mument) return null;
 
-        const music = await Music.findById(mument.music._id);
-        if (!music) return null;
-
         const loginUser = await User.findById(userId);
         if (!loginUser) return null;
 
-        const isLiked = await Like.findOne({
-            user: {
-                _id: userId,
-            },
-            mument: {
-                _id: mumentId,
-            },
-        });
-        console.log(isLiked);
+        if (mument.user._id.toString() !== userId) return true;
 
-        const historyCount = await Mument.countDocuments({
-            $or: [
+        const music = await Music.findById(mument.music._id);
+        if (!music) return null;
+
+        const isLiked = await Like.findOne({
+            $and: [
                 {
-                    music: { _id: mument.music._id },
+                    mument: { $elemMatch: { _id: mumentId } },
                 },
                 {
-                    user: { _id: mument.user._id },
+                    'user._id': { $eq: userId },
+                },
+            ],
+        });
+
+        const historyCount = await Mument.countDocuments({
+            $and: [
+                {
+                    'music._id': { $eq: mument.music._id },
+                },
+                {
+                    'user._id': { $eq: mument.user._id },
                 },
             ],
         });
