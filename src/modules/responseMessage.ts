@@ -14,6 +14,7 @@ const message = {
 
     // music
     FIND_MUSIC_MYMUMENT_SUCCESS: '곡 상세, 나의 뮤멘트 조회 성공',
+    READ_MUSIC_MUMENTLIST_SUCCESS: '뮤멘트 리스트 조회 성공',
 };
 
 export default message;
