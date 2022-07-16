@@ -1,6 +1,10 @@
+import { MusicInfo } from '../interfaces/music/MusicInfo';
+import { MumentInfo } from '../interfaces/mument/MumentInfo';
+import { MumentCardViewInterface } from '../interfaces/mument/MumentCardViewInterface';
 import { PostBaseResponseDto } from '../interfaces/common/PostBaseResponseDto';
 import { MumentCreateDto } from '../interfaces/mument/MumentCreateDto';
 import { MumentResponseDto } from '../interfaces/mument/MumentResponseDto';
+import { MumentHistoryResponseDto } from '../interfaces/mument/MumentHistoryResponseDto';
 import Mument from '../models/Mument';
 import Music from '../models/Music';
 import User from '../models/User';
@@ -110,7 +114,98 @@ const getMument = async (mumentId: string, userId: string): Promise<MumentRespon
     }
 };
 
+const getMumentHistory = async (userId: string, musicId: string, isLatestOrder:boolean ): Promise<MumentHistoryResponseDto | null> => {
+    try {
+        // 음악 정보 조회
+        const music: MusicInfo | null = await Music.findById(musicId);
+
+        // 음악이 존재하지 않으면 null 리턴
+        if (!music) {
+            return null;
+        }
+
+        let originalMumentList: MumentInfo[];
+
+        // 해당 유저가 쓴 뮤멘트 전부 조회
+        switch (isLatestOrder) {
+            case true: {
+                // 최신순 정렬
+                originalMumentList = await Mument.find({
+                    'user._id': userId,
+                    'music._id': musicId,
+                    isDeleted: false,
+                }).sort({
+                    createdAt: -1,
+                });
+                break;
+            }
+            case false: {
+                // 오래된순 정렬
+                originalMumentList = await Mument.find({
+                    'user._id': userId,
+                    'music._id': musicId,
+                    isDeleted: false,
+                }).sort({
+                    createdAt: 1,
+                });
+                break;
+            }
+        }
+
+        // 결과값이 없을 경우
+        if (originalMumentList.length === 0) {
+            const data: MumentHistoryResponseDto = {
+                music,
+                mumentHistory: [],
+            };
+
+            return data;
+        }
+
+        // mumentId array 리턴
+        const mumentIdList = originalMumentList.map(mument => mument._id);
+
+        // 해당 유저아이디의 document에서 mumentIdList find
+        const likeList = await Like.find({
+            'user._id': userId,
+            'mument._id': { $in: mumentIdList },
+        });
+
+        // map 함수 사용을 위해 날짜 가공해주는 함수
+        const createDate = (createdAt: Date): string => {
+            const date = dayjs(createdAt).format('D MMM, YYYY');
+            return date;
+        };
+
+        // 최종 리턴될 data
+        let mumentHistory: MumentCardViewInterface[];
+        originalMumentList.reduce((ac, cur, index) => {
+            mumentHistory[index] = {
+                ...cur.toObject(),
+                date: createDate(cur.createdAt),
+                isLiked: Boolean(mumentIdList[index] in likeList),
+            };
+            return mumentHistory;
+        });
+
+        const data: MumentHistoryResponseDto = {
+            music,
+            mumentHistory,
+        };
+        
+        // 지우기
+        console.log(data);
+
+        return data;
+
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+};
+
 export default {
     createMument,
     getMument,
+    getMumentHistory,
 };
