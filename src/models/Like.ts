@@ -17,6 +17,9 @@ const LikeSchema = new mongoose.Schema({
                 ref: 'Mument',
             },
             user: {
+                _id: {
+                    type: mongoose.Types.ObjectId,
+                },
                 name: {
                     type: String,
                     required: true,
@@ -27,6 +30,9 @@ const LikeSchema = new mongoose.Schema({
                 },
             },
             music: {
+                _id: {
+                    type: mongoose.Types.ObjectId,
+                },
                 name: {
                     type: String,
                     required: true,

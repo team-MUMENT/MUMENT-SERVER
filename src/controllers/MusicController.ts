@@ -71,7 +71,25 @@ const getMumentList = async (req: Request, res: Response) => {
     }
 };
 
+/**
+ * @ROUTE GET /search?keyword=
+ * @DESC 곡 검색창에서 검색한 음악 리스트 가져오기
+ */
+const getMusicListBySearch = async (req: Request, res: Response) => {
+    const { keyword } = req.query;
+
+    try {
+        const data = await MusicService.getMusicListBySearch(keyword as string);
+
+        res.status(statusCode.OK).send(util.success(statusCode.OK, message.SEARCH_MUSIC_LIST_SUCCESS, data));
+    } catch (error) {
+        console.log(error);
+        res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
+    }
+};
+
 export default {
     getMusicAndMyMument,
     getMumentList,
+    getMusicListBySearch,
 };
