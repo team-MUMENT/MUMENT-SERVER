@@ -15,4 +15,16 @@ router.get('/:userId/:musicId/history', [
     query('default').isString().isIn(['Y', 'N']),
 ], MumentController.getMumentHistory);
 
+// 좋아요 등록
+router.post('/:mumentId/:userId/like', [
+    param('mumentId').isString().isLength({ min: 24, max: 24}),
+    param('userId').isString().isLength({ min: 24, max: 24}),
+], MumentController.createLike);
+
+// 좋아요 삭제
+router.delete('/:mumentId/:userId/like', [
+    param('mumentId').isString().isLength({ min: 24, max: 24}),
+    param('userId').isString().isLength({ min: 24, max: 24}),
+], MumentController.deleteLike);
+
 export default router;
