@@ -70,23 +70,23 @@ const getMumentList = async(musicId: string, userId: string, isLikeOrder: boolea
 
         // mumentList 조회
         switch (isLikeOrder) {
-            case (true): {
+            case true: {
                 // 좋아요순 정렬
                 originalMumentList = await Mument.find({
                    'music._id': musicId,
                    isDeleted: false, 
                 }).sort({
-                    'likeCount': -1
+                    likeCount: -1
                 });
                 break;
             }
-            case (false): {
+            case false: {
                 // 최신순 정렬
                 originalMumentList = await Mument.find({
                     'music._id': musicId,
                     isDeleted: false,
                 }).sort({
-                    'createdAt': -1
+                    createdAt: -1
                 });
                 break;
             }
@@ -104,14 +104,14 @@ const getMumentList = async(musicId: string, userId: string, isLikeOrder: boolea
         // 해당 유저아이디의 document에서 mumentIdList find
         const likeList = await Like.find({
             'user._id': userId,
-            'mument._id': {$in: mumentIdList}
+            'mument._id': { $in: mumentIdList }
         });
 
         // 지우기
         console.log('like list: ', likeList);
 
         // map 함수 사용을 위해 날짜 가공해주는 함수
-        const createDate = (createdAt: string): string => {
+        const createDate = (createdAt: date): string => {
             const date = dayjs(createdAt).format('D MMM, YYYY');
             return date;
         };
