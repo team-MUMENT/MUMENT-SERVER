@@ -53,6 +53,27 @@ const getMument = async (req: Request, res: Response) => {
 };
 
 /**
+ *  @ROUTE GET /mument/:userId/:musicId/is-first
+ *  @DESC 특정 음악에 대해 뮤멘트 기록하기 전 처음/다시 태그 판단
+ */
+const getIsFirst = async (req: Request, res: Response) => {
+    const { userId, musicId } = req.params;
+
+    try {
+        const data = await MumentService.getIsFirst(userId, musicId);
+
+        // 존재하지않는 musicId를 보낼 경우
+        if (!data) res.status(statusCode.NOT_FOUND).send(util.fail(statusCode.NOT_FOUND, message.NOT_FOUND_ID));
+
+        res.status(statusCode.OK).send(util.success(statusCode.OK, message.READ_ISFIRST_SUCCESS, data));
+    } catch (error) {
+        console.log(error);
+
+        res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
+    }
+};
+
+/**
  * @ROUTE /mument/:userId/:musicId/history?default=
  * @DESC get mument history
  */
@@ -95,5 +116,6 @@ const getMumentHistory = async (req: Request, res: Response) => {
 export default {
     createMument,
     getMument,
+    getIsFirst,
     getMumentHistory,
 };

@@ -15,4 +15,6 @@ router.get('/:userId/:musicId/history', [
     query('default').isString().isIn(['Y', 'N']),
 ], MumentController.getMumentHistory);
 
+router.get('/:userId/:musicId/is-first', MumentController.getIsFirst);
+
 export default router;
