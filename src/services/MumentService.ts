@@ -52,6 +52,73 @@ const createMument = async (userId: string, musicId: string, mumentCreateDto: Mu
     }
 };
 
+const updateMument = async (mumentId: string, mumentUpdateDto: MumentCreateDto): Promise<PostBaseResponseDto | null> => {
+    try {
+        const mument = await Mument.findById(mumentId);
+        if (!mument) return null;
+
+        const data = {
+            _id: mument._id,
+        };
+
+        // 공개글에서 비밀글로 수정한 경우
+        if (mumentUpdateDto.isPrivate !== undefined) {
+            if (mument.isPrivate === false && mumentUpdateDto.isPrivate === true) {
+                await Mument.findByIdAndUpdate(mumentId, {
+                    $set: {
+                        isFirst: mumentUpdateDto.isFirst,
+                        impressionTag: mumentUpdateDto.impressionTag,
+                        feelingTag: mumentUpdateDto.feelingTag,
+                        content: mumentUpdateDto.content ? mumentUpdateDto.content : null,
+                        isPrivate: mumentUpdateDto.isPrivate ? mumentUpdateDto.isPrivate : false,
+                        likeCount: 0, // 좋아요 수 초기화
+                    },
+                });
+
+                //모든 유저의 Like에서 뮤멘트 제거 - 좋아요 삭제
+                await Like.updateMany(
+                    {},
+                    {
+                        $pull: { mument: { _id: mumentId } },
+                    },
+                );
+
+                return data;
+            }
+        }
+
+        //뮤멘트 업데이트
+        await Mument.findByIdAndUpdate(mumentId, {
+            $set: {
+                isFirst: mumentUpdateDto.isFirst,
+                impressionTag: mumentUpdateDto.impressionTag,
+                feelingTag: mumentUpdateDto.feelingTag,
+                content: mumentUpdateDto.content != undefined ? mumentUpdateDto.content : null,
+                isPrivate: mumentUpdateDto.isPrivate != undefined ? mumentUpdateDto.isPrivate : false,
+            },
+        });
+
+        //모든 유저의 뮤멘트 업데이트
+        await Like.updateMany(
+            { mument: { $elemMatch: { _id: mumentId } } },
+            {
+                $set: {
+                    'mument.$.isFirst': mumentUpdateDto.isFirst,
+                    'mument.$.impressionTag': mumentUpdateDto.impressionTag,
+                    'mument.$.feelingTag': mumentUpdateDto.feelingTag,
+                    'mument.$.content': mumentUpdateDto.content != undefined ? mumentUpdateDto.content : null,
+                    'mument.$.isPrivate': mumentUpdateDto.isPrivate != undefined ? mumentUpdateDto.isPrivate : false,
+                },
+            },
+        );
+
+        return data;
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+};
+
 const getMument = async (mumentId: string, userId: string): Promise<MumentResponseDto | null | true> => {
     try {
         const mument = await Mument.findById(mumentId);
@@ -339,6 +406,7 @@ const deleteLike = async (mumentId: string, userId: string): Promise<LikeCountRe
 
 export default {
     createMument,
+    updateMument,
     getMument,
     getIsFirst,
     getMumentHistory,
