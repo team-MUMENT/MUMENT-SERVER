@@ -123,7 +123,7 @@ const getIsFirst = async (userId: string, musicId: string): Promise<IsFirstRespo
         const music = await Music.findById(musicId);
         if (!music) return null;
 
-        const userMument = await Mument.findOne({
+        const userMument = await Mument.find({
             $and: [
                 {
                     'user._id': { $eq: userId },
@@ -137,14 +137,30 @@ const getIsFirst = async (userId: string, musicId: string): Promise<IsFirstRespo
             ],
         });
 
-        if (!userMument) {
+        if (userMument.length === 0) {
+            // 뮤멘트 기록이 처음인 경우
             return {
                 isFirst: true,
+                FirstAvailable: true,
             };
         } else {
-            return {
-                isFirst: false,
-            };
+            const firstMument = userMument.some((mument: MumentInfo) => {
+                return mument.isFirst === true;
+            });
+
+            if (firstMument === false) {
+                // 처음 들었어요 기록이 존재하지않는 경우 - 처음 선택 가능
+                return {
+                    isFirst: false,
+                    FirstAvailable: true,
+                };
+            } else {
+                // 처음 들었어요 기록이 존재하지않는 경우 - 처음 선택 불가
+                return {
+                    isFirst: false,
+                    FirstAvailable: false,
+                };
+            }
         }
     } catch (error) {
         console.log(error);
@@ -152,7 +168,7 @@ const getIsFirst = async (userId: string, musicId: string): Promise<IsFirstRespo
     }
 };
 
-const getMumentHistory = async (userId: string, musicId: string, isLatestOrder:boolean ): Promise<MumentHistoryResponseDto | null> => {
+const getMumentHistory = async (userId: string, musicId: string, isLatestOrder: boolean): Promise<MumentHistoryResponseDto | null> => {
     try {
         // 음악 정보 조회
         const music: MusicInfo | null = await Music.findById(musicId);
@@ -232,7 +248,6 @@ const getMumentHistory = async (userId: string, musicId: string, isLatestOrder:b
         };
 
         return data;
-
     } catch (error) {
         console.log(error);
         throw error;
