@@ -19,9 +19,11 @@ const createMument = async (req: Request, res: Response) => {
     try {
         const data: PostBaseResponseDto | null = await MumentService.createMument(userId, musicId, mumentCreateDto);
 
-        if (!data) res.status(statusCode.NOT_FOUND).send(util.fail(statusCode.NOT_FOUND, message.NOT_FOUND_ID));
-
-        res.status(statusCode.CREATED).send(util.success(statusCode.CREATED, message.CREATE_MUMENT_SUCCESS, data));
+        if (!data) {
+            res.status(statusCode.NOT_FOUND).send(util.fail(statusCode.NOT_FOUND, message.NOT_FOUND_ID));
+        } else {
+            res.status(statusCode.CREATED).send(util.success(statusCode.CREATED, message.CREATE_MUMENT_SUCCESS, data));
+        }
     } catch (error) {
         console.log(error);
 
@@ -74,6 +76,24 @@ const getMument = async (req: Request, res: Response) => {
         } else {
             res.status(statusCode.OK).send(util.success(statusCode.OK, message.READ_MUMENT_SUCEESS, data));
         }
+    } catch (error) {
+        console.log(error);
+
+        res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
+    }
+};
+
+/**
+ *  @ROUTE DELETE /:mumentId
+ *  @DESC Delete Mument
+ */
+const deleteMument = async (req: Request, res: Response) => {
+    const { mumentId } = req.params;
+
+    try {
+        const data = await MumentService.deleteMument(mumentId);
+
+        res.status(statusCode.NO_CONTENT).send(util.success(statusCode.NO_CONTENT, message.DELETE_MUMENT_SUCCESS));
     } catch (error) {
         console.log(error);
 
@@ -195,8 +215,7 @@ const deleteLike = async (req: Request, res: Response) => {
             res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.DELETE_LIKE_FAIL));
         }
 
-        res.status(statusCode.OK).send(util.success(statusCode.OK, message.DELETE_LIKE_SUCCESS, data));
-
+        res.status(statusCode.OK).send(util.success(statusCode.OK, message.DELETE_LIKE_SUCCESS));
     } catch (error) {
         console.log(error);
         res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
@@ -207,6 +226,7 @@ export default {
     createMument,
     updateMument,
     getMument,
+    deleteMument,
     getIsFirst,
     getMumentHistory,
     createLike,
