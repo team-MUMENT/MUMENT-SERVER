@@ -280,9 +280,7 @@ const createLike = async (mumentId: string, userId: string): Promise<LikeCountRe
         };
 
         // like 콜렉션에 해당 뮤멘트 추가
-        await Like.findOne({
-            'user._id': userId,
-        }).updateOne({}, { $push: { mument: likedMument } });
+        await Like.updateOne({ 'user._id': userId }, { $push: { mument: likedMument } }, { upsert: true });
 
         // 리턴 데이터
         const data: LikeCountResponeDto = {
@@ -309,9 +307,7 @@ const deleteLike = async (mumentId: string, userId: string): Promise<LikeCountRe
         }
 
         // like collection에서 해당 뮤멘트 삭제
-        await Like.findOne({
-            'user._id': userId,
-        }).updateOne({}, { mument: { $pull: { $elemMatch: { 'mument._id': updatedMument._id } } } } );
+        await Like.updateOne({ 'user._id': userId }, { $pull: { mument: { _id: updatedMument._id } } });
 
         // 리턴 데이터
         const data: LikeCountResponeDto = {
