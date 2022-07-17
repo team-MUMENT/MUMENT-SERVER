@@ -141,7 +141,7 @@ const getIsFirst = async (userId: string, musicId: string): Promise<IsFirstRespo
             // 뮤멘트 기록이 처음인 경우
             return {
                 isFirst: true,
-                FirstAvailable: true,
+                firstAvailable: true,
             };
         } else {
             const firstMument = userMument.some((mument: MumentInfo) => {
@@ -152,13 +152,13 @@ const getIsFirst = async (userId: string, musicId: string): Promise<IsFirstRespo
                 // 처음 들었어요 기록이 존재하지않는 경우 - 처음 선택 가능
                 return {
                     isFirst: false,
-                    FirstAvailable: true,
+                    firstAvailable: true,
                 };
             } else {
                 // 처음 들었어요 기록이 존재하지않는 경우 - 처음 선택 불가
                 return {
                     isFirst: false,
-                    FirstAvailable: false,
+                    firstAvailable: false,
                 };
             }
         }
