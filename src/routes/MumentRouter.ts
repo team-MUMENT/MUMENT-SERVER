@@ -2,7 +2,6 @@ import { Router } from 'express';
 import { MumentController } from '../controllers';
 import { body, param, query } from 'express-validator';
 
-
 const router: Router = Router();
 
 router.post('/:userId/:musicId', MumentController.createMument);
