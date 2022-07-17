@@ -185,6 +185,31 @@ const getMument = async (mumentId: string, userId: string): Promise<MumentRespon
     }
 };
 
+const deleteMument = async (mumentId: string): Promise<void | null> => {
+    try {
+        const mument = await Mument.findById(mumentId);
+        if (!mument) return null;
+
+        //Mument soft delete
+        await Mument.findByIdAndUpdate(mumentId, {
+            $set: {
+                isDeleted: true,
+            },
+        });
+
+        //Like에서 Mument 제거
+        await Like.updateMany(
+            {},
+            {
+                $pull: { mument: { _id: mumentId } },
+            },
+        );
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+};
+
 const getIsFirst = async (userId: string, musicId: string): Promise<IsFirstResponseDto | null> => {
     try {
         const music = await Music.findById(musicId);
@@ -408,6 +433,7 @@ export default {
     createMument,
     updateMument,
     getMument,
+    deleteMument,
     getIsFirst,
     getMumentHistory,
     createLike,
