@@ -22,6 +22,7 @@ const message = {
     CREATE_LIKE_FAIL: '좋아요 등록 실패',
     DELETE_LIKE_SUCCESS: '좋아요 취소 성공',
     DELETE_LIKE_FAIL: '좋아요 취소 실패',
+    READ_ISFIRST_SUCCESS: '뮤멘트 처음/다시 조회 성공',
 
     // music
     NO_MUSIC_ID: '해당 아이디의 음악이 존재하지 않습니다',

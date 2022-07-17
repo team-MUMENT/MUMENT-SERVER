@@ -1,5 +1,3 @@
-import mongoose from 'mongoose';
-
 export interface MumentCreateDto {
     isFirst: boolean;
     impressionTag: number[];

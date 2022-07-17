@@ -6,6 +6,7 @@ import { MumentInfo } from '../interfaces/mument/MumentInfo';
 import { MumentCardViewInterface } from '../interfaces/mument/MumentCardViewInterface';
 import { MumentCreateDto } from '../interfaces/mument/MumentCreateDto';
 import { MumentResponseDto } from '../interfaces/mument/MumentResponseDto';
+import { IsFirstResponseDto } from '../interfaces/mument/IsFirstResponseDto';
 import { MumentHistoryResponseDto } from '../interfaces/mument/MumentHistoryResponseDto';
 import { LikeCountResponeDto } from '../interfaces/like/LikeCountResponseDto';
 import { LikeMumentInfo } from '../interfaces/like/LikeInfo';
@@ -111,6 +112,40 @@ const getMument = async (mumentId: string, userId: string): Promise<MumentRespon
         };
 
         return data;
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+};
+
+const getIsFirst = async (userId: string, musicId: string): Promise<IsFirstResponseDto | null> => {
+    try {
+        const music = await Music.findById(musicId);
+        if (!music) return null;
+
+        const userMument = await Mument.findOne({
+            $and: [
+                {
+                    'user._id': { $eq: userId },
+                },
+                {
+                    'music._id': { $eq: musicId },
+                },
+                {
+                    isDeleted: { $eq: false },
+                },
+            ],
+        });
+
+        if (!userMument) {
+            return {
+                isFirst: true,
+            };
+        } else {
+            return {
+                isFirst: false,
+            };
+        }
     } catch (error) {
         console.log(error);
         throw error;
@@ -294,6 +329,7 @@ const deleteLike = async (mumentId: string, userId: string): Promise<LikeCountRe
 export default {
     createMument,
     getMument,
+    getIsFirst,
     getMumentHistory,
     createLike,
     deleteLike,
