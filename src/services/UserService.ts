@@ -1,18 +1,19 @@
-import { UserMumentListResponseDto } from '../interfaces/user/UserMumentListResponseDto';
-import Mument from '../models/Mument';
-import User from '../models/User';
-import Music from '../models/Music';
 import dayjs from 'dayjs';
-import Like from '../models/Like';
+import { UserMumentListResponseDto } from '../interfaces/user/UserMumentListResponseDto';
 import { MumentResponseDto } from '../interfaces/mument/MumentResponseDto';
-import { LikeInfo } from '../interfaces/like/LikeInfo';
-import { UserInfo } from '../interfaces/user/UserInfo';
 import { UserResponseDto } from '../interfaces/user/UserResponseDto';
+import { LikeInfo } from '../interfaces/like/LikeInfo';
+import { MumentInfo } from '../interfaces/mument/MumentInfo';
+import { UserInfo } from '../interfaces/user/UserInfo';
+import Mument from '../models/Mument';
+import Music from '../models/Music';
+import Like from '../models/Like';
+import User from '../models/User';
 import constant from '../modules/serviceReturnConstant';
 
-const getMyMumentList = async (userId: string): Promise<UserMumentListResponseDto | null> => {
+const getMyMumentList = async (userId: string, tagList: number[]): Promise<UserMumentListResponseDto | null> => {
     try {
-        const myMumentList = await Mument.find({
+        let myMumentList: MumentInfo[] = await Mument.find({
             $and: [
                 {
                     'user._id': { $eq: userId },
@@ -27,6 +28,17 @@ const getMyMumentList = async (userId: string): Promise<UserMumentListResponseDt
             return {
                 muments: [],
             };
+        }
+
+        // 필터링 태그 존재시 뮤멘트 필터링
+        if (tagList.length > 0) {
+            myMumentList = myMumentList.filter(mument => {
+                const mumentTagList = mument.impressionTag.concat(mument.feelingTag);
+
+                return tagList.every(tag => {
+                    return mumentTagList.includes(tag);
+                });
+            });
         }
 
         const data = await Promise.all(
@@ -54,7 +66,7 @@ const getMyMumentList = async (userId: string): Promise<UserMumentListResponseDt
                     music: {
                         _id: !music ? null : music._id,
                         name: !music ? 'nonexistence' : music.name,
-                        artist: !music ? 'onexistence' : music.artist,
+                        artist: !music ? 'nonexistence' : music.artist,
                         image: !music ? 'nonexistence' : music.image,
                     },
                     isFirst: mument.isFirst,
@@ -82,7 +94,7 @@ const getMyMumentList = async (userId: string): Promise<UserMumentListResponseDt
     }
 };
 
-const getLikeMumentList = async (userId: string): Promise<UserMumentListResponseDto | null> => {
+const getLikeMumentList = async (userId: string, tagList: number[]): Promise<UserMumentListResponseDto | null> => {
     try {
         const myMumentList: LikeInfo | null = await Like.findOne({
             'user._id': userId,
@@ -96,12 +108,22 @@ const getLikeMumentList = async (userId: string): Promise<UserMumentListResponse
         }
 
         myMumentList.mument.sort((a, b) => {
-            return +new Date(a.createdAt) - +new Date(b.createdAt);
+            return +new Date(b.createdAt) - +new Date(a.createdAt);
         });
+
+        // 필터링 태그 존재시 뮤멘트 필터링
+        if (tagList.length > 0) {
+            myMumentList.mument = myMumentList.mument.filter(mument => {
+                const mumentTagList = mument.impressionTag.concat(mument.feelingTag);
+
+                return tagList.every(tag => {
+                    return mumentTagList.includes(tag);
+                });
+            });
+        }
 
         const data = await Promise.all(
             myMumentList.mument.map((mument: any) => {
-
                 const result: MumentResponseDto = {
                     _id: mument._id,
                     user: {
@@ -119,8 +141,8 @@ const getLikeMumentList = async (userId: string): Promise<UserMumentListResponse
                     impressionTag: mument.impressionTag,
                     feelingTag: mument.feelingTag,
                     content: mument.content,
+                    likeCount: mument.likeCount,
                     isPrivate: mument.isPrivate,
-                    likeCount: 0, //쓰이지 않음
                     isLiked: true,
                     createdAt: dayjs(mument.createdAt).format('D MMM, YYYY'),
                     year: Number(dayjs(mument.createdAt).format('YYYY')),
@@ -151,7 +173,7 @@ const login = async (profileId: string, password: string): Promise<UserResponseD
         if (!user) {
             return constant.NO_USER;
         }
-        
+
         // 비밀번호 검증
         const isMatch = !!(password === user.password);
 
