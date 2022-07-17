@@ -1,17 +1,18 @@
+import dayjs from 'dayjs';
+import constant from '../modules/serviceReturnConstant';
 import { MusicInfo } from '../interfaces/music/MusicInfo';
+import { PostBaseResponseDto } from '../interfaces/common/PostBaseResponseDto';
 import { MumentInfo } from '../interfaces/mument/MumentInfo';
 import { MumentCardViewInterface } from '../interfaces/mument/MumentCardViewInterface';
-import { PostBaseResponseDto } from '../interfaces/common/PostBaseResponseDto';
 import { MumentCreateDto } from '../interfaces/mument/MumentCreateDto';
 import { MumentResponseDto } from '../interfaces/mument/MumentResponseDto';
 import { MumentHistoryResponseDto } from '../interfaces/mument/MumentHistoryResponseDto';
+import { LikeCountResponeDto } from '../interfaces/like/LikeCountResponseDto';
+import { LikeMumentInfo } from '../interfaces/like/LikeInfo';
 import Mument from '../models/Mument';
 import Music from '../models/Music';
 import User from '../models/User';
 import Like from '../models/Like';
-import dayjs from 'dayjs';
-import { LikeCountResponeDto } from '../interfaces/like/LikeCountResponseDto';
-import { LikeMumentInfo } from '../interfaces/like/LikeInfo';
 
 const createMument = async (userId: string, musicId: string, mumentCreateDto: MumentCreateDto): Promise<PostBaseResponseDto | null> => {
     try {
@@ -204,7 +205,7 @@ const getMumentHistory = async (userId: string, musicId: string, isLatestOrder:b
 };
 
 // 좋아요 등록
-const createLike = async (mumentId: string, userId: string): Promise<LikeCountResponeDto | null> => {
+const createLike = async (mumentId: string, userId: string): Promise<LikeCountResponeDto | null | number> => {
     try {
         // 해당 뮤멘트의 likeCount를 +1 해주고, 업데이트 이후의 값을 리턴
         const updatedMument = await Mument.findOneAndUpdate({ _id: mumentId }, { $inc: { likeCount: +1 } }, { returnDocument: 'after' });
@@ -214,22 +215,13 @@ const createLike = async (mumentId: string, userId: string): Promise<LikeCountRe
             return null;
         }
 
-        // 지우기
-        console.log('updated mument document: ', updatedMument);
-
         // like 콜렉션에 추가하기 위해 music 정보 조회
         const music = await Music.findById(updatedMument.music._id);
 
-        /**
-         * music 정보가 없으면 return null
-         * 전체 플로우를 고려해서 로직의 필요 유무 생각해보기
-         */
+        // music 정보가 없으면 return NO_MUSIC
         if (!music) {
-            return null;
+            return constant.NO_MUSIC;
         }
-
-        // 지우기
-        console.log(music);
 
         // like 콜렉션에 추가할 뮤멘트
         const likedMument: LikeMumentInfo = {
@@ -255,7 +247,7 @@ const createLike = async (mumentId: string, userId: string): Promise<LikeCountRe
         // like 콜렉션에 해당 뮤멘트 추가
         await Like.findOne({
             'user._id': userId,
-        }).updateOne({}, { $pull: { mument: likedMument } });
+        }).updateOne({}, { $push: { mument: likedMument } });
 
         // 리턴 데이터
         const data: LikeCountResponeDto = {
@@ -271,14 +263,32 @@ const createLike = async (mumentId: string, userId: string): Promise<LikeCountRe
 };
 
 // 좋아요 취소
-const deleteLike = async (mumentId: string, userId: string) => {
+const deleteLike = async (mumentId: string, userId: string): Promise<LikeCountResponeDto | null | number> => {
     try {
+        // 해당 뮤멘트의 likeCount를 -1 해주고, 업데이트 이후의 값을 리턴
+        const updatedMument = await Mument.findOneAndUpdate({ _id: mumentId }, { $inc: { likeCount: -1 } }, { returnDocument: 'after' });
 
+        // 업데이트에 문제가 생겼을 경우 return null
+        if (!updatedMument) {
+            return null;
+        }
+
+        // like collection에서 해당 뮤멘트 삭제
+        await Like.findOne({
+            'user._id': userId,
+        }).updateOne({}, { mument: { $pull: { $elemMatch: { 'mument._id': updatedMument._id } } } } );
+
+        // 리턴 데이터
+        const data: LikeCountResponeDto = {
+            mumentId: updatedMument._id,
+            likeCount: updatedMument.likeCount,
+        };
+
+        return data;
     } catch (error) {
         console.log(error);
         throw error;
     }
-
 };
 
 export default {
@@ -286,5 +296,5 @@ export default {
     getMument,
     getMumentHistory,
     createLike,
-    deleteLike
+    deleteLike,
 };
