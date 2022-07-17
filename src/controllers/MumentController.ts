@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import statusCode from '../modules/statusCode';
 import message from '../modules/responseMessage';
 import util from '../modules/util';
+import constant from '../modules/serviceReturnConstant';
 import { validationResult } from 'express-validator';
 import { MumentService } from '../services';
 import { MumentCreateDto } from '../interfaces/mument/MumentCreateDto';
@@ -74,7 +75,7 @@ const getIsFirst = async (req: Request, res: Response) => {
 };
 
 /**
- * @ROUTE /mument/:userId/:musicId/history?default=
+ * @ROUTE GET /mument/:userId/:musicId/history?default=
  * @DESC get mument history
  */
 const getMumentHistory = async (req: Request, res: Response) => {
@@ -113,9 +114,72 @@ const getMumentHistory = async (req: Request, res: Response) => {
     }
 };
 
+/**
+ * @ROUTE POST /mument/:mumentId/:userId/like
+ * @DESC 좋아요 등록
+ */
+const createLike = async (req: Request, res: Response) => {
+    const { mumentId, userId } = req.params;
+
+    const error = validationResult(req);
+    if (!error.isEmpty()) {
+        res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.WRONG_PARAMS));
+    }
+
+    try {
+        const data = await MumentService.createLike(mumentId, userId);
+
+        // 실패했을 때
+        switch (data) {
+            case null: {
+                // 업데이트가 실패했을 때
+                res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.CREATE_LIKE_FAIL));
+            }
+            case constant.NO_MUSIC: {
+                // 음악 data가 없을 때
+                res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.NO_MUSIC_ID));
+            }
+        }
+
+        res.status(statusCode.CREATED).send(util.success(statusCode.CREATED, message.CREATE_LIKE_SUCCESS, data));
+    } catch (error) {
+        console.log(error);
+        res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
+    }
+};
+
+/**
+ * @ROUTE DELETE /mument/:mumentId/:userId/like
+ * @DESC 좋아요 취소
+ */
+const deleteLike = async (req: Request, res: Response) => {
+    const { mumentId, userId } = req.params;
+
+    const error = validationResult(req);
+    if (!error.isEmpty()) {
+        res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.WRONG_PARAMS));
+    }
+
+    try {
+        const data = await MumentService.deleteLike(mumentId, userId);
+
+        if (!data) {
+            res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.DELETE_LIKE_FAIL));
+        }
+
+        res.status(statusCode.OK).send(util.success(statusCode.OK, message.DELETE_LIKE_SUCCESS, data));
+
+    } catch (error) {
+        console.log(error);
+        res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
+    }
+};
+
 export default {
     createMument,
     getMument,
     getIsFirst,
     getMumentHistory,
+    createLike,
+    deleteLike,
 };
