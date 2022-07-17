@@ -175,6 +175,15 @@ const deleteLike = async (req: Request, res: Response) => {
     }
 };
 
+const getRandomMument = async (req: Request, res: Response) => {
+    try {
+        const data = MumentService.getRandomMument();
+    } catch (error) {
+        console.log(error);
+        res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
+    }
+}
+
 export default {
     createMument,
     getMument,
@@ -182,4 +191,5 @@ export default {
     getMumentHistory,
     createLike,
     deleteLike,
+    getRandomMument,
 };
