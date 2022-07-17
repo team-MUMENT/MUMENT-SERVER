@@ -14,6 +14,8 @@ router.put('/:mumentId', [
 router.get('/:mumentId/:userId', MumentController.getMument);
 router.get('/:userId/:musicId/is-first', MumentController.getIsFirst);
 
+router.delete('/:mumentId', MumentController.deleteMument);
+
 // 히스토리 조회
 router.get('/:userId/:musicId/history', [
     param('musicId').isString().isLength({ min: 24, max: 24 }),

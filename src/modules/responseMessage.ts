@@ -17,6 +17,7 @@ const message = {
     CREATE_MUMENT_SUCCESS: '뮤멘트 기록하기 성공',
     UPDATE_MUMENT_SUCCESS: '뮤멘트 수정하기 성공',
     READ_MUMENT_SUCEESS: '뮤멘트 상세보기 성공',
+    DELETE_MUMENT_SUCCESS: '뮤멘트 삭제하기 성공',
     NOT_YOUR_MUMENT: '비밀글 입니다',
     READ_MUMENT_HISTORY_SUCCESS: '뮤멘트 히스토리 조회 성공',
     CREATE_LIKE_SUCCESS: '좋아요 등록 성공',
