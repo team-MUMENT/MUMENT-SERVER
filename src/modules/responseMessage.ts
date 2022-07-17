@@ -16,6 +16,7 @@ const message = {
     NOT_YOUR_MUMENT: '비밀글 입니다',
     READ_MUMENT_HISTORY_SUCCESS: '뮤멘트 히스토리 조회 성공',
     CREATE_LIKE_SUCCESS: '좋아요 등록 성공',
+    CREATE_LIKE_FAIL: '좋아요 등록 실패',
     DELETE_LIKE_SUCCESS: '좋아요 취소 성공',
 
     // music
