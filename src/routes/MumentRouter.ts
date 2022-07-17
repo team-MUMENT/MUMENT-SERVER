@@ -6,6 +6,7 @@ const router: Router = Router();
 
 router.post('/:userId/:musicId', MumentController.createMument);
 router.get('/:mumentId/:userId', MumentController.getMument);
+router.get('/:userId/:musicId/is-first', MumentController.getIsFirst);
 
 // 히스토리 조회
 router.get('/:userId/:musicId/history', [
