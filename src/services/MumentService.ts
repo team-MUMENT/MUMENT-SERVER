@@ -10,6 +10,7 @@ import Music from '../models/Music';
 import User from '../models/User';
 import Like from '../models/Like';
 import dayjs from 'dayjs';
+import { IsFirstResponseDto } from '../interfaces/mument/IsFirstResponseDto';
 
 const createMument = async (userId: string, musicId: string, mumentCreateDto: MumentCreateDto): Promise<PostBaseResponseDto | null> => {
     try {
@@ -114,6 +115,40 @@ const getMument = async (mumentId: string, userId: string): Promise<MumentRespon
     }
 };
 
+const getIsFirst = async (userId: string, musicId: string): Promise<IsFirstResponseDto | null> => {
+    try {
+        const music = await Music.findById(musicId);
+        if (!music) return null;
+
+        const userMument = await Mument.findOne({
+            $and: [
+                {
+                    'user._id': { $eq: userId },
+                },
+                {
+                    'music._id': { $eq: musicId },
+                },
+                {
+                    isDeleted: { $eq: false },
+                },
+            ],
+        });
+
+        if (!userMument) {
+            return {
+                isFirst: true,
+            };
+        } else {
+            return {
+                isFirst: false,
+            };
+        }
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+};
+
 const getMumentHistory = async (userId: string, musicId: string, isLatestOrder:boolean ): Promise<MumentHistoryResponseDto | null> => {
     try {
         // 음악 정보 조회
@@ -204,5 +239,6 @@ const getMumentHistory = async (userId: string, musicId: string, isLatestOrder:b
 export default {
     createMument,
     getMument,
+    getIsFirst,
     getMumentHistory,
 };
