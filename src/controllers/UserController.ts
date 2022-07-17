@@ -3,20 +3,22 @@ import statusCode from '../modules/statusCode';
 import message from '../modules/responseMessage';
 import util from '../modules/util';
 import { UserService } from '../services';
+import constant from '../modules/serviceReturnConstant';
 
 /**
- *  @ROUTE GET /my/:userId/list
- *  @DESC Get My Mument List
+ *  @ROUTE GET /my/:userId/list?tag1=&tag2=&tag3=
+ *  @DESC 보관함에서 나의 뮤멘트 리스트를 조회합니다. 필터링이 필요한 경우 필터링합니다.
  */
 const getMyMumentList = async (req: Request, res: Response) => {
-    //const { tag1, tag2, tag3 } = req.query;
+    const { tag1, tag2, tag3 } = req.query;
+    let tagList = [Number(tag1), Number(tag2), Number(tag3)];
+    tagList = tagList.filter(tag => isNaN(tag) === false);
 
     const { userId } = req.params;
 
     try {
-        const data = await UserService.getMyMumentList(userId);
+        const data = await UserService.getMyMumentList(userId, tagList);
 
-        if (!data) res.status(statusCode.NOT_FOUND).send(util.fail(statusCode.NOT_FOUND, message.NOT_FOUND_ID));
         res.status(statusCode.OK).send(util.success(statusCode.OK, message.READ_MY_MUMENT_LIST_SUCCESS, data));
     } catch (error) {
         console.log(error);
@@ -27,17 +29,18 @@ const getMyMumentList = async (req: Request, res: Response) => {
 
 /**
  *  @ROUTE GET /like/:userId/list
- *  @DESC Get My Mument List
+ *  @DESC 보관함에서 좋아요한 뮤멘트 리스트를 조회합니다. 필터링이 필요한 경우 필터링합니다.
  */
 const getLikeMumentList = async (req: Request, res: Response) => {
-    //const { tag1, tag2, tag3 } = req.query;
+    const { tag1, tag2, tag3 } = req.query;
+    let tagList = [Number(tag1), Number(tag2), Number(tag3)];
+    tagList = tagList.filter(tag => isNaN(tag) === false);
 
     const { userId } = req.params;
 
     try {
-        const data = await UserService.getLikeMumentList(userId);
+        const data = await UserService.getLikeMumentList(userId, tagList);
 
-        if (!data) res.status(statusCode.NOT_FOUND).send(util.fail(statusCode.NOT_FOUND, message.NOT_FOUND_ID));
         res.status(statusCode.OK).send(util.success(statusCode.OK, message.READ_LIKE_MUMENT_LIST_SUCCESS, data));
     } catch (error) {
         console.log(error);
