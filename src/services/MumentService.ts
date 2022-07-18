@@ -306,21 +306,7 @@ const getMumentHistory = async (userId: string, musicId: string, isLatestOrder: 
         }
 
         // mumentId array 리턴
-        const mumentIdList = originalMumentList.map(mument => {
-            //태그 개수 처리
-            const impressionTagLength = mument.impressionTag.length;
-            const feelingTagLength = mument.feelingTag.length;
-
-            if (impressionTagLength >= 1 && feelingTagLength >= 1) {
-                mument.impressionTag = [mument.impressionTag[0]];
-                mument.feelingTag = [mument.feelingTag[0]];
-            } else if (impressionTagLength >= 1 && feelingTagLength < 1) {
-                mument.impressionTag = mument.impressionTag.slice(0, 2);
-            } else if (impressionTagLength < 1 && feelingTagLength >= 1) {
-                mument.feelingTag = mument.feelingTag.slice(0, 2);
-            }
-            return mument._id;
-        });
+        const mumentIdList = originalMumentList.map(mument => mument._id);
 
         // 해당 유저아이디의 document에서 mumentIdList find
         const likeList = await Like.find({
@@ -337,8 +323,22 @@ const getMumentHistory = async (userId: string, musicId: string, isLatestOrder: 
         // 최종 리턴될 data
         const mumentHistory: MumentCardViewInterface[] = [];
         originalMumentList.reduce((ac, cur, index) => {
+            // 카드뷰 태그 리스트
+            const cardTag: number[] = [];
+            const impressionTagLength = cur.impressionTag.length;
+            const feelingTagLength = cur.feelingTag.length;
+
+            if (impressionTagLength >= 1 && feelingTagLength >= 1) {
+                cardTag.push(cur.impressionTag[0], cur.feelingTag[0]);
+            } else if (impressionTagLength >= 1 && feelingTagLength < 1) {
+                cardTag.push(...cur.impressionTag.slice(0, 2));
+            } else if (impressionTagLength < 1 && feelingTagLength >= 1) {
+                cardTag.push(...cur.feelingTag.slice(0, 2));
+            }
+
             mumentHistory[index] = {
                 ...cur.toObject(),
+                cardTag: cardTag,
                 date: createDate(cur.createdAt),
                 isLiked: Boolean(mumentIdList[index] in likeList),
             };
