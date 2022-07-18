@@ -56,6 +56,18 @@ const getMyMumentList = async (userId: string, tagList: number[]): Promise<UserM
                     ],
                 });
 
+                const impressionTagLength = mument.impressionTag.length;
+                const feelingTagLength = mument.feelingTag.length;
+
+                if (impressionTagLength >= 1 && feelingTagLength >= 1) {
+                    mument.impressionTag = [mument.impressionTag[0]];
+                    mument.feelingTag = [mument.feelingTag[0]];
+                } else if (impressionTagLength >= 1 && feelingTagLength < 1) {
+                    mument.impressionTag = mument.impressionTag.slice(0, 2);
+                } else if (impressionTagLength < 1 && feelingTagLength >= 1) {
+                    mument.feelingTag = mument.feelingTag.slice(0, 2);
+                }
+
                 const result: MumentResponseDto = {
                     _id: mument._id,
                     user: {
@@ -124,6 +136,18 @@ const getLikeMumentList = async (userId: string, tagList: number[]): Promise<Use
 
         const data = await Promise.all(
             myMumentList.mument.map((mument: any) => {
+                const impressionTagLength = mument.impressionTag.length;
+                const feelingTagLength = mument.feelingTag.length;
+
+                if (impressionTagLength >= 1 && feelingTagLength >= 1) {
+                    mument.impressionTag = [mument.impressionTag[0]];
+                    mument.feelingTag = [mument.feelingTag[0]];
+                } else if (impressionTagLength >= 1 && feelingTagLength < 1) {
+                    mument.impressionTag = mument.impressionTag.slice(0, 2);
+                } else if (impressionTagLength < 1 && feelingTagLength >= 1) {
+                    mument.feelingTag = mument.feelingTag.slice(0, 2);
+                }
+
                 const result: MumentResponseDto = {
                     _id: mument._id,
                     user: {
