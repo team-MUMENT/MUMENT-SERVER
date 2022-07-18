@@ -1,7 +1,6 @@
 import dayjs from 'dayjs';
-import { MumentInfo } from '../interfaces/mument/MumentInfo';
+import { MumentCardViewInterface } from '../interfaces/mument/MumentCardViewInterface';
 import { MusicMumentListResponseDto } from '../interfaces/music/MusicMumentListResponseDto';
-
 import { MusicMyMumentResponseDto } from '../interfaces/music/MusicMyMumentResponseDto';
 import { MusicResponseDto } from '../interfaces/music/MusicResponseDto';
 import Like from '../models/Like';
@@ -44,28 +43,29 @@ const getMusicAndMyMument = async (musicId: string, userId: string): Promise<Mus
         // isLiked 조회
         const isLiked = Boolean(
             await Like.findOne({
-            user: { _id: userId },
-            mument: { _id: latestMument._id },
+                user: { _id: userId },
+                mument: { _id: latestMument._id },
             }),
         );
 
-        // 태그 개수 처리
+        // 카드뷰 태그 리스트
+        const cardTag: number[] = [];
         const impressionTagLength = latestMument.impressionTag.length;
         const feelingTagLength = latestMument.feelingTag.length;
 
         if (impressionTagLength >= 1 && feelingTagLength >= 1) {
-            latestMument.impressionTag = [latestMument.impressionTag[0]];
-            latestMument.feelingTag = [latestMument.feelingTag[0]];
+            cardTag.push(latestMument.impressionTag[0], latestMument.feelingTag[0]);
         } else if (impressionTagLength >= 1 && feelingTagLength < 1) {
-            latestMument.impressionTag = latestMument.impressionTag.slice(0, 2);
+            cardTag.push(...latestMument.impressionTag.slice(0, 2));
         } else if (impressionTagLength < 1 && feelingTagLength >= 1) {
-            latestMument.feelingTag = latestMument.feelingTag.slice(0, 2);
+            cardTag.push(...latestMument.feelingTag.slice(0, 2));
         }
 
         const data = {
             music: music,
             myMument: {
                 ...latestMument.toObject(),
+                cardTag: cardTag,
                 date: mumentDate,
                 isLiked: isLiked,
             },
@@ -78,7 +78,7 @@ const getMusicAndMyMument = async (musicId: string, userId: string): Promise<Mus
     }
 };
 
-const getMumentList = async(musicId: string, userId: string, isLikeOrder: boolean): Promise<MusicMumentListResponseDto | null> => {    
+const getMumentList = async (musicId: string, userId: string, isLikeOrder: boolean): Promise<MusicMumentListResponseDto | null> => {
     try {
         let originalMumentList;
 
@@ -112,21 +112,7 @@ const getMumentList = async(musicId: string, userId: string, isLikeOrder: boolea
         }
 
         // mumentId array 리턴
-        const mumentIdList = originalMumentList.map(mument => {
-            //태그 개수 처리
-            const impressionTagLength = mument.impressionTag.length;
-            const feelingTagLength = mument.feelingTag.length;
-
-            if (impressionTagLength >= 1 && feelingTagLength >= 1) {
-                mument.impressionTag = [mument.impressionTag[0]];
-                mument.feelingTag = [mument.feelingTag[0]];
-            } else if (impressionTagLength >= 1 && feelingTagLength < 1) {
-                mument.impressionTag = mument.impressionTag.slice(0, 2);
-            } else if (impressionTagLength < 1 && feelingTagLength >= 1) {
-                mument.feelingTag = mument.feelingTag.slice(0, 2);
-            }
-            return mument._id;
-        });
+        const mumentIdList = originalMumentList.map(mument => mument._id);
 
         // 해당 유저아이디의 document에서 mumentIdList find
         const likeList = await Like.find({
@@ -140,17 +126,34 @@ const getMumentList = async(musicId: string, userId: string, isLikeOrder: boolea
             return date;
         };
 
-
         // 최종 리턴될 data
-        const data: MusicMumentListResponseDto[] = originalMumentList;
-        originalMumentList.reduce((ac, cur, index) => {
-            data[index] = {
+        const mumentList: MumentCardViewInterface[] = [];
+        originalMumentList.reduce((ac: MumentCardViewInterface[], cur, index) => {
+            // 카드뷰 태그 리스트
+            const cardTag: number[] = [];
+            const impressionTagLength = cur.impressionTag.length;
+            const feelingTagLength = cur.feelingTag.length;
+
+            if (impressionTagLength >= 1 && feelingTagLength >= 1) {
+                cardTag.push(cur.impressionTag[0], cur.feelingTag[0]);
+            } else if (impressionTagLength >= 1 && feelingTagLength < 1) {
+                cardTag.push(...cur.impressionTag.slice(0, 2));
+            } else if (impressionTagLength < 1 && feelingTagLength >= 1) {
+                cardTag.push(...cur.feelingTag.slice(0, 2));
+            }
+
+            mumentList[index] = {
                 ...cur.toObject(),
+                cardTag: cardTag,
                 date: createDate(cur.createdAt),
                 isLiked: Boolean(mumentIdList[index] in likeList),
             };
-            return data;
-        }, 0);
+            return mumentList;
+        }, []);
+
+        const data: MusicMumentListResponseDto = {
+            mumentList,
+        };
 
         return data;
     } catch (error) {
