@@ -49,6 +49,19 @@ const getMusicAndMyMument = async (musicId: string, userId: string): Promise<Mus
             }),
         );
 
+        // 태그 개수 처리
+        const impressionTagLength = latestMument.impressionTag.length;
+        const feelingTagLength = latestMument.feelingTag.length;
+
+        if (impressionTagLength >= 1 && feelingTagLength >= 1) {
+            latestMument.impressionTag = [latestMument.impressionTag[0]];
+            latestMument.feelingTag = [latestMument.feelingTag[0]];
+        } else if (impressionTagLength >= 1 && feelingTagLength < 1) {
+            latestMument.impressionTag = latestMument.impressionTag.slice(0, 2);
+        } else if (impressionTagLength < 1 && feelingTagLength >= 1) {
+            latestMument.feelingTag = latestMument.feelingTag.slice(0, 2);
+        }
+
         const data = {
             music: music,
             myMument: {
@@ -92,14 +105,28 @@ const getMumentList = async(musicId: string, userId: string, isLikeOrder: boolea
                 break;
             }
         }
-        
+
         // 결과값이 없을 경우
         if (originalMumentList.length === 0) {
             return null;
         }
 
         // mumentId array 리턴
-        const mumentIdList = originalMumentList.map(mument => mument._id);
+        const mumentIdList = originalMumentList.map(mument => {
+            //태그 개수 처리
+            const impressionTagLength = mument.impressionTag.length;
+            const feelingTagLength = mument.feelingTag.length;
+
+            if (impressionTagLength >= 1 && feelingTagLength >= 1) {
+                mument.impressionTag = [mument.impressionTag[0]];
+                mument.feelingTag = [mument.feelingTag[0]];
+            } else if (impressionTagLength >= 1 && feelingTagLength < 1) {
+                mument.impressionTag = mument.impressionTag.slice(0, 2);
+            } else if (impressionTagLength < 1 && feelingTagLength >= 1) {
+                mument.feelingTag = mument.feelingTag.slice(0, 2);
+            }
+            return mument._id;
+        });
 
         // 해당 유저아이디의 document에서 mumentIdList find
         const likeList = await Like.find({
@@ -113,6 +140,7 @@ const getMumentList = async(musicId: string, userId: string, isLikeOrder: boolea
             return date;
         };
 
+
         // 최종 리턴될 data
         const data: MusicMumentListResponseDto[] = originalMumentList;
         originalMumentList.reduce((ac, cur, index) => {
@@ -122,7 +150,7 @@ const getMumentList = async(musicId: string, userId: string, isLikeOrder: boolea
                 isLiked: Boolean(mumentIdList[index] in likeList),
             };
             return data;
-        });
+        }, 0);
 
         return data;
     } catch (error) {
