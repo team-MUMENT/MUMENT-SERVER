@@ -187,9 +187,6 @@ const getMument = async (mumentId: string, userId: string): Promise<MumentRespon
 
 const deleteMument = async (mumentId: string): Promise<void | null> => {
     try {
-        const mument = await Mument.findById(mumentId);
-        if (!mument) return null;
-
         //Mument soft delete
         await Mument.findByIdAndUpdate(mumentId, {
             $set: {
