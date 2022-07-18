@@ -1,4 +1,4 @@
-const tagRandomTitle = {
+const tagBannerTitle = {
     // impressionTag
     100: '음색이\n매력적인 곡', // 음색
     101: '비트가\n매력적인 곡', // 비트
@@ -26,7 +26,7 @@ const tagRandomTitle = {
     215: '차분함이\n느껴지는 곡', // 차분
 };
 
-const tagBannerTitle = {
+const tagRandomTitle = {
     // impressionTag
     100: '음색에 반한 순간', // 음색
     101: '비트에 반한 순간', // 비트
@@ -54,7 +54,4 @@ const tagBannerTitle = {
     215: '차분함을 느낀 순간', // 차분
 };
 
-export default {
-    tagRandomTitle,
-    tagBannerTitle,
-};
+export { tagRandomTitle, tagBannerTitle };
