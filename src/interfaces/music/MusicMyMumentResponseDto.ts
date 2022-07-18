@@ -8,5 +8,5 @@ export interface MusicMyMumentResponseDto {
         artist: string;
         image?: string;
     };
-    myMument?: MumentCardViewInterface;
+    myMument?: MumentCardViewInterface | null;
 }

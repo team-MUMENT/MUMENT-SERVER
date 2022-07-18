@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import { MumentInfo } from '../interfaces/mument/MumentInfo';
+import { MumentCardViewInterface } from '../interfaces/mument/MumentCardViewInterface';
 import { MusicMumentListResponseDto } from '../interfaces/music/MusicMumentListResponseDto';
 
 import { MusicMyMumentResponseDto } from '../interfaces/music/MusicMyMumentResponseDto';
@@ -128,8 +128,8 @@ const getMumentList = async (musicId: string, userId: string, isLikeOrder: boole
         };
 
         // 최종 리턴될 data
-        const data: MusicMumentListResponseDto[] = [];
-        originalMumentList.reduce((ac, cur, index) => {
+        const mumentList: MumentCardViewInterface[] = [];
+        originalMumentList.reduce((ac: MumentCardViewInterface[], cur, index) => {
             // 카드뷰 태그 리스트
             const cardTag: number[] = [];
             const impressionTagLength = cur.impressionTag.length;
@@ -143,14 +143,18 @@ const getMumentList = async (musicId: string, userId: string, isLikeOrder: boole
                 cardTag.push(...cur.feelingTag.slice(0, 2));
             }
 
-            data[index] = {
+            mumentList[index] = {
                 ...cur.toObject(),
                 cardTag: cardTag,
                 date: createDate(cur.createdAt),
                 isLiked: Boolean(mumentIdList[index] in likeList),
             };
-            return data;
-        }, 0);
+            return mumentList;
+        }, []);
+
+        const data: MusicMumentListResponseDto = {
+            mumentList,
+        };
 
         return data;
     } catch (error) {
