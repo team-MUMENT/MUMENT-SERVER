@@ -1,5 +1,7 @@
 import dayjs from 'dayjs';
 import constant from '../modules/serviceReturnConstant';
+import { tagBannerTitle } from '../modules/tagTitle';
+import { tagRandomTitle } from '../modules/tagTitle';
 import { MusicInfo } from '../interfaces/music/MusicInfo';
 import { PostBaseResponseDto } from '../interfaces/common/PostBaseResponseDto';
 import { MumentInfo } from '../interfaces/mument/MumentInfo';
@@ -14,6 +16,7 @@ import Mument from '../models/Mument';
 import Music from '../models/Music';
 import User from '../models/User';
 import Like from '../models/Like';
+import tagTitle from '../modules/tagTitle';
 
 const createMument = async (userId: string, musicId: string, mumentCreateDto: MumentCreateDto): Promise<PostBaseResponseDto | null> => {
     try {
@@ -334,6 +337,48 @@ const deleteLike = async (mumentId: string, userId: string): Promise<LikeCountRe
     } catch (error) {
         console.log(error);
         throw error;
+    }
+};
+
+// 랜덤 태그, 뮤멘트 조회
+const getRandomMument = async(): Promise<> => {
+    try {
+        // 난수 생성 함수
+        const createRandomNum = (min: number, max: number): number => {
+            return Math.floor(Math.random() * (max - min +1)) + min;
+        };
+
+        // 태그 종류 결정을 위해 1과 2 사이에서 난수 생성
+        const tagSort: number = createRandomNum(1, 2);
+
+        // 태그 종류에 따라 세부 태그 결정
+        let detailTag: number = 0;
+        switch (tagSort) {
+            case 1: {
+                // impressionTag
+                detailTag = createRandomNum(100, 105);
+                break;
+            };
+            case 2: {
+                // feelingTag
+                detailTag = createRandomNum(200, 215);
+                break;
+            };
+        }
+
+        const tagTitle: string = tagRandomTitle[detailTag as keyof typeof tagRandomTitle];
+
+        // 조건에 맞는 랜덤 뮤멘트 가져오기
+        const randomMumentList = await Mument.aggregate ([
+            { $match: { $filter: { $or: [ { impressionTag: detailTag }, { feelingTag: detailTag } ] } } },
+            { $sample: { size: 5 } }
+        ])
+
+        
+
+
+
+
     }
 };
 
