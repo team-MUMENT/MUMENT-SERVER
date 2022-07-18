@@ -55,6 +55,73 @@ const createMument = async (userId: string, musicId: string, mumentCreateDto: Mu
     }
 };
 
+const updateMument = async (mumentId: string, mumentUpdateDto: MumentCreateDto): Promise<PostBaseResponseDto | null> => {
+    try {
+        const mument = await Mument.findById(mumentId);
+        if (!mument) return null;
+
+        const data = {
+            _id: mument._id,
+        };
+
+        // 공개글에서 비밀글로 수정한 경우
+        if (mumentUpdateDto.isPrivate !== undefined) {
+            if (mument.isPrivate === false && mumentUpdateDto.isPrivate === true) {
+                await Mument.findByIdAndUpdate(mumentId, {
+                    $set: {
+                        isFirst: mumentUpdateDto.isFirst,
+                        impressionTag: mumentUpdateDto.impressionTag,
+                        feelingTag: mumentUpdateDto.feelingTag,
+                        content: mumentUpdateDto.content ? mumentUpdateDto.content : null,
+                        isPrivate: mumentUpdateDto.isPrivate ? mumentUpdateDto.isPrivate : false,
+                        likeCount: 0, // 좋아요 수 초기화
+                    },
+                });
+
+                //모든 유저의 Like에서 뮤멘트 제거 - 좋아요 삭제
+                await Like.updateMany(
+                    {},
+                    {
+                        $pull: { mument: { _id: mumentId } },
+                    },
+                );
+
+                return data;
+            }
+        }
+
+        //뮤멘트 업데이트
+        await Mument.findByIdAndUpdate(mumentId, {
+            $set: {
+                isFirst: mumentUpdateDto.isFirst,
+                impressionTag: mumentUpdateDto.impressionTag,
+                feelingTag: mumentUpdateDto.feelingTag,
+                content: mumentUpdateDto.content != undefined ? mumentUpdateDto.content : null,
+                isPrivate: mumentUpdateDto.isPrivate != undefined ? mumentUpdateDto.isPrivate : false,
+            },
+        });
+
+        //모든 유저의 뮤멘트 업데이트
+        await Like.updateMany(
+            { mument: { $elemMatch: { _id: mumentId } } },
+            {
+                $set: {
+                    'mument.$.isFirst': mumentUpdateDto.isFirst,
+                    'mument.$.impressionTag': mumentUpdateDto.impressionTag,
+                    'mument.$.feelingTag': mumentUpdateDto.feelingTag,
+                    'mument.$.content': mumentUpdateDto.content != undefined ? mumentUpdateDto.content : null,
+                    'mument.$.isPrivate': mumentUpdateDto.isPrivate != undefined ? mumentUpdateDto.isPrivate : false,
+                },
+            },
+        );
+
+        return data;
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+};
+
 const getMument = async (mumentId: string, userId: string): Promise<MumentResponseDto | null | true> => {
     try {
         const mument = await Mument.findById(mumentId);
@@ -121,6 +188,28 @@ const getMument = async (mumentId: string, userId: string): Promise<MumentRespon
     }
 };
 
+const deleteMument = async (mumentId: string): Promise<void | null> => {
+    try {
+        //Mument soft delete
+        await Mument.findByIdAndUpdate(mumentId, {
+            $set: {
+                isDeleted: true,
+            },
+        });
+
+        //Like에서 Mument 제거
+        await Like.updateMany(
+            {},
+            {
+                $pull: { mument: { _id: mumentId } },
+            },
+        );
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+};
+
 const getIsFirst = async (userId: string, musicId: string): Promise<IsFirstResponseDto | null> => {
     try {
         const music = await Music.findById(musicId);
@@ -144,7 +233,7 @@ const getIsFirst = async (userId: string, musicId: string): Promise<IsFirstRespo
             // 뮤멘트 기록이 처음인 경우
             return {
                 isFirst: true,
-                FirstAvailable: true,
+                firstAvailable: true,
             };
         } else {
             const firstMument = userMument.some((mument: MumentInfo) => {
@@ -155,13 +244,13 @@ const getIsFirst = async (userId: string, musicId: string): Promise<IsFirstRespo
                 // 처음 들었어요 기록이 존재하지않는 경우 - 처음 선택 가능
                 return {
                     isFirst: false,
-                    FirstAvailable: true,
+                    firstAvailable: true,
                 };
             } else {
                 // 처음 들었어요 기록이 존재하지않는 경우 - 처음 선택 불가
                 return {
                     isFirst: false,
-                    FirstAvailable: false,
+                    firstAvailable: false,
                 };
             }
         }
@@ -220,7 +309,21 @@ const getMumentHistory = async (userId: string, musicId: string, isLatestOrder: 
         }
 
         // mumentId array 리턴
-        const mumentIdList = originalMumentList.map(mument => mument._id);
+        const mumentIdList = originalMumentList.map(mument => {
+            //태그 개수 처리
+            const impressionTagLength = mument.impressionTag.length;
+            const feelingTagLength = mument.feelingTag.length;
+
+            if (impressionTagLength >= 1 && feelingTagLength >= 1) {
+                mument.impressionTag = [mument.impressionTag[0]];
+                mument.feelingTag = [mument.feelingTag[0]];
+            } else if (impressionTagLength >= 1 && feelingTagLength < 1) {
+                mument.impressionTag = mument.impressionTag.slice(0, 2);
+            } else if (impressionTagLength < 1 && feelingTagLength >= 1) {
+                mument.feelingTag = mument.feelingTag.slice(0, 2);
+            }
+            return mument._id;
+        });
 
         // 해당 유저아이디의 document에서 mumentIdList find
         const likeList = await Like.find({
@@ -243,7 +346,7 @@ const getMumentHistory = async (userId: string, musicId: string, isLatestOrder: 
                 isLiked: Boolean(mumentIdList[index] in likeList),
             };
             return mumentHistory;
-        });
+        }, 0);
 
         const data: MumentHistoryResponseDto = {
             music,
@@ -384,7 +487,9 @@ const getRandomMument = async(): Promise<> => {
 
 export default {
     createMument,
+    updateMument,
     getMument,
+    deleteMument,
     getIsFirst,
     getMumentHistory,
     createLike,
