@@ -9,6 +9,7 @@ export interface MumentResponseDto {
     isFirst: boolean;
     impressionTag: number[];
     feelingTag: number[];
+    cardTag?: number[];
     content: string;
     isPrivate?: boolean;
     likeCount: number;

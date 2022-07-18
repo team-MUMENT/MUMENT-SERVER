@@ -5,7 +5,6 @@ import util from '../modules/util';
 import constant from '../modules/serviceReturnConstant';
 import { validationResult } from 'express-validator';
 import { UserService } from '../services';
-import constant from '../modules/serviceReturnConstant';
 
 /**
  *  @ROUTE GET /my/:userId/list?tag1=&tag2=&tag3=
