@@ -269,8 +269,6 @@ const getMumentHistory = async (userId: string, musicId: string, isLatestOrder: 
 
         let originalMumentList: MumentInfo[];
 
-
-
         // 해당 유저가 쓴 뮤멘트 전부 조회
         switch (isLatestOrder) {
             case true: {
@@ -309,7 +307,19 @@ const getMumentHistory = async (userId: string, musicId: string, isLatestOrder: 
 
         // mumentId array 리턴
         const mumentIdList = originalMumentList.map(mument => {
-            mument._id;
+            //태그 개수 처리
+            const impressionTagLength = mument.impressionTag.length;
+            const feelingTagLength = mument.feelingTag.length;
+
+            if (impressionTagLength >= 1 && feelingTagLength >= 1) {
+                mument.impressionTag = [mument.impressionTag[0]];
+                mument.feelingTag = [mument.feelingTag[0]];
+            } else if (impressionTagLength >= 1 && feelingTagLength < 1) {
+                mument.impressionTag = mument.impressionTag.slice(0, 2);
+            } else if (impressionTagLength < 1 && feelingTagLength >= 1) {
+                mument.feelingTag = mument.feelingTag.slice(0, 2);
+            }
+            return mument._id;
         });
 
         // 해당 유저아이디의 document에서 mumentIdList find
