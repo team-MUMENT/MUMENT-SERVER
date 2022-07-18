@@ -49,6 +49,19 @@ const getMusicAndMyMument = async (musicId: string, userId: string): Promise<Mus
             }),
         );
 
+        // 태그 개수 처리
+        const impressionTagLength = latestMument.impressionTag.length;
+        const feelingTagLength = latestMument.feelingTag.length;
+
+        if (impressionTagLength >= 1 && feelingTagLength >= 1) {
+            latestMument.impressionTag = [latestMument.impressionTag[0]];
+            latestMument.feelingTag = [latestMument.feelingTag[0]];
+        } else if (impressionTagLength >= 1 && feelingTagLength < 1) {
+            latestMument.impressionTag = latestMument.impressionTag.slice(0, 2);
+        } else if (impressionTagLength < 1 && feelingTagLength >= 1) {
+            latestMument.feelingTag = latestMument.feelingTag.slice(0, 2);
+        }
+
         const data = {
             music: music,
             myMument: {
