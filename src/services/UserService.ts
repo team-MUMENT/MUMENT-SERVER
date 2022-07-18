@@ -58,13 +58,10 @@ const getMyMumentList = async (userId: string, tagList: number[]): Promise<UserM
                 if (impressionTagLength >= 1 && feelingTagLength >= 1) {
                     mument.impressionTag = [mument.impressionTag[0]];
                     mument.feelingTag = [mument.feelingTag[0]];
-                    console.log(mument.impressionTag, mument.feelingTag);
                 } else if (impressionTagLength >= 1 && feelingTagLength < 1) {
                     mument.impressionTag = mument.impressionTag.slice(0, 2);
-                    console.log(mument.impressionTag.slice(0, 2));
                 } else if (impressionTagLength < 1 && feelingTagLength >= 1) {
                     mument.feelingTag = mument.feelingTag.slice(0, 2);
-                    console.log(mument.impressionTag.slice(0, 2));
                 }
 
                 const result: MumentResponseDto = {
