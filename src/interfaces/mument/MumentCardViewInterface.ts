@@ -19,8 +19,8 @@ export interface MumentCardViewInterface {
     likeCount: number;
     isDeleted: boolean;
     createdAt: Date;
-    updatedAt: Date;
-    __v: number;
+    updatedAt?: Date;
+    __v?: number;
     date: string;
     isLiked: boolean;
 }
