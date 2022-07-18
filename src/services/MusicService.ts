@@ -150,7 +150,7 @@ const getMumentList = async(musicId: string, userId: string, isLikeOrder: boolea
                 isLiked: Boolean(mumentIdList[index] in likeList),
             };
             return data;
-        });
+        }, 0);
 
         return data;
     } catch (error) {

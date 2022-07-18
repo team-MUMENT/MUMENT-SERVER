@@ -269,6 +269,8 @@ const getMumentHistory = async (userId: string, musicId: string, isLatestOrder: 
 
         let originalMumentList: MumentInfo[];
 
+
+
         // 해당 유저가 쓴 뮤멘트 전부 조회
         switch (isLatestOrder) {
             case true: {
@@ -306,7 +308,9 @@ const getMumentHistory = async (userId: string, musicId: string, isLatestOrder: 
         }
 
         // mumentId array 리턴
-        const mumentIdList = originalMumentList.map(mument => mument._id);
+        const mumentIdList = originalMumentList.map(mument => {
+            mument._id;
+        });
 
         // 해당 유저아이디의 document에서 mumentIdList find
         const likeList = await Like.find({
@@ -329,7 +333,7 @@ const getMumentHistory = async (userId: string, musicId: string, isLatestOrder: 
                 isLiked: Boolean(mumentIdList[index] in likeList),
             };
             return mumentHistory;
-        });
+        }, 0);
 
         const data: MumentHistoryResponseDto = {
             music,
