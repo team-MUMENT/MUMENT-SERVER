@@ -56,16 +56,17 @@ const getMyMumentList = async (userId: string, tagList: number[]): Promise<UserM
                     ],
                 });
 
+                // 카드뷰 태그 리스트
+                const cardTag: number[] = [];
                 const impressionTagLength = mument.impressionTag.length;
                 const feelingTagLength = mument.feelingTag.length;
 
                 if (impressionTagLength >= 1 && feelingTagLength >= 1) {
-                    mument.impressionTag = [mument.impressionTag[0]];
-                    mument.feelingTag = [mument.feelingTag[0]];
+                    cardTag.push(mument.impressionTag[0], mument.feelingTag[0]);
                 } else if (impressionTagLength >= 1 && feelingTagLength < 1) {
-                    mument.impressionTag = mument.impressionTag.slice(0, 2);
+                    cardTag.push(...mument.impressionTag.slice(0, 2));
                 } else if (impressionTagLength < 1 && feelingTagLength >= 1) {
-                    mument.feelingTag = mument.feelingTag.slice(0, 2);
+                    cardTag.push(...mument.feelingTag.slice(0, 2));
                 }
 
                 const result: MumentResponseDto = {
@@ -84,6 +85,7 @@ const getMyMumentList = async (userId: string, tagList: number[]): Promise<UserM
                     isFirst: mument.isFirst,
                     impressionTag: mument.impressionTag,
                     feelingTag: mument.feelingTag,
+                    cardTag: cardTag,
                     content: mument.content,
                     isPrivate: mument.isPrivate,
                     likeCount: mument.likeCount,
@@ -136,16 +138,17 @@ const getLikeMumentList = async (userId: string, tagList: number[]): Promise<Use
 
         const data = await Promise.all(
             myMumentList.mument.map((mument: any) => {
+                // 카드뷰 태그 리스트
+                const cardTag: number[] = [];
                 const impressionTagLength = mument.impressionTag.length;
                 const feelingTagLength = mument.feelingTag.length;
 
                 if (impressionTagLength >= 1 && feelingTagLength >= 1) {
-                    mument.impressionTag = [mument.impressionTag[0]];
-                    mument.feelingTag = [mument.feelingTag[0]];
+                    cardTag.push(mument.impressionTag[0], mument.feelingTag[0]);
                 } else if (impressionTagLength >= 1 && feelingTagLength < 1) {
-                    mument.impressionTag = mument.impressionTag.slice(0, 2);
+                    cardTag.push(...mument.impressionTag.slice(0, 2));
                 } else if (impressionTagLength < 1 && feelingTagLength >= 1) {
-                    mument.feelingTag = mument.feelingTag.slice(0, 2);
+                    cardTag.push(...mument.feelingTag.slice(0, 2));
                 }
 
                 const result: MumentResponseDto = {
@@ -164,6 +167,7 @@ const getLikeMumentList = async (userId: string, tagList: number[]): Promise<Use
                     isFirst: mument.isFirst,
                     impressionTag: mument.impressionTag,
                     feelingTag: mument.feelingTag,
+                    cardTag: cardTag,
                     content: mument.content,
                     likeCount: mument.likeCount,
                     isPrivate: mument.isPrivate,
