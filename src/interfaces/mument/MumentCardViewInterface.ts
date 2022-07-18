@@ -13,13 +13,14 @@ export interface MumentCardViewInterface {
     isFirst: boolean;
     impressionTag: number[];
     feelingTag: number[];
+    cardTag?: number[];
     content: string;
     isPrivate: boolean;
     likeCount: number;
     isDeleted: boolean;
     createdAt: Date;
-    updatedAt: Date;
-    __v: number;
+    updatedAt?: Date;
+    __v?: number;
     date: string;
     isLiked: boolean;
 }
