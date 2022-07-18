@@ -260,14 +260,14 @@ const getIsFirst = async (userId: string, musicId: string): Promise<IsFirstRespo
 const getMumentHistory = async (userId: string, musicId: string, isLatestOrder: boolean): Promise<MumentHistoryResponseDto | null> => {
     try {
         // 음악 정보 조회
-        const music: MusicInfo | null = await Music.findById(musicId);
+        const music = await Music.findById(musicId);
 
         // 음악이 존재하지 않으면 null 리턴
         if (!music) {
             return null;
         }
 
-        let originalMumentList: MumentInfo[];
+        let originalMumentList;
 
         // 해당 유저가 쓴 뮤멘트 전부 조회
         switch (isLatestOrder) {
@@ -322,7 +322,7 @@ const getMumentHistory = async (userId: string, musicId: string, isLatestOrder: 
 
         // 최종 리턴될 data
         const mumentHistory: MumentCardViewInterface[] = [];
-        originalMumentList.reduce((ac, cur, index) => {
+        originalMumentList.reduce((ac: MumentCardViewInterface[], cur, index) => {
             // 카드뷰 태그 리스트
             const cardTag: number[] = [];
             const impressionTagLength = cur.impressionTag.length;
@@ -343,7 +343,7 @@ const getMumentHistory = async (userId: string, musicId: string, isLatestOrder: 
                 isLiked: Boolean(mumentIdList[index] in likeList),
             };
             return mumentHistory;
-        }, 0);
+        }, []);
 
         const data: MumentHistoryResponseDto = {
             music,
