@@ -8,7 +8,7 @@ router.get('/my/:userId/list', UserController.getMyMumentList);
 router.get('/like/:userId/list', UserController.getLikeMumentList);
 
 // 로그인
-router.post('/auth/longin', [
+router.post('/auth/login', [
     body('profileId').notEmpty().isString(), 
     body('password').notEmpty().isString(),
 ], UserController.login);
