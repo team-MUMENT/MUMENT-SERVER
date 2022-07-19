@@ -16,7 +16,7 @@ import Mument from '../models/Mument';
 import Music from '../models/Music';
 import User from '../models/User';
 import Like from '../models/Like';
-import tagTitle from '../modules/tagTitle';
+import HomeCandidate from '../models/HomeCandidate';
 
 const createMument = async (userId: string, musicId: string, mumentCreateDto: MumentCreateDto): Promise<PostBaseResponseDto | null> => {
     try {
@@ -472,16 +472,13 @@ const getRandomMument = async(): Promise<> => {
         const tagTitle: string = tagRandomTitle[detailTag as keyof typeof tagRandomTitle];
 
         // 조건에 맞는 랜덤 뮤멘트 가져오기
-        const randomMumentList = await Mument.aggregate ([
-            { $match: { $filter: { $or: [ { impressionTag: detailTag }, { feelingTag: detailTag } ] } } },
-            { $sample: { size: 5 } }
-        ])
-
-        
-
-
-
-
+        const randomMumentList = await HomeCandidate.aggregate([
+            { $match: { $and: [{ isDeleted: false }, { isPrivate: false }, { $filter: { $or: [{ impressionTag: detailTag }, { feelingTag: detailTag }] } }] } },
+            { $sample: { size: 3 } },
+        ]);
+    } catch (error) {
+        console.log(error);
+        throw error;
     }
 };
 
