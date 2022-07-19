@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
+import { BannerSelectionInfo } from '../interfaces/home/BannerSelectionInfo';
 
-const BannerSelection = new mongoose.Schema({
+const BannerSelectionSchema = new mongoose.Schema({
     music: {
         _id: {
             type: mongoose.Types.ObjectId,
@@ -29,5 +30,7 @@ const BannerSelection = new mongoose.Schema({
     displayDate: {
         type: Date,
         required: true,
-    }
+    },
 });
+
+export default mongoose.model<BannerSelectionInfo & mongoose.Document>('BannerSelection', BannerSelectionSchema);

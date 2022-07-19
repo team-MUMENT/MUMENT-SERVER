@@ -1,6 +1,7 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
+import { TodaySelectionInfo } from '../interfaces/home/TodaySelectionInfo';
 
-const TodaySelection = new mongoose.Schema({
+const TodaySelectionSchema = new mongoose.Schema({
     mumentId: {
         type: mongoose.Types.ObjectId,
         ref: 'Mument',
@@ -60,5 +61,7 @@ const TodaySelection = new mongoose.Schema({
     displayDate: {
         type: Date,
         required: true,
-    }
+    },
 });
+
+export default mongoose.model<TodaySelectionInfo & mongoose.Document>('TodaySelection', TodaySelectionSchema);
