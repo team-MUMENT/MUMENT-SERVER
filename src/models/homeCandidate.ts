@@ -4,7 +4,6 @@ import { HomeCandidateInfo } from '../interfaces/home/HomeCandidateInfo';
 const HomeCandidateSchema = new mongoose.Schema({
     mumentId: {
         type: mongoose.Types.ObjectId,
-        ref: 'Mument',
     },
     music: {
         _id: {
