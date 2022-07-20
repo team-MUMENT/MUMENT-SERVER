@@ -4,7 +4,6 @@ import { TodaySelectionInfo } from '../interfaces/home/TodaySelectionInfo';
 const TodaySelectionSchema = new mongoose.Schema({
     mumentId: {
         type: mongoose.Types.ObjectId,
-        ref: 'Mument',
     },
     music: {
         _id: {

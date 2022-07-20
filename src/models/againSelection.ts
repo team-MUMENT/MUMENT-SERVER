@@ -4,7 +4,6 @@ import { AgainSelectionInfo } from '../interfaces/home/AgainSelectionInfo';
 const AgainSelectionSchema = new mongoose.Schema({
     mumentId: {
         type: mongoose.Types.ObjectId,
-        ref: 'Mument',
     },
     music: {
         _id: {
