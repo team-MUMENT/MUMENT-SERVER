@@ -1,9 +1,9 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
+import { HomeCandidateInfo } from '../interfaces/home/HomeCandidateInfo';
 
-const HomeCandidate = new mongoose.Schema({
+const HomeCandidateSchema = new mongoose.Schema({
     mumentId: {
         type: mongoose.Types.ObjectId,
-        ref: 'Mument',
     },
     music: {
         _id: {
@@ -53,11 +53,6 @@ const HomeCandidate = new mongoose.Schema({
         required: true,
         default: false,
     },
-    likeCount: {
-        type: Number,
-        required: true,
-        default: 0,
-    },
     isDeleted: {
         type: Boolean,
         required: true,
@@ -70,5 +65,7 @@ const HomeCandidate = new mongoose.Schema({
     date: {
         type: String,
         required: true,
-    }
+    },
 });
+
+export default mongoose.model<HomeCandidateInfo & mongoose.Document>('HomeCandidate', HomeCandidateSchema);
