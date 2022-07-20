@@ -18,6 +18,8 @@ import User from '../models/User';
 import Like from '../models/Like';
 import HomeCandidate from '../models/HomeCandidate';
 import { HomeCandidateInfo } from '../interfaces/home/HomeCandidateInfo';
+import { RandomMumentResponseDto } from '../interfaces/mument/RandomMumentResponeDto';
+import { RandomMumentInterface } from '../interfaces/home/randomMumentInterface';
 
 const createMument = async (userId: string, musicId: string, mumentCreateDto: MumentCreateDto): Promise<PostBaseResponseDto | null> => {
     try {
@@ -47,7 +49,6 @@ const createMument = async (userId: string, musicId: string, mumentCreateDto: Mu
 
         // 조건에 부합하면 homeCandidate collection에도 저장
         if (mumentCreateDto.isPrivate === false && mumentCreateDto.content) {
-
             const date = dayjs(savedMument.createdAt).format('D MMM, YYYY');
 
             const homeCandidateMument = new HomeCandidate({
@@ -469,38 +470,46 @@ const deleteLike = async (mumentId: string, userId: string): Promise<LikeCountRe
 };
 
 // 랜덤 태그, 뮤멘트 조회
-const getRandomMument = async(): Promise<> => {
+const getRandomMument = async (): Promise<RandomMumentResponseDto> => {
     try {
         // 난수 생성 함수
         const createRandomNum = (min: number, max: number): number => {
-            return Math.floor(Math.random() * (max - min +1)) + min;
+            return Math.floor(Math.random() * (max - min + 1)) + min;
         };
 
         // 태그 종류 결정을 위해 1과 2 사이에서 난수 생성
         const tagSort: number = createRandomNum(1, 2);
 
         // 태그 종류에 따라 세부 태그 결정
-        let detailTag: number = 0;
+        let detailTag = 0;
         switch (tagSort) {
             case 1: {
                 // impressionTag
                 detailTag = createRandomNum(100, 105);
                 break;
-            };
+            }
             case 2: {
                 // feelingTag
                 detailTag = createRandomNum(200, 215);
                 break;
-            };
+            }
         }
 
         const tagTitle: string = tagRandomTitle[detailTag as keyof typeof tagRandomTitle];
 
         // 조건에 맞는 랜덤 뮤멘트 가져오기
-        const randomMumentList = await HomeCandidate.aggregate([
+        const randomMumentList: RandomMumentInterface[] = await HomeCandidate.aggregate([
             { $match: { $and: [{ isDeleted: false }, { isPrivate: false }, { $filter: { $or: [{ impressionTag: detailTag }, { feelingTag: detailTag }] } }] } },
             { $sample: { size: 3 } },
+            { $project: { _id: 1, music: { name: 1, artist: 1 }, user: { name: 1, image: 1 }, impressionTag: 1, feelingTag: 1, content: 1, createdAt: 1 } },
         ]);
+
+        const data: RandomMumentResponseDto = {
+            title: tagTitle,
+            mumentList: randomMumentList,
+        };
+
+        return data;
     } catch (error) {
         console.log(error);
         throw error;
