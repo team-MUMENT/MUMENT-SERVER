@@ -38,4 +38,7 @@ router.delete('/:mumentId/:userId/like', [
 // 랜덤 뮤멘트
 router.get('/random', MumentController.getRandomMument);
 
+// 오늘의 뮤멘트
+router.get('/today', MumentController.getTodayMument);
+
 export default router;
