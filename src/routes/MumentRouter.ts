@@ -36,6 +36,6 @@ router.delete('/:mumentId/:userId/like', [
 ], MumentController.deleteLike);
 
 // 랜덤 뮤멘트
-router.get('/home/random', MumentController.getRandomMument);
+router.get('/random', MumentController.getRandomMument);
 
 export default router;
