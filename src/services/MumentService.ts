@@ -1,4 +1,5 @@
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 import constant from '../modules/serviceReturnConstant';
 import { tagBannerTitle } from '../modules/tagTitle';
 import { tagRandomTitle } from '../modules/tagTitle';
@@ -17,9 +18,10 @@ import Music from '../models/Music';
 import User from '../models/User';
 import Like from '../models/Like';
 import HomeCandidate from '../models/HomeCandidate';
-import { HomeCandidateInfo } from '../interfaces/home/HomeCandidateInfo';
+import TodaySelection from '../models/TodaySelection';
 import { RandomMumentResponseDto } from '../interfaces/mument/RandomMumentResponeDto';
 import { RandomMumentInterface } from '../interfaces/home/randomMumentInterface';
+import { TodayMumentResponseDto } from '../interfaces/mument/TodayMumentResponseDto';
 
 const createMument = async (userId: string, musicId: string, mumentCreateDto: MumentCreateDto): Promise<PostBaseResponseDto | null> => {
     try {
@@ -521,6 +523,36 @@ const getRandomMument = async (): Promise<RandomMumentResponseDto | null> => {
     }
 };
 
+// 오늘의 뮤멘트 조회
+const getTodayMument = async (): Promise<TodayMumentResponseDto | number> => {
+    try {
+        dayjs.extend(utc);
+
+        // 리퀘스트 받아온 시간 판단 후 당일 자정으로 수정
+        const todayMidnight = new Date().setHours(0, 0, 0, 0);
+        const todayUtcDate = dayjs(todayMidnight).utc().format();
+        const todayDate = dayjs(todayMidnight).format('YYYY-MM-DD');
+
+        const todayMument = await TodaySelection.findOne({
+            displayDate: todayUtcDate,
+        });
+
+        if (!todayMument) {
+            return constant.NO_HOME_CONTENT;
+        }
+
+        const data: TodayMumentResponseDto = {
+            todayDate,
+            todayMument,
+        };
+
+        return data;
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+};
+
 export default {
     createMument,
     updateMument,
@@ -531,4 +563,5 @@ export default {
     createLike,
     deleteLike,
     getRandomMument,
+    getTodayMument,
 };

@@ -1,6 +1,6 @@
-import { MumentCardViewInterface } from './MumentCardViewInterface';
+import { TodaySelectionInfo } from '../home/TodaySelectionInfo';
 
 export interface TodayMumentResponseDto {
-    nowDate: Date;
-    todayMument: MumentCardViewInterface;
+    todayDate: string;
+    todayMument: TodaySelectionInfo;
 }
