@@ -525,4 +525,5 @@ export default {
     getMumentHistory,
     createLike,
     deleteLike,
+    getRandomMument,
 };
