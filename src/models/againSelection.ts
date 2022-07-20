@@ -1,9 +1,9 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
+import { AgainSelectionInfo } from '../interfaces/home/AgainSelectionInfo';
 
-const AgainSelection = new mongoose.Schema({
+const AgainSelectionSchema = new mongoose.Schema({
     mumentId: {
         type: mongoose.Types.ObjectId,
-        ref: 'Mument',
     },
     music: {
         _id: {
@@ -49,5 +49,7 @@ const AgainSelection = new mongoose.Schema({
     displayDate: {
         type: Date,
         required: true,
-    }
+    },
 });
+
+export default mongoose.model<AgainSelectionInfo & mongoose.Document>('AgainSelection', AgainSelectionSchema);
