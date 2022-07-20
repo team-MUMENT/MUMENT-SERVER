@@ -223,7 +223,7 @@ const deleteLike = async (req: Request, res: Response) => {
 };
 
 /**
- * @ROUTE GET /mument/home/random
+ * @ROUTE GET /mument/random
  * @DESC get random tag and tag matched random three muments
  */
 const getRandomMument = async (req: Request, res: Response) => {
