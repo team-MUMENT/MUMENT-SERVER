@@ -52,6 +52,7 @@ const createMument = async (userId: string, musicId: string, mumentCreateDto: Mu
             const date = dayjs(savedMument.createdAt).format('D MMM, YYYY');
 
             const homeCandidateMument = new HomeCandidate({
+                mumentId: savedMument._id,
                 music: music,
                 user: {
                     _id: user._id,
@@ -470,7 +471,7 @@ const deleteLike = async (mumentId: string, userId: string): Promise<LikeCountRe
 };
 
 // 랜덤 태그, 뮤멘트 조회
-const getRandomMument = async (): Promise<RandomMumentResponseDto> => {
+const getRandomMument = async (): Promise<RandomMumentResponseDto | null> => {
     try {
         // 난수 생성 함수
         const createRandomNum = (min: number, max: number): number => {
@@ -495,13 +496,17 @@ const getRandomMument = async (): Promise<RandomMumentResponseDto> => {
             }
         }
 
+        if (detailTag === 0) {
+            return null;
+        }
+
         const tagTitle: string = tagRandomTitle[detailTag as keyof typeof tagRandomTitle];
 
         // 조건에 맞는 랜덤 뮤멘트 가져오기
         const randomMumentList: RandomMumentInterface[] = await HomeCandidate.aggregate([
-            { $match: { $and: [{ isDeleted: false }, { isPrivate: false }, { $filter: { $or: [{ impressionTag: detailTag }, { feelingTag: detailTag }] } }] } },
+            { $match: { $and: [{ isDeleted: false }, { isPrivate: false }, { $or: [{ impressionTag: detailTag }, { feelingTag: detailTag }] }] } },
             { $sample: { size: 3 } },
-            { $project: { _id: 1, music: { name: 1, artist: 1 }, user: { name: 1, image: 1 }, impressionTag: 1, feelingTag: 1, content: 1, createdAt: 1 } },
+            { $project: { _id: '$mumentId', music: { name: 1, artist: 1 }, user: { name: 1, image: 1 }, impressionTag: 1, feelingTag: 1, content: 1, createdAt: 1 } },
         ]);
 
         const data: RandomMumentResponseDto = {
