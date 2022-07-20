@@ -241,6 +241,21 @@ const getRandomMument = async (req: Request, res: Response) => {
     }
 };
 
+/**
+ * @ROUTE mument/today
+ * @DESC get today's mument
+ */
+const getTodayMument = async (req: Request, res: Response) => {
+    try {
+        const data = await MumentService.getTodayMument();
+
+        res.status(statusCode.OK).send(util.success(statusCode.OK, message.GET_TODAY_MUMENT_SUCCESS, data));
+    } catch (error) {
+        console.log;
+        res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
+    }
+};
+
 export default {
     createMument,
     updateMument,
@@ -251,4 +266,5 @@ export default {
     createLike,
     deleteLike,
     getRandomMument,
+    getTodayMument,
 };
