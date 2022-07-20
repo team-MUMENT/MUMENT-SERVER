@@ -17,6 +17,7 @@ import Music from '../models/Music';
 import User from '../models/User';
 import Like from '../models/Like';
 import HomeCandidate from '../models/HomeCandidate';
+import { HomeCandidateInfo } from '../interfaces/home/HomeCandidateInfo';
 
 const createMument = async (userId: string, musicId: string, mumentCreateDto: MumentCreateDto): Promise<PostBaseResponseDto | null> => {
     try {
@@ -42,7 +43,31 @@ const createMument = async (userId: string, musicId: string, mumentCreateDto: Mu
             isPrivate: mumentCreateDto.isPrivate,
         });
 
-        await mument.save();
+        const savedMument = await mument.save();
+
+        // 조건에 부합하면 homeCandidate collection에도 저장
+        if (mumentCreateDto.isPrivate === false && mumentCreateDto.content) {
+
+            const date = dayjs(savedMument.createdAt).format('D MMM, YYYY');
+
+            const homeCandidateMument = new HomeCandidate({
+                music: music,
+                user: {
+                    _id: user._id,
+                    name: user.name,
+                    image: user.image,
+                },
+                isFirst: mumentCreateDto.isFirst,
+                impressionTag: mumentCreateDto.impressionTag,
+                feelingTag: mumentCreateDto.feelingTag,
+                content: mumentCreateDto.content,
+                isPrivate: mumentCreateDto.isPrivate,
+                createdAt: savedMument.createdAt,
+                date,
+            });
+
+            await homeCandidateMument.save();
+        }
 
         const data = {
             _id: mument._id,
