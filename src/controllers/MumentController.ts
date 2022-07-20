@@ -249,6 +249,11 @@ const getTodayMument = async (req: Request, res: Response) => {
     try {
         const data = await MumentService.getTodayMument();
 
+        // 조회는 성공했으나 결과값이 없을 경우
+        if (data === constant.NO_HOME_CONTENT) {
+            res.status(statusCode.NO_CONTENT).send();
+        }
+
         res.status(statusCode.OK).send(util.success(statusCode.OK, message.GET_TODAY_MUMENT_SUCCESS, data));
     } catch (error) {
         console.log;
