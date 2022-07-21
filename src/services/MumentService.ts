@@ -1,5 +1,6 @@
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
 import constant from '../modules/serviceReturnConstant';
 import { tagBannerTitle } from '../modules/tagTitle';
 import { tagRandomTitle } from '../modules/tagTitle';
@@ -533,9 +534,10 @@ const getRandomMument = async (): Promise<RandomMumentResponseDto | null> => {
 const getTodayMument = async (): Promise<TodayMumentResponseDto | number> => {
     try {
         dayjs.extend(utc);
+        dayjs.extend(timezone);
 
         // 리퀘스트 받아온 시간 판단 후 당일 자정으로 수정
-        const todayMidnight = new Date().setHours(0, 0, 0, 0);
+        const todayMidnight = dayjs().tz('Asia/Seoul').hour(0).minute(0).second(0).millisecond(0);
         const todayUtcDate = dayjs(todayMidnight).utc().format();
         const todayDate = dayjs(todayMidnight).format('YYYY-MM-DD');
 
@@ -565,7 +567,7 @@ const getBanner = async (): Promise<TodayBannerResponseDto | number> => {
         dayjs.extend(utc);
 
         // 날짜 비교를 위해 이번주 월요일 자정 날짜 받아오기
-        const mondayMidnight = dayjs(new Date().setHours(0, 0, 0, 0)).day(1).utc().format();
+        const mondayMidnight = dayjs().tz('Asia/Seoul').day(1).hour(0).minute(0).second(0).millisecond(0).utc().format();
 
         const todayDate = dayjs().format('YYYY-MM-DD');
 
@@ -593,7 +595,7 @@ const getAgainMument = async (): Promise<AgainMumentResponseDto | number> => {
         dayjs.extend(utc);
 
         // 리퀘스트 받아온 시간 판단 후 당일 자정으로 수정
-        const todayMidnight = new Date().setHours(0, 0, 0, 0);
+        const todayMidnight = dayjs().tz('Asia/Seoul').hour(0).minute(0).second(0).millisecond(0);
         const todayUtcDate = dayjs(todayMidnight).utc().format();
         const todayDate = dayjs(todayMidnight).format('YYYY-MM-DD');
 
