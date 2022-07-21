@@ -22,6 +22,9 @@ import TodaySelection from '../models/TodaySelection';
 import { RandomMumentResponseDto } from '../interfaces/mument/RandomMumentResponeDto';
 import { RandomMumentInterface } from '../interfaces/home/randomMumentInterface';
 import { TodayMumentResponseDto } from '../interfaces/mument/TodayMumentResponseDto';
+import { TodayBannerResponseDto } from '../interfaces/mument/TodayBannerResponseDto';
+import BannerSelection from '../models/BannerSelection';
+import { BannerSelectionInfo } from '../interfaces/home/BannerSelectionInfo';
 
 const createMument = async (userId: string, musicId: string, mumentCreateDto: MumentCreateDto): Promise<PostBaseResponseDto | null> => {
     try {
@@ -553,6 +556,34 @@ const getTodayMument = async (): Promise<TodayMumentResponseDto | number> => {
     }
 };
 
+// 배너 조회
+const getBanner = async (): Promise<TodayBannerResponseDto | number> => {
+    try {
+        dayjs.extend(utc);
+
+        // 날짜 비교를 위해 이번주 월요일 자정 날짜 받아오기
+        const mondayMidnight = dayjs(new Date().setHours(0, 0, 0, 0)).day(1).utc().format();
+
+        const todayDate = dayjs().format('YYYY-MM-DD');
+
+        const bannerList: BannerSelectionInfo[] = await BannerSelection.find({
+            displayDate: mondayMidnight,
+        });
+
+        if (bannerList.length === 0) return constant.NO_HOME_CONTENT;
+
+        const data: TodayBannerResponseDto = {
+            todayDate,
+            bannerList,
+        };
+
+        return data;
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+};
+
 export default {
     createMument,
     updateMument,
@@ -564,4 +595,5 @@ export default {
     deleteLike,
     getRandomMument,
     getTodayMument,
+    getBanner,
 };
