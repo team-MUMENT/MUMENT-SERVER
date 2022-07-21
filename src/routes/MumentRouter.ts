@@ -44,4 +44,7 @@ router.get('/today', MumentController.getTodayMument);
 // 배너
 router.get('/banner', MumentController.getBanner);
 
+// 다시 들은 뮤멘트
+router.get('/again', MumentController.getAgainMument);
+
 export default router;
