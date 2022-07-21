@@ -41,4 +41,7 @@ router.get('/random', MumentController.getRandomMument);
 // 오늘의 뮤멘트
 router.get('/today', MumentController.getTodayMument);
 
+// 배너
+router.get('/banner', MumentController.getBanner);
+
 export default router;
