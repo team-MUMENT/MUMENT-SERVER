@@ -281,6 +281,25 @@ const getBanner = async (req: Request, res: Response) => {
     }
 };
 
+/**
+ * @ROUTE GET mument/again
+ * @DESC get today's again tagged mument list
+ */
+const getAgainMument = async (req: Request, res: Response) => {
+    try {
+        const data = await MumentService.getAgainMument();
+
+        if (data === constant.NO_HOME_CONTENT) {
+            res.status(statusCode.NO_CONTENT).send(util.success(statusCode.NO_CONTENT, message.GET_AGAIN_MUMENT_SUCCESS));
+        }
+
+        res.status(statusCode.OK).send(util.success(statusCode.OK, message.GET_AGAIN_MUMENT_SUCCESS, data));
+    } catch (error) {
+        console.log(error);
+        res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
+    }
+};
+
 export default {
     createMument,
     updateMument,
@@ -293,4 +312,5 @@ export default {
     getRandomMument,
     getTodayMument,
     getBanner,
+    getAgainMument,
 };
