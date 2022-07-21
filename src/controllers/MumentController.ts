@@ -270,11 +270,11 @@ const getBanner = async (req: Request, res: Response) => {
         const data = await MumentService.getBanner();
 
         // 조회는 성공했으나, 결과값이 없는 경우
-        if (!data) {
-            res.status(statusCode.NO_CONTENT).send();
+        if (data === constant.NO_HOME_CONTENT) {
+            res.status(statusCode.NO_CONTENT).send(util.success(statusCode.NO_CONTENT, message.GET_BANNER_SUCCESS));
+        } else {
+            res.status(statusCode.OK).send(util.success(statusCode.OK, message.GET_BANNER_SUCCESS, data));
         }
-
-        res.status(statusCode.OK).send(util.success(statusCode.OK, message.GET_BANNER_SUCCESS, data));
     } catch (error) {
         console.log(error);
         res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
