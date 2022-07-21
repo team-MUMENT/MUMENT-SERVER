@@ -33,6 +33,7 @@ const message = {
     GET_RANDOM_MUMENT_SUCCESS: '랜덤 뮤멘트 리스트 조회 성공',
     RANDOM_TAG_FAIL: '랜덤 태그 생성 실패',
     GET_TODAY_MUMENT_SUCCESS: '오늘의 뮤멘트 리스트 조회 성공',
+    GET_BANNER_SUCCESS: '배너 조회 성공',
 
     // music
     NO_MUSIC_ID: '해당 아이디의 음악이 존재하지 않습니다',
