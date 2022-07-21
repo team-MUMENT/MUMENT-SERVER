@@ -25,6 +25,9 @@ import { TodayMumentResponseDto } from '../interfaces/mument/TodayMumentResponse
 import { TodayBannerResponseDto } from '../interfaces/mument/TodayBannerResponseDto';
 import BannerSelection from '../models/BannerSelection';
 import { BannerSelectionInfo } from '../interfaces/home/BannerSelectionInfo';
+import { AgainMumentResponseDto } from '../interfaces/mument/AgainMumentResponseDto';
+import { AgainSelectionInfo } from '../interfaces/home/AgainSelectionInfo';
+import AgainSelection from '../models/AgainSelection';
 
 const createMument = async (userId: string, musicId: string, mumentCreateDto: MumentCreateDto): Promise<PostBaseResponseDto | null> => {
     try {
@@ -584,6 +587,36 @@ const getBanner = async (): Promise<TodayBannerResponseDto | number> => {
     }
 };
 
+// 다시 들은 곡의 뮤멘트 조회
+const getAgainMument = async (): Promise<AgainMumentResponseDto | number> => {
+    try {
+        dayjs.extend(utc);
+
+        // 리퀘스트 받아온 시간 판단 후 당일 자정으로 수정
+        const todayMidnight = new Date().setHours(0, 0, 0, 0);
+        const todayUtcDate = dayjs(todayMidnight).utc().format();
+        const todayDate = dayjs(todayMidnight).format('YYYY-MM-DD');
+
+        const againMument: AgainSelectionInfo[] = await AgainSelection.find({
+            displayDate: todayUtcDate,
+        });
+
+        if (!againMument) {
+            return constant.NO_HOME_CONTENT;
+        }
+
+        const data: AgainMumentResponseDto = {
+            todayDate,
+            againMument,
+        };
+
+        return data;
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+};
+
 export default {
     createMument,
     updateMument,
@@ -596,4 +629,5 @@ export default {
     getRandomMument,
     getTodayMument,
     getBanner,
+    getAgainMument,
 };
