@@ -261,6 +261,26 @@ const getTodayMument = async (req: Request, res: Response) => {
     }
 };
 
+/**
+ * @ROUTE GET mument/banner
+ * @DESC get banner music and tag title list
+ */
+const getBanner = async (req: Request, res: Response) => {
+    try {
+        const data = await MumentService.getBanner();
+
+        // 조회는 성공했으나, 결과값이 없는 경우
+        if (!data) {
+            res.status(statusCode.NO_CONTENT).send();
+        }
+
+        res.status(statusCode.OK).send(util.success(statusCode.OK, message.GET_BANNER_SUCCESS, data));
+    } catch (error) {
+        console.log(error);
+        res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
+    }
+};
+
 export default {
     createMument,
     updateMument,
@@ -272,4 +292,5 @@ export default {
     deleteLike,
     getRandomMument,
     getTodayMument,
+    getBanner,
 };
