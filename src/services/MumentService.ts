@@ -1,5 +1,8 @@
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 import constant from '../modules/serviceReturnConstant';
+import { tagBannerTitle } from '../modules/tagTitle';
+import { tagRandomTitle } from '../modules/tagTitle';
 import { MusicInfo } from '../interfaces/music/MusicInfo';
 import { PostBaseResponseDto } from '../interfaces/common/PostBaseResponseDto';
 import { MumentInfo } from '../interfaces/mument/MumentInfo';
@@ -14,6 +17,17 @@ import Mument from '../models/Mument';
 import Music from '../models/Music';
 import User from '../models/User';
 import Like from '../models/Like';
+import HomeCandidate from '../models/HomeCandidate';
+import TodaySelection from '../models/TodaySelection';
+import { RandomMumentResponseDto } from '../interfaces/mument/RandomMumentResponeDto';
+import { RandomMumentInterface } from '../interfaces/home/randomMumentInterface';
+import { TodayMumentResponseDto } from '../interfaces/mument/TodayMumentResponseDto';
+import { TodayBannerResponseDto } from '../interfaces/mument/TodayBannerResponseDto';
+import BannerSelection from '../models/BannerSelection';
+import { BannerSelectionInfo } from '../interfaces/home/BannerSelectionInfo';
+import { AgainMumentResponseDto } from '../interfaces/mument/AgainMumentResponseDto';
+import { AgainSelectionInfo } from '../interfaces/home/AgainSelectionInfo';
+import AgainSelection from '../models/AgainSelection';
 
 const createMument = async (userId: string, musicId: string, mumentCreateDto: MumentCreateDto): Promise<PostBaseResponseDto | null> => {
     try {
@@ -39,7 +53,31 @@ const createMument = async (userId: string, musicId: string, mumentCreateDto: Mu
             isPrivate: mumentCreateDto.isPrivate,
         });
 
-        await mument.save();
+        const savedMument = await mument.save();
+
+        // 조건에 부합하면 homeCandidate collection에도 저장
+        if (mumentCreateDto.isPrivate === false && mumentCreateDto.content) {
+            const date = dayjs(savedMument.createdAt).format('D MMM, YYYY');
+
+            const homeCandidateMument = new HomeCandidate({
+                mumentId: savedMument._id,
+                music: music,
+                user: {
+                    _id: user._id,
+                    name: user.name,
+                    image: user.image,
+                },
+                isFirst: mumentCreateDto.isFirst,
+                impressionTag: mumentCreateDto.impressionTag,
+                feelingTag: mumentCreateDto.feelingTag,
+                content: mumentCreateDto.content,
+                isPrivate: mumentCreateDto.isPrivate,
+                createdAt: savedMument.createdAt,
+                date,
+            });
+
+            await homeCandidateMument.save();
+        }
 
         const data = {
             _id: mument._id,
@@ -440,6 +478,145 @@ const deleteLike = async (mumentId: string, userId: string): Promise<LikeCountRe
     }
 };
 
+// 랜덤 태그, 뮤멘트 조회
+const getRandomMument = async (): Promise<RandomMumentResponseDto | null> => {
+    try {
+        // 난수 생성 함수
+        const createRandomNum = (min: number, max: number): number => {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        };
+
+        // 태그 종류 결정을 위해 1과 2 사이에서 난수 생성
+        const tagSort: number = createRandomNum(1, 2);
+
+        // 태그 종류에 따라 세부 태그 결정
+        let detailTag = 0;
+        switch (tagSort) {
+            case 1: {
+                // impressionTag
+                detailTag = createRandomNum(100, 105);
+                break;
+            }
+            case 2: {
+                // feelingTag
+                detailTag = createRandomNum(200, 215);
+                break;
+            }
+        }
+
+        if (detailTag === 0) {
+            return null;
+        }
+
+        const tagTitle: string = tagRandomTitle[detailTag as keyof typeof tagRandomTitle];
+
+        // 조건에 맞는 랜덤 뮤멘트 가져오기
+        const randomMumentList: RandomMumentInterface[] = await HomeCandidate.aggregate([
+            { $match: { $and: [{ isDeleted: false }, { isPrivate: false }, { $or: [{ impressionTag: detailTag }, { feelingTag: detailTag }] }] } },
+            { $sample: { size: 3 } },
+            { $project: { _id: '$mumentId', music: { name: 1, artist: 1 }, user: { name: 1, image: 1 }, impressionTag: 1, feelingTag: 1, content: 1, createdAt: 1 } },
+        ]);
+
+        const data: RandomMumentResponseDto = {
+            title: tagTitle,
+            mumentList: randomMumentList,
+        };
+
+        return data;
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+};
+
+// 오늘의 뮤멘트 조회
+const getTodayMument = async (): Promise<TodayMumentResponseDto | number> => {
+    try {
+        dayjs.extend(utc);
+
+        // 리퀘스트 받아온 시간 판단 후 당일 자정으로 수정
+        const todayMidnight = new Date().setHours(0, 0, 0, 0);
+        const todayUtcDate = dayjs(todayMidnight).utc().format();
+        const todayDate = dayjs(todayMidnight).format('YYYY-MM-DD');
+
+        const todayMument = await TodaySelection.findOne({
+            displayDate: todayUtcDate,
+        });
+
+        if (!todayMument) {
+            return constant.NO_HOME_CONTENT;
+        }
+
+        const data: TodayMumentResponseDto = {
+            todayDate,
+            todayMument,
+        };
+
+        return data;
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+};
+
+// 배너 조회
+const getBanner = async (): Promise<TodayBannerResponseDto | number> => {
+    try {
+        dayjs.extend(utc);
+
+        // 날짜 비교를 위해 이번주 월요일 자정 날짜 받아오기
+        const mondayMidnight = dayjs(new Date().setHours(0, 0, 0, 0)).day(1).utc().format();
+
+        const todayDate = dayjs().format('YYYY-MM-DD');
+
+        const bannerList: BannerSelectionInfo[] = await BannerSelection.find({
+            displayDate: mondayMidnight,
+        });
+
+        if (bannerList.length === 0) return constant.NO_HOME_CONTENT;
+
+        const data: TodayBannerResponseDto = {
+            todayDate,
+            bannerList,
+        };
+
+        return data;
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+};
+
+// 다시 들은 곡의 뮤멘트 조회
+const getAgainMument = async (): Promise<AgainMumentResponseDto | number> => {
+    try {
+        dayjs.extend(utc);
+
+        // 리퀘스트 받아온 시간 판단 후 당일 자정으로 수정
+        const todayMidnight = new Date().setHours(0, 0, 0, 0);
+        const todayUtcDate = dayjs(todayMidnight).utc().format();
+        const todayDate = dayjs(todayMidnight).format('YYYY-MM-DD');
+
+        const againMument: AgainSelectionInfo[] = await AgainSelection.find({
+            displayDate: todayUtcDate,
+        });
+
+        if (!againMument) {
+            return constant.NO_HOME_CONTENT;
+        }
+
+        const data: AgainMumentResponseDto = {
+            todayDate,
+            againMument,
+        };
+
+        return data;
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+};
+
 export default {
     createMument,
     updateMument,
@@ -449,4 +626,8 @@ export default {
     getMumentHistory,
     createLike,
     deleteLike,
+    getRandomMument,
+    getTodayMument,
+    getBanner,
+    getAgainMument,
 };

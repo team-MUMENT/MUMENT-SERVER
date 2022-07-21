@@ -222,6 +222,84 @@ const deleteLike = async (req: Request, res: Response) => {
     }
 };
 
+/**
+ * @ROUTE GET /mument/random
+ * @DESC get random tag and tag matched random three muments
+ */
+const getRandomMument = async (req: Request, res: Response) => {
+    try {
+        const data = await MumentService.getRandomMument();
+
+        if (!data) {
+            res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.BAD_REQUEST, message.RANDOM_TAG_FAIL));
+        }
+
+        res.status(statusCode.OK).send(util.success(statusCode.OK, message.GET_RANDOM_MUMENT_SUCCESS, data));
+    } catch (error) {
+        console.log(error);
+        res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
+    }
+};
+
+/**
+ * @ROUTE mument/today
+ * @DESC get today's mument
+ */
+const getTodayMument = async (req: Request, res: Response) => {
+    try {
+        const data = await MumentService.getTodayMument();
+
+        // 조회는 성공했으나 결과값이 없을 경우
+        if (data === constant.NO_HOME_CONTENT) {
+            res.status(statusCode.NO_CONTENT).send();
+        }
+
+        res.status(statusCode.OK).send(util.success(statusCode.OK, message.GET_TODAY_MUMENT_SUCCESS, data));
+    } catch (error) {
+        console.log;
+        res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
+    }
+};
+
+/**
+ * @ROUTE GET mument/banner
+ * @DESC get banner music and tag title list
+ */
+const getBanner = async (req: Request, res: Response) => {
+    try {
+        const data = await MumentService.getBanner();
+
+        // 조회는 성공했으나, 결과값이 없는 경우
+        if (data === constant.NO_HOME_CONTENT) {
+            res.status(statusCode.NO_CONTENT).send(util.success(statusCode.NO_CONTENT, message.GET_BANNER_SUCCESS));
+        } else {
+            res.status(statusCode.OK).send(util.success(statusCode.OK, message.GET_BANNER_SUCCESS, data));
+        }
+    } catch (error) {
+        console.log(error);
+        res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
+    }
+};
+
+/**
+ * @ROUTE GET mument/again
+ * @DESC get today's again tagged mument list
+ */
+const getAgainMument = async (req: Request, res: Response) => {
+    try {
+        const data = await MumentService.getAgainMument();
+
+        if (data === constant.NO_HOME_CONTENT) {
+            res.status(statusCode.NO_CONTENT).send(util.success(statusCode.NO_CONTENT, message.GET_AGAIN_MUMENT_SUCCESS));
+        }
+
+        res.status(statusCode.OK).send(util.success(statusCode.OK, message.GET_AGAIN_MUMENT_SUCCESS, data));
+    } catch (error) {
+        console.log(error);
+        res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
+    }
+};
+
 export default {
     createMument,
     updateMument,
@@ -231,4 +309,8 @@ export default {
     getMumentHistory,
     createLike,
     deleteLike,
+    getRandomMument,
+    getTodayMument,
+    getBanner,
+    getAgainMument,
 };

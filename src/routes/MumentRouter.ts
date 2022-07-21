@@ -35,4 +35,16 @@ router.delete('/:mumentId/:userId/like', [
     param('userId').isString().isLength({ min: 24, max: 24}),
 ], MumentController.deleteLike);
 
+// 랜덤 뮤멘트
+router.get('/random', MumentController.getRandomMument);
+
+// 오늘의 뮤멘트
+router.get('/today', MumentController.getTodayMument);
+
+// 배너
+router.get('/banner', MumentController.getBanner);
+
+// 다시 들은 뮤멘트
+router.get('/again', MumentController.getAgainMument);
+
 export default router;
