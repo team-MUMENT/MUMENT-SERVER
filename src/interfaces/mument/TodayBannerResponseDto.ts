@@ -1,6 +1,6 @@
 import { BannerSelectionInfo } from '../home/BannerSelectionInfo';
 
 export interface TodayBannerResponseDto {
-    todayDate: Date;
+    todayDate: string;
     bannerList: BannerSelectionInfo[];
 }
