@@ -41,6 +41,9 @@
 </table>
 <br>
 
+## Server Architecture
+<p align="center"><img src="https://user-images.githubusercontent.com/81809575/180463246-0da9f1c5-f90e-4801-941e-e7095bc7c8ca.jpg" width=90%></p><br>
+
 ## API
 [▶️ API 명세서](https://destiny-plum-124.notion.site/API-8e6aba4083374f7f8b3ff628046eb946)
 | Method |  View | description               | 🎤담당  | progress   | issue |
