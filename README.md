@@ -48,7 +48,7 @@
 [▶️ API 명세서](https://destiny-plum-124.notion.site/API-8e6aba4083374f7f8b3ff628046eb946)
 | Method |  View | description               | 🎤담당  | progress   | issue |
 | :----: | :------: | ------------------------- | :-----: | :-------:  | :---: |
-| `POST` | 로그인    | 로그인                    |         | `✅ 완료`   |   [#24](https://github.com/team-MUMENT/MUMENT-SERVER/issues/24) |
+| `POST` | 로그인    | 로그인                    | 🌊유정  | `✅ 완료`   |   [#24](https://github.com/team-MUMENT/MUMENT-SERVER/issues/24) |
 | `GET`  | 홈       | 배너 조회                  | 🌊유정  | `✅ 완료`    |   [#49](https://github.com/team-MUMENT/MUMENT-SERVER/issues/49) |
 | `GET`  |          | 오늘의 뮤멘트 조회          | 🌊유정  | `✅ 완료`    |   [#47](https://github.com/team-MUMENT/MUMENT-SERVER/issues/47) |
 | `GET`  |          | 다시 들은 곡의 뮤멘트       | 🌊유정  | `✅ 완료`    |   [#51](https://github.com/team-MUMENT/MUMENT-SERVER/issues/51) | 
