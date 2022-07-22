@@ -16,6 +16,7 @@ const connectDB = async () => {
 
         console.log('Mongoose Connected ...');
 
+        /*
         User.createCollection().then(function (collection) {
             console.log('User Collection is created!!');
         });
@@ -47,6 +48,7 @@ const connectDB = async () => {
         AgainSelection.createCollection().then(function (collection) {
             console.log('AgainSelection Collection is created!!');
         });
+        */
     } catch (err: any) {
         console.error(err.message);
         process.exit(1);

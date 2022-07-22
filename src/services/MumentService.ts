@@ -18,17 +18,17 @@ import Mument from '../models/Mument';
 import Music from '../models/Music';
 import User from '../models/User';
 import Like from '../models/Like';
-import HomeCandidate from '../models/homeCandidate';
+import HomeCandidate from '../models/HomeCandidate';
 import TodaySelection from '../models/TodaySelection';
 import { RandomMumentResponseDto } from '../interfaces/mument/RandomMumentResponeDto';
 import { RandomMumentInterface } from '../interfaces/home/randomMumentInterface';
 import { TodayMumentResponseDto } from '../interfaces/mument/TodayMumentResponseDto';
 import { TodayBannerResponseDto } from '../interfaces/mument/TodayBannerResponseDto';
-import BannerSelection from '../models/bannerSelection';
+import BannerSelection from '../models/BannerSelection';
 import { BannerSelectionInfo } from '../interfaces/home/BannerSelectionInfo';
 import { AgainMumentResponseDto } from '../interfaces/mument/AgainMumentResponseDto';
 import { AgainSelectionInfo } from '../interfaces/home/AgainSelectionInfo';
-import AgainSelection from '../models/againSelection';
+import AgainSelection from '../models/AgainSelection';
 
 const createMument = async (userId: string, musicId: string, mumentCreateDto: MumentCreateDto): Promise<PostBaseResponseDto | null> => {
     try {
@@ -537,7 +537,7 @@ const getTodayMument = async (): Promise<TodayMumentResponseDto | number> => {
         dayjs.extend(timezone);
 
         // 리퀘스트 받아온 시간 판단 후 당일 자정으로 수정
-        const todayMidnight = dayjs().tz('Asia/Seoul').hour(0).minute(0).second(0).millisecond(0);
+        const todayMidnight = dayjs().hour(0).minute(0).second(0).millisecond(0);
         const todayUtcDate = dayjs(todayMidnight).utc().format();
         const todayDate = dayjs(todayMidnight).format('YYYY-MM-DD');
 
@@ -567,7 +567,7 @@ const getBanner = async (): Promise<TodayBannerResponseDto | number> => {
         dayjs.extend(utc);
 
         // 날짜 비교를 위해 이번주 월요일 자정 날짜 받아오기
-        const mondayMidnight = dayjs().tz('Asia/Seoul').day(1).hour(0).minute(0).second(0).millisecond(0).utc().format();
+        const mondayMidnight = dayjs().day(1).hour(0).minute(0).second(0).millisecond(0).utc().format();
 
         const todayDate = dayjs().format('YYYY-MM-DD');
 
@@ -595,7 +595,7 @@ const getAgainMument = async (): Promise<AgainMumentResponseDto | number> => {
         dayjs.extend(utc);
 
         // 리퀘스트 받아온 시간 판단 후 당일 자정으로 수정
-        const todayMidnight = dayjs().tz('Asia/Seoul').hour(0).minute(0).second(0).millisecond(0);
+        const todayMidnight = dayjs().hour(0).minute(0).second(0).millisecond(0);
         const todayUtcDate = dayjs(todayMidnight).utc().format();
         const todayDate = dayjs(todayMidnight).format('YYYY-MM-DD');
 
