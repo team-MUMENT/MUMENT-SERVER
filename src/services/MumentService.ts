@@ -18,17 +18,17 @@ import Mument from '../models/Mument';
 import Music from '../models/Music';
 import User from '../models/User';
 import Like from '../models/Like';
-import HomeCandidate from '../models/homeCandidate';
+import HomeCandidate from '../models/HomeCandidate';
 import TodaySelection from '../models/TodaySelection';
 import { RandomMumentResponseDto } from '../interfaces/mument/RandomMumentResponeDto';
-import { RandomMumentInterface } from '../interfaces/home/randomMumentInterface';
+import { RandomMumentInterface } from '../interfaces/home/RandomMumentInterface';
 import { TodayMumentResponseDto } from '../interfaces/mument/TodayMumentResponseDto';
 import { TodayBannerResponseDto } from '../interfaces/mument/TodayBannerResponseDto';
-import BannerSelection from '../models/bannerSelection';
+import BannerSelection from '../models/BannerSelection';
 import { BannerSelectionInfo } from '../interfaces/home/BannerSelectionInfo';
 import { AgainMumentResponseDto } from '../interfaces/mument/AgainMumentResponseDto';
 import { AgainSelectionInfo } from '../interfaces/home/AgainSelectionInfo';
-import AgainSelection from '../models/againSelection';
+import AgainSelection from '../models/AgainSelection';
 
 const createMument = async (userId: string, musicId: string, mumentCreateDto: MumentCreateDto): Promise<PostBaseResponseDto | null> => {
     try {
