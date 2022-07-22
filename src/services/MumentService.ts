@@ -158,7 +158,7 @@ const updateMument = async (mumentId: string, mumentUpdateDto: MumentCreateDto):
     }
 };
 
-const getMument = async (mumentId: string, userId: string): Promise<MumentResponseDto | null | true> => {
+const getMument = async (mumentId: string, userId: string): Promise<MumentResponseDto | null | number> => {
     try {
         const mument = await Mument.findById(mumentId);
         if (!mument) return null;
@@ -166,7 +166,7 @@ const getMument = async (mumentId: string, userId: string): Promise<MumentRespon
         const loginUser = await User.findById(userId);
         if (!loginUser) return null;
 
-        if (mument.isPrivate === true && mument.user._id.toString() !== userId) return true;
+        if (mument.isPrivate === true && mument.user._id.toString() !== userId) return constant.PRIVATE_MUMENT;
 
         const music = await Music.findById(mument.music._id);
         if (!music) return null;

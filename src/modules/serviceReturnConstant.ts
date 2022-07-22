@@ -8,6 +8,7 @@ const constant = {
     NO_MUMENT: -3, // 아이디로 조회한 뮤멘트의 값이 없을 때
     WRONG_PASSWORD: -4, // 패스워드가 일치하지 않을 때
     NO_HOME_CONTENT: -5, // 홈에 들어갈 뮤멘트가 존재하지 않을 때
+    PRIVATE_MUMENT: -6, // 비밀글에 다른 유저가 접속하려 할 때
 };
 
 export default constant;
