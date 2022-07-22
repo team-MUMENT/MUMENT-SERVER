@@ -1,6 +1,9 @@
 # MUMENT-SERVER
 
 <p align="center"><img src="https://user-images.githubusercontent.com/78145403/178549072-1ddc7a62-c9c7-4c76-a3c8-82db4d4ffec7.png" width=60%></p><br>
+<p align="center"><img src="https://user-images.githubusercontent.com/81809575/180454090-ad43efb9-390c-4e76-ba09-2c0db6d0bf03.png" width=60%></p><br>
+
+
 
 ## Contributors
 <table align="center" style = "width: 100%;">
@@ -36,24 +39,24 @@
 [▶️ API 명세서](https://destiny-plum-124.notion.site/API-8e6aba4083374f7f8b3ff628046eb946)
 | Method |  View | description               | 🎤담당  | progress   | issue |
 | :----: | :------: | ------------------------- | :-----: | :-------:  | :---: |
-| `POST` | 로그인    | 로그인                    |         | `🚏 대기`   |       |
-| `GET`  | 홈       | 배너 조회                  | 🌊유정  | `🚏 대기`    |       |
-| `GET`  |          | 오늘의 뮤멘트 조회          | 🌊유정  | `🚏 대기`    |       |
-| `GET`  |          | 다시 들은 곡의 뮤멘트       | 🌊유정  | `🚏 대기`    |       | 
-| `GET`  |          | 랜덤 태그, 랜덤 뮤멘트      | 🌊유정  | `🚏 대기`    |       |
-| `GET`  |          | 곡 검색                    | 🎶채은  | `🚍 진행중`    |   [#15](https://github.com/team-MUMENT/MUMENT-SERVER/issues/15) |
-| `GET`  |          | 곡 상세 페이지 - 곡, 나의 뮤멘트 | 🌊유정  | `🚍 진행중`    | [#7](https://github.com/team-MUMENT/MUMENT-SERVER/issues/7) |
-| `GET`  |          | 곡 상세 페이지 - 모든 뮤멘트 조회 | 🌊유정  | `🚍 진행중`    | [#12](https://github.com/team-MUMENT/MUMENT-SERVER/issues/12) |
-| `GET`  | 기록하기  | 처음/다시 들어요 선택       | 🎶채은  | `🚏 대기`    |     |
-| `POST` |          | 뮤멘트 기록하기             | 🎶채은  | `🚍 진행중` | [#4](https://github.com/team-MUMENT/MUMENT-SERVER/issues/4) |
-| `PUT`  |          | 뮤멘트 수정하기             | 🎶채은  | `🚏 대기` |     |
-| `GET`  |          | 뮤멘트 상세보기             | 🎶채은  | `🚍 진행중` | [#6](https://github.com/team-MUMENT/MUMENT-SERVER/issues/6) |
-|`DELETE`|          | 뮤멘트 삭제하기             | 🎶채은  | `🚏 대기`    |     |
-| `GET`  |          | 나의 히스토리               | 🌊유정  | `🚏 대기`    |     |
-| `GET`  | 보관함    | 내가 작성한 뮤멘트 리스트   | 🎶채은  | `🚍 진행중`    | [#10](https://github.com/team-MUMENT/MUMENT-SERVER/issues/10)    |
-| `GET`  |           | 좋아요한 뮤멘트 리스트      | 🎶채은  | `🚍 진행중`     | [#14](https://github.com/team-MUMENT/MUMENT-SERVER/issues/14)    |
-| `POST` | 좋아요    | 뮤멘트 좋아요 등록          | 🎶채은  | `🚏 대기`    |     |
-|`DELETE`|           | 뮤멘트 좋아요 취소         | 🎶채은  | `🚏 대기`    |     |
+| `POST` | 로그인    | 로그인                    |         | `✅ 완료`   |   [#24](https://github.com/team-MUMENT/MUMENT-SERVER/issues/24) |
+| `GET`  | 홈       | 배너 조회                  | 🌊유정  | `✅ 완료`    |   [#49](https://github.com/team-MUMENT/MUMENT-SERVER/issues/49) |
+| `GET`  |          | 오늘의 뮤멘트 조회          | 🌊유정  | `✅ 완료`    |   [#47](https://github.com/team-MUMENT/MUMENT-SERVER/issues/47) |
+| `GET`  |          | 다시 들은 곡의 뮤멘트       | 🌊유정  | `✅ 완료`    |   [#51](https://github.com/team-MUMENT/MUMENT-SERVER/issues/51) | 
+| `GET`  |          | 랜덤 태그, 랜덤 뮤멘트      | 🌊유정  | `✅ 완료`    |   [#30](https://github.com/team-MUMENT/MUMENT-SERVER/issues/30) |
+| `GET`  |          | 곡 검색                    | 🎶채은  | `✅ 완료`    |   [#15](https://github.com/team-MUMENT/MUMENT-SERVER/issues/15) |
+| `GET`  |          | 곡 상세 페이지 - 곡, 나의 뮤멘트 | 🌊유정  | `✅ 완료`    | [#7](https://github.com/team-MUMENT/MUMENT-SERVER/issues/7) |
+| `GET`  |          | 곡 상세 페이지 - 모든 뮤멘트 조회 | 🌊유정  | `✅ 완료`    | [#12](https://github.com/team-MUMENT/MUMENT-SERVER/issues/12) |
+| `GET`  | 기록하기  | 처음/다시 들어요 선택       | 🎶채은  | `✅ 완료`    |   [#19](https://github.com/team-MUMENT/MUMENT-SERVER/issues/19) |
+| `POST` |          | 뮤멘트 기록하기             | 🎶채은  | `✅ 완료` | [#4](https://github.com/team-MUMENT/MUMENT-SERVER/issues/4) |
+| `PUT`  |          | 뮤멘트 수정하기             | 🎶채은  | `✅ 완료` |   [#27](https://github.com/team-MUMENT/MUMENT-SERVER/issues/27) |
+| `GET`  |          | 뮤멘트 상세보기             | 🎶채은  | `✅ 완료` | [#6](https://github.com/team-MUMENT/MUMENT-SERVER/issues/6) |
+|`DELETE`|          | 뮤멘트 삭제하기             | 🎶채은  | `✅ 완료`    |   [#28](https://github.com/team-MUMENT/MUMENT-SERVER/issues/28) |
+| `GET`  |          | 나의 히스토리               | 🌊유정  | `✅ 완료`    |   [#13](https://github.com/team-MUMENT/MUMENT-SERVER/issues/13) |
+| `GET`  | 보관함    | 내가 작성한 뮤멘트 리스트   | 🎶채은  | `✅ 완료`    | [#10](https://github.com/team-MUMENT/MUMENT-SERVER/issues/10)    |
+| `GET`  |           | 좋아요한 뮤멘트 리스트      | 🎶채은  | `✅ 완료`     | [#14](https://github.com/team-MUMENT/MUMENT-SERVER/issues/14)    |
+| `POST` | 좋아요    | 뮤멘트 좋아요 등록          | 🌊유정  | `✅ 완료`    |   [#21](https://github.com/team-MUMENT/MUMENT-SERVER/issues/21) |
+|`DELETE`|           | 뮤멘트 좋아요 취소         | 🌊유정  | `✅ 완료`    |   [#21](https://github.com/team-MUMENT/MUMENT-SERVER/issues/21) |
 
 
 ## Collection
@@ -77,6 +80,33 @@
 ┣ 📂routes
 ┣ 📂services
 ┣ 📜index.ts
+```
+
+## Dependency
+```
+"devDependencies": {
+        "@types/express": "^4.17.13",
+        "@types/mongoose": "^5.11.97",
+        "@types/node": "^17.0.25",
+        "@typescript-eslint/eslint-plugin": "^5.30.5",
+        "@typescript-eslint/parser": "^5.30.5",
+        "eslint": "^8.19.0",
+        "eslint-config-prettier": "^8.5.0",
+        "eslint-plugin-prettier": "^4.2.1",
+        "nodemon": "^2.0.15",
+        "prettier": "^2.7.1",
+        "ts-node": "^10.7.0",
+        "typescript": "^4.6.3"
+},
+"dependencies": {
+        "axios": "^0.27.2",
+        "dayjs": "^1.11.3",
+        "dotenv": "^16.0.0",
+        "express": "^4.17.3",
+        "express-validator": "^6.14.0",
+        "husky": "^8.0.1",
+        "mongoose": "^6.3.1"
+}
 ```
 
 ## Commit Convention
