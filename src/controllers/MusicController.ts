@@ -23,9 +23,9 @@ const getMusicAndMyMument = async (req: Request, res: Response) => {
 
         if (!data) {
             res.status(statusCode.NOT_FOUND).send(util.fail(statusCode.NOT_FOUND, message.NOT_FOUND));
+        } else {
+            res.status(statusCode.OK).send(util.success(statusCode.OK, message.FIND_MUSIC_MYMUMENT_SUCCESS, data));
         }
-
-        res.status(statusCode.OK).send(util.success(statusCode.OK, message.FIND_MUSIC_MYMUMENT_SUCCESS, data));
     } catch (error) {
         console.log(error);
 
