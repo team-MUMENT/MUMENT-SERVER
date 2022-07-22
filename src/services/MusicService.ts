@@ -40,11 +40,19 @@ const getMusicAndMyMument = async (musicId: string, userId: string): Promise<Mus
         // 날짜 가공
         const mumentDate = dayjs(latestMument.createdAt).format('D MMM, YYYY');
 
+        const myMumentId: string = latestMument._id.toString();
+
         // isLiked 조회
         const isLiked = Boolean(
             await Like.findOne({
-                user: { _id: userId },
-                mument: { _id: latestMument._id },
+                $and: [
+                    {
+                        'user._id': { $eq: userId },
+                    },
+                    {
+                        mument: { $elemMatch: { _id: latestMument._id } },
+                    },
+                ],
             }),
         );
 
@@ -112,13 +120,19 @@ const getMumentList = async (musicId: string, userId: string, isLikeOrder: boole
         }
 
         // mumentId array 리턴
-        const mumentIdList = originalMumentList.map(mument => mument._id);
+        const mumentIdList = originalMumentList.map(mument => mument._id.toString());
 
         // 해당 유저아이디의 document에서 mumentIdList find
-        const likeList = await Like.find({
+        const likeList = await Like.findOne({
             'user._id': userId,
             'mument._id': { $in: mumentIdList },
         });
+
+        let likeMumentIdList: string[] = [];
+
+        if (likeList) {
+            likeMumentIdList = likeList.mument.map(mument => mument._id.toString());
+        }
 
         // map 함수 사용을 위해 날짜 가공해주는 함수
         const createDate = (createdAt: Date): string => {
@@ -146,7 +160,7 @@ const getMumentList = async (musicId: string, userId: string, isLikeOrder: boole
                 ...cur.toObject(),
                 cardTag: cardTag,
                 date: createDate(cur.createdAt),
-                isLiked: Boolean(mumentIdList[index] in likeList),
+                isLiked: likeMumentIdList.includes(mumentIdList[index].toString()),
             };
             return mumentList;
         }, []);
