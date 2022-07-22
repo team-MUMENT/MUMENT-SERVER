@@ -5,6 +5,7 @@ import util from '../modules/util';
 import constant from '../modules/serviceReturnConstant';
 import { validationResult } from 'express-validator';
 import { AuthService } from '../services';
+import sendMessage, { SlackMessageFormat } from '../library/slackWebHook';
 
 /**
  * @ROUTE POST /auth/login
@@ -25,15 +26,27 @@ const login = async (req: Request, res: Response) => {
         switch (data) {
             case constant.NO_USER: {
                 res.status(statusCode.NOT_FOUND).send(util.fail(statusCode.NOT_FOUND, message.NO_USER_PROFILEID));
-            };
+            }
             case constant.WRONG_PASSWORD: {
                 res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.LOGIN_FAIL));
-            };
+            }
         }
 
         res.status(statusCode.OK).send(util.success(statusCode.OK, message.LOGIN_SUCCESS, data));
     } catch (error) {
         console.log(error);
+
+        const slackMessage: SlackMessageFormat = {
+            title: 'MUMENT ec2 서버 오류',
+            text: '서버 내부 오류입니다',
+            fields: [
+                {
+                    title: 'Error Stack:',
+                    value: `\`\`\`${error}\`\`\``,
+                },
+            ],
+        };
+        sendMessage(slackMessage);
         res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
     }
 };
