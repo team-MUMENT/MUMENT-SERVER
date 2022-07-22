@@ -1,11 +1,11 @@
 {
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
-    "project": "./tsconfig.json",
+    "project": "MUMENT-SERVER/tsconfig.json",
     "sourceType": "module"
   },
   "env": {
-    "node": true
+    "node": true,
   },
   "extends": [
     "plugin:@typescript-eslint/recommended",
