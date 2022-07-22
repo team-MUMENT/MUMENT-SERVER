@@ -2,6 +2,12 @@
 
 <p align="center"><img src="https://user-images.githubusercontent.com/78145403/178549072-1ddc7a62-c9c7-4c76-a3c8-82db4d4ffec7.png" width=60%></p><br>
 <p align="center"><img src="https://user-images.githubusercontent.com/81809575/180454090-ad43efb9-390c-4e76-ba09-2c0db6d0bf03.png" width=60%></p><br>
+<p align="center"><img src="https://user-images.githubusercontent.com/81809575/180456406-580f643d-ffa4-43be-a33e-be7a26075a55.png" width=60%></p><br>
+<p align="center"><img src="https://user-images.githubusercontent.com/81809575/180456533-59375ae5-3746-40e9-b555-78a23e0087e6.png" width=60%></p><br>
+<p align="center"><img src="https://user-images.githubusercontent.com/81809575/180456738-8642c01b-40da-4889-afb6-abdf7f89ab57.png" width=60%></p><br>
+
+
+
 
 
 
