@@ -166,7 +166,7 @@ const getMument = async (mumentId: string, userId: string): Promise<MumentRespon
         const loginUser = await User.findById(userId);
         if (!loginUser) return null;
 
-        if (mument.user._id.toString() !== userId) return true;
+        if (mument.isPrivate === true && mument.user._id.toString() !== userId) return true;
 
         const music = await Music.findById(mument.music._id);
         if (!music) return null;
