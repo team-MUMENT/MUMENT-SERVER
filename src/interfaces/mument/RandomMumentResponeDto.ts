@@ -1,4 +1,4 @@
-import { RandomMumentInterface } from '../home/randomMumentInterface';
+import { RandomMumentInterface } from '../home/RandomMumentInterface';
 
 export interface RandomMumentResponseDto {
     title: string;
