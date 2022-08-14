@@ -575,7 +575,6 @@ const getRandomMument = async (): Promise<RandomMumentResponseDto | null> => {
 
         const tagTitle: string = tagRandomTitle[detailTag as keyof typeof tagRandomTitle];
 
-
         /**
          * ✅몽고디비 연결 임시 주석처리 + data 변수에 임시로 더미 넣어둠
          */
@@ -611,7 +610,6 @@ const getTodayMument = async (): Promise<TodayMumentResponseDto | number> => {
         const todayMidnight = dayjs().hour(0).minute(0).second(0).millisecond(0);
         const todayUtcDate = dayjs(todayMidnight).utc().format();
         const todayDate = dayjs(todayMidnight).format('YYYY-MM-DD');
-
 
         /**
          * ✅몽고디비 연결 임시 주석처리 + 변수에 임시로 더미 넣어둠
@@ -650,7 +648,6 @@ const getBanner = async (): Promise<TodayBannerResponseDto | number> => {
 
         const todayDate = dayjs().format('YYYY-MM-DD');
 
-
         /**
          * ✅몽고디비 연결 임시 주석처리 + data 변수에 임시로 더미 넣어둠
          */
@@ -685,7 +682,6 @@ const getAgainMument = async (): Promise<AgainMumentResponseDto | number> => {
         const todayMidnight = dayjs().hour(0).minute(0).second(0).millisecond(0);
         const todayUtcDate = dayjs(todayMidnight).utc().format();
         const todayDate = dayjs(todayMidnight).format('YYYY-MM-DD');
-
 
         /**
          * ✅몽고디비 연결 임시 주석처리 + data 변수에 임시로 더미 넣어둠
