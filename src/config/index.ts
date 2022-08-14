@@ -17,9 +17,12 @@ export default {
     port: parseInt(process.env.PORT as string, 10) as number,
 
     /**
-     * MongoDB URI
+     * 몽고디비 연결 임시 주석처리
      */
-    mongoURI: process.env.MONGODB_URI as string,
+    // /**
+    //  * MongoDB URI
+    //  */
+    // mongoURI: process.env.MONGODB_URI as string,
 
     /**
      * Connect to Slack with Webhook

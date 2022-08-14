@@ -1,20 +1,23 @@
-import mongoose from 'mongoose';
+/**
+ * 몽고디비 연결 임시 주석처리
+ */
 import config from '../config';
-import Like from '../models/Like';
-import Mument from '../models/Mument';
-import Music from '../models/Music';
-import User from '../models/User';
-import HomeCandidate from '../models/HomeCandidate';
-import BannerSelection from '../models/BannerSelection';
-import TodaySelection from '../models/TodaySelection';
-import AgainSelection from '../models/AgainSelection';
+// import mongoose from 'mongoose';
+// import Like from '../models/Like';
+// import Mument from '../models/Mument';
+// import Music from '../models/Music';
+// import User from '../models/User';
+// import HomeCandidate from '../models/HomeCandidate';
+// import BannerSelection from '../models/BannerSelection';
+// import TodaySelection from '../models/TodaySelection';
+// import AgainSelection from '../models/AgainSelection';
 
 const connectDB = async () => {
     try {
-        await mongoose.connect(config.mongoURI);
-        mongoose.set('autoCreate', true);
+        // await mongoose.connect(config.mongoURI);
+        // mongoose.set('autoCreate', true);
 
-        console.log('Mongoose Connected ...');
+        // console.log('Mongoose Connected ...');
 
         /*
         User.createCollection().then(function (collection) {

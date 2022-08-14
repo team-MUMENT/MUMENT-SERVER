@@ -3,7 +3,7 @@ import { MumentCardViewInterface } from '../mument/MumentCardViewInterface';
 
 export interface MusicMyMumentResponseDto {
     music: {
-        _id: mongoose.Schema.Types.ObjectId;
+        _id: mongoose.Types.ObjectId;
         name: string;
         artist: string;
         image?: string;
