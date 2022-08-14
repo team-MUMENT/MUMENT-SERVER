@@ -130,4 +130,4 @@ export default {
     getMumentListDummy,
     myHistoryDummy,
     todaySelectionDummy,
-};
+}
