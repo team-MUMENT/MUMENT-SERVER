@@ -29,56 +29,63 @@ import { BannerSelectionInfo } from '../interfaces/home/BannerSelectionInfo';
 import { AgainMumentResponseDto } from '../interfaces/mument/AgainMumentResponseDto';
 import { AgainSelectionInfo } from '../interfaces/home/AgainSelectionInfo';
 import AgainSelection from '../models/AgainSelection';
+import dummyData from '../modules/dummyData'; // 임시 더미 데이터
 
+/** 
+ * 뮤멘트 기록하기
+*/
 const createMument = async (userId: string, musicId: string, mumentCreateDto: MumentCreateDto): Promise<PostBaseResponseDto | null> => {
     try {
-        const user = await User.findById(userId);
-        if (!user) return null;
+        /**
+         * ✅몽고디비 연결 임시 주석처리 + 변수에 임시로 더미 넣어둠
+         */
+        // const user = await User.findById(userId);
+        // if (!user) return null;
 
-        const music = await Music.findById(musicId);
-        if (!music) return null;
+        // const music = await Music.findById(musicId);
+        // if (!music) return null;
 
-        const mument = new Mument({
-            music: {
-                _id: musicId,
-            },
-            user: {
-                _id: userId,
-                name: user.name,
-                image: user.image,
-            },
-            isFirst: mumentCreateDto.isFirst,
-            impressionTag: mumentCreateDto.impressionTag,
-            feelingTag: mumentCreateDto.feelingTag,
-            content: mumentCreateDto.content ? mumentCreateDto.content : null,
-            isPrivate: mumentCreateDto.isPrivate,
-        });
+        // const mument = new Mument({
+        //     music: {
+        //         _id: musicId,
+        //     },
+        //     user: {
+        //         _id: userId,
+        //         name: user.name,
+        //         image: user.image,
+        //     },
+        //     isFirst: mumentCreateDto.isFirst,
+        //     impressionTag: mumentCreateDto.impressionTag,
+        //     feelingTag: mumentCreateDto.feelingTag,
+        //     content: mumentCreateDto.content ? mumentCreateDto.content : null,
+        //     isPrivate: mumentCreateDto.isPrivate,
+        // });
+        //const savedMument = await mument.save();
 
-        const savedMument = await mument.save();
+        // // 조건에 부합하면 homeCandidate collection에도 저장 -> RDB에서는 homeCandidate 없음 
+        // if (mumentCreateDto.isPrivate === false && mumentCreateDto.content) {
+        //     const date = dayjs(savedMument.createdAt).format('D MMM, YYYY');
 
-        // 조건에 부합하면 homeCandidate collection에도 저장
-        if (mumentCreateDto.isPrivate === false && mumentCreateDto.content) {
-            const date = dayjs(savedMument.createdAt).format('D MMM, YYYY');
+        //     const homeCandidateMument = new HomeCandidate({
+        //         mumentId: savedMument._id,
+        //         music: music,
+        //         user: {
+        //             _id: user._id,
+        //             name: user.name,
+        //             image: user.image,
+        //         },
+        //         isFirst: mumentCreateDto.isFirst,
+        //         impressionTag: mumentCreateDto.impressionTag,
+        //         feelingTag: mumentCreateDto.feelingTag,
+        //         content: mumentCreateDto.content,
+        //         isPrivate: mumentCreateDto.isPrivate,
+        //         createdAt: savedMument.createdAt,
+        //         date,
+        //     });
 
-            const homeCandidateMument = new HomeCandidate({
-                mumentId: savedMument._id,
-                music: music,
-                user: {
-                    _id: user._id,
-                    name: user.name,
-                    image: user.image,
-                },
-                isFirst: mumentCreateDto.isFirst,
-                impressionTag: mumentCreateDto.impressionTag,
-                feelingTag: mumentCreateDto.feelingTag,
-                content: mumentCreateDto.content,
-                isPrivate: mumentCreateDto.isPrivate,
-                createdAt: savedMument.createdAt,
-                date,
-            });
-
-            await homeCandidateMument.save();
-        }
+        //     await homeCandidateMument.save();
+        // }
+        const mument = dummyData.mumentDummy;
 
         const data = {
             _id: mument._id,
@@ -91,65 +98,71 @@ const createMument = async (userId: string, musicId: string, mumentCreateDto: Mu
     }
 };
 
+/**
+ * 뮤멘트 수정하기
+ */
 const updateMument = async (mumentId: string, mumentUpdateDto: MumentCreateDto): Promise<PostBaseResponseDto | null> => {
     try {
-        const mument = await Mument.findById(mumentId);
-        if (!mument) return null;
+        /**
+         * ✅몽고디비 연결 임시 주석처리 + 변수에 임시로 더미 넣어둠
+         */
+        // const mument = await Mument.findById(mumentId);
+        // if (!mument) return null;
 
+        // // 공개글에서 비밀글로 수정한 경우
+        // if (mumentUpdateDto.isPrivate !== undefined) {
+        //     if (mument.isPrivate === false && mumentUpdateDto.isPrivate === true) {
+        //         await Mument.findByIdAndUpdate(mumentId, {
+        //             $set: {
+        //                 isFirst: mumentUpdateDto.isFirst,
+        //                 impressionTag: mumentUpdateDto.impressionTag,
+        //                 feelingTag: mumentUpdateDto.feelingTag,
+        //                 content: mumentUpdateDto.content ? mumentUpdateDto.content : null,
+        //                 isPrivate: mumentUpdateDto.isPrivate ? mumentUpdateDto.isPrivate : false,
+        //                 likeCount: 0, // 좋아요 수 초기화
+        //             },
+        //         });
+
+        //         //모든 유저의 Like에서 뮤멘트 제거 - 좋아요 삭제
+        //         await Like.updateMany(
+        //             {},
+        //             {
+        //                 $pull: { mument: { _id: mumentId } },
+        //             },
+        //         );
+
+        //         return data;
+        //     }
+        // }
+
+        // //뮤멘트 업데이트
+        // await Mument.findByIdAndUpdate(mumentId, {
+        //     $set: {
+        //         isFirst: mumentUpdateDto.isFirst,
+        //         impressionTag: mumentUpdateDto.impressionTag,
+        //         feelingTag: mumentUpdateDto.feelingTag,
+        //         content: mumentUpdateDto.content != undefined ? mumentUpdateDto.content : null,
+        //         isPrivate: mumentUpdateDto.isPrivate != undefined ? mumentUpdateDto.isPrivate : false,
+        //     },
+        // });
+
+        // //모든 유저의 뮤멘트 업데이트
+        // await Like.updateMany(
+        //     { mument: { $elemMatch: { _id: mumentId } } },
+        //     {
+        //         $set: {
+        //             'mument.$.isFirst': mumentUpdateDto.isFirst,
+        //             'mument.$.impressionTag': mumentUpdateDto.impressionTag,
+        //             'mument.$.feelingTag': mumentUpdateDto.feelingTag,
+        //             'mument.$.content': mumentUpdateDto.content != undefined ? mumentUpdateDto.content : null,
+        //             'mument.$.isPrivate': mumentUpdateDto.isPrivate != undefined ? mumentUpdateDto.isPrivate : false,
+        //         },
+        //     },
+        // );
+        const mument = dummyData.mumentDummy;
         const data = {
             _id: mument._id,
         };
-
-        // 공개글에서 비밀글로 수정한 경우
-        if (mumentUpdateDto.isPrivate !== undefined) {
-            if (mument.isPrivate === false && mumentUpdateDto.isPrivate === true) {
-                await Mument.findByIdAndUpdate(mumentId, {
-                    $set: {
-                        isFirst: mumentUpdateDto.isFirst,
-                        impressionTag: mumentUpdateDto.impressionTag,
-                        feelingTag: mumentUpdateDto.feelingTag,
-                        content: mumentUpdateDto.content ? mumentUpdateDto.content : null,
-                        isPrivate: mumentUpdateDto.isPrivate ? mumentUpdateDto.isPrivate : false,
-                        likeCount: 0, // 좋아요 수 초기화
-                    },
-                });
-
-                //모든 유저의 Like에서 뮤멘트 제거 - 좋아요 삭제
-                await Like.updateMany(
-                    {},
-                    {
-                        $pull: { mument: { _id: mumentId } },
-                    },
-                );
-
-                return data;
-            }
-        }
-
-        //뮤멘트 업데이트
-        await Mument.findByIdAndUpdate(mumentId, {
-            $set: {
-                isFirst: mumentUpdateDto.isFirst,
-                impressionTag: mumentUpdateDto.impressionTag,
-                feelingTag: mumentUpdateDto.feelingTag,
-                content: mumentUpdateDto.content != undefined ? mumentUpdateDto.content : null,
-                isPrivate: mumentUpdateDto.isPrivate != undefined ? mumentUpdateDto.isPrivate : false,
-            },
-        });
-
-        //모든 유저의 뮤멘트 업데이트
-        await Like.updateMany(
-            { mument: { $elemMatch: { _id: mumentId } } },
-            {
-                $set: {
-                    'mument.$.isFirst': mumentUpdateDto.isFirst,
-                    'mument.$.impressionTag': mumentUpdateDto.impressionTag,
-                    'mument.$.feelingTag': mumentUpdateDto.feelingTag,
-                    'mument.$.content': mumentUpdateDto.content != undefined ? mumentUpdateDto.content : null,
-                    'mument.$.isPrivate': mumentUpdateDto.isPrivate != undefined ? mumentUpdateDto.isPrivate : false,
-                },
-            },
-        );
 
         return data;
     } catch (error) {
@@ -158,40 +171,51 @@ const updateMument = async (mumentId: string, mumentUpdateDto: MumentCreateDto):
     }
 };
 
+/**
+ * 뮤멘트 상세보기
+ */
 const getMument = async (mumentId: string, userId: string): Promise<MumentResponseDto | null | number> => {
     try {
-        const mument = await Mument.findById(mumentId);
+        /**
+        * ✅몽고디비 연결 임시 주석처리 + 변수에 임시로 더미 넣어둠
+        */       
+        const mument = dummyData.mumentDummy;
+        // const mument = await Mument.findById(mumentId);
         if (!mument) return null;
 
-        const loginUser = await User.findById(userId);
+        const loginUser = dummyData.userDummy;
+        // const loginUser = await User.findById(userId);
         if (!loginUser) return null;
 
         if (mument.isPrivate === true && mument.user._id.toString() !== userId) return constant.PRIVATE_MUMENT;
 
-        const music = await Music.findById(mument.music._id);
+        const music = dummyData.musicDummy;
+        // const music = await Music.findById(mument.music._id);
         if (!music) return null;
 
-        const isLiked = await Like.findOne({
-            $and: [
-                {
-                    mument: { $elemMatch: { _id: mumentId } },
-                },
-                {
-                    'user._id': { $eq: userId },
-                },
-            ],
-        });
+        const isLiked = false;
+        // const isLiked = await Like.findOne({
+        //     $and: [
+        //         {
+        //             mument: { $elemMatch: { _id: mumentId } },
+        //         },
+        //         {
+        //             'user._id': { $eq: userId },
+        //         },
+        //     ],
+        // });
 
-        const historyCount = await Mument.countDocuments({
-            $and: [
-                {
-                    'music._id': { $eq: mument.music._id },
-                },
-                {
-                    'user._id': { $eq: mument.user._id },
-                },
-            ],
-        });
+        const historyCount = 0;
+        // const historyCount = await Mument.countDocuments({
+        //     $and: [
+        //         {
+        //             'music._id': { $eq: mument.music._id },
+        //         },
+        //         {
+        //             'user._id': { $eq: mument.user._id },
+        //         },
+        //     ],
+        // });
 
         const createdTime = dayjs(mument.createdAt).format('YYYY.MM.DD h:mm A');
 
@@ -224,46 +248,62 @@ const getMument = async (mumentId: string, userId: string): Promise<MumentRespon
     }
 };
 
+/** 
+ * 뮤멘트 삭제하기
+*/
 const deleteMument = async (mumentId: string): Promise<void | null> => {
     try {
-        //Mument soft delete
-        await Mument.findByIdAndUpdate(mumentId, {
-            $set: {
-                isDeleted: true,
-            },
-        });
+        /**
+         * ✅몽고디비 연결 임시 주석처리
+         */
+        // 추가 - 이미 isDelted 된거면 오류 메시지
+    
+        // //Mument soft delete
+        // await Mument.findByIdAndUpdate(mumentId, {
+        //     $set: {
+        //         isDeleted: true,
+        //     },
+        // });
 
-        //Like에서 Mument 제거
-        await Like.updateMany(
-            {},
-            {
-                $pull: { mument: { _id: mumentId } },
-            },
-        );
+        // //Like에서 Mument 제거
+        // await Like.updateMany(
+        //     {},
+        //     {
+        //         $pull: { mument: { _id: mumentId } },
+        //     },
+        // );
     } catch (error) {
         console.log(error);
         throw error;
     }
 };
 
+/**
+ * 처음/다시 들어요 선택
+ */
 const getIsFirst = async (userId: string, musicId: string): Promise<IsFirstResponseDto | null> => {
     try {
-        const music = await Music.findById(musicId);
+        /**
+         * ✅몽고디비 연결 임시 주석처리 + 변수에 임시로 더미 넣어둠
+         */
+        const music = dummyData.musicDummy;
+        // const music = await Music.findById(musicId);
         if (!music) return null;
-
-        const userMument = await Mument.find({
-            $and: [
-                {
-                    'user._id': { $eq: userId },
-                },
-                {
-                    'music._id': { $eq: musicId },
-                },
-                {
-                    isDeleted: { $eq: false },
-                },
-            ],
-        });
+        
+        const userMument = [dummyData.mumentDummy, dummyData.mumentDummy];
+        // const userMument = await Mument.find({
+        //     $and: [
+        //         {
+        //             'user._id': { $eq: userId },
+        //         },
+        //         {
+        //             'music._id': { $eq: musicId },
+        //         },
+        //         {
+        //             isDeleted: { $eq: false },
+        //         },
+        //     ],
+        // });
 
         if (userMument.length === 0) {
             // 뮤멘트 기록이 처음인 경우
@@ -296,99 +336,105 @@ const getIsFirst = async (userId: string, musicId: string): Promise<IsFirstRespo
     }
 };
 
+/**
+ * 나의 히스토리
+ */
 const getMumentHistory = async (userId: string, musicId: string, isLatestOrder: boolean): Promise<MumentHistoryResponseDto | null> => {
     try {
-        // 음악 정보 조회
-        const music = await Music.findById(musicId);
+        /**
+         * ✅몽고디비 연결 임시 주석처리 + 변수에 임시로 더미 넣어둠
+         */
+        // // 음악 정보 조회
+        // const music = await Music.findById(musicId);
 
-        // 음악이 존재하지 않으면 null 리턴
-        if (!music) {
-            return null;
-        }
+        // // 음악이 존재하지 않으면 null 리턴
+        // if (!music) {
+        //     return null;
+        // }
 
-        let originalMumentList;
+        // let originalMumentList;
 
-        // 해당 유저가 쓴 뮤멘트 전부 조회
-        switch (isLatestOrder) {
-            case true: {
-                // 최신순 정렬
-                originalMumentList = await Mument.find({
-                    'user._id': userId,
-                    'music._id': musicId,
-                    isDeleted: false,
-                }).sort({
-                    createdAt: -1,
-                });
-                break;
-            }
-            case false: {
-                // 오래된순 정렬
-                originalMumentList = await Mument.find({
-                    'user._id': userId,
-                    'music._id': musicId,
-                    isDeleted: false,
-                }).sort({
-                    createdAt: 1,
-                });
-                break;
-            }
-        }
+        // // 해당 유저가 쓴 뮤멘트 전부 조회
+        // switch (isLatestOrder) {
+        //     case true: {
+        //         // 최신순 정렬
+        //         originalMumentList = await Mument.find({
+        //             'user._id': userId,
+        //             'music._id': musicId,
+        //             isDeleted: false,
+        //         }).sort({
+        //             createdAt: -1,
+        //         });
+        //         break;
+        //     }
+        //     case false: {
+        //         // 오래된순 정렬
+        //         originalMumentList = await Mument.find({
+        //             'user._id': userId,
+        //             'music._id': musicId,
+        //             isDeleted: false,
+        //         }).sort({
+        //             createdAt: 1,
+        //         });
+        //         break;
+        //     }
+        // }
 
-        // 결과값이 없을 경우
-        if (originalMumentList.length === 0) {
-            const data: MumentHistoryResponseDto = {
-                music,
-                mumentHistory: [],
-            };
+        // // 결과값이 없을 경우
+        // if (originalMumentList.length === 0) {
+        //     const data: MumentHistoryResponseDto = {
+        //         music,
+        //         mumentHistory: [],
+        //     };
 
-            return data;
-        }
+        //     return data;
+        // }
 
-        // mumentId array 리턴
-        const mumentIdList = originalMumentList.map(mument => mument._id);
+        // // mumentId array 리턴
+        // const mumentIdList = originalMumentList.map(mument => mument._id);
 
-        // 해당 유저아이디의 document에서 mumentIdList find
-        const likeList = await Like.find({
-            'user._id': userId,
-            'mument._id': { $in: mumentIdList },
-        });
+        // // 해당 유저아이디의 document에서 mumentIdList find
+        // const likeList = await Like.find({
+        //     'user._id': userId,
+        //     'mument._id': { $in: mumentIdList },
+        // });
 
-        // map 함수 사용을 위해 날짜 가공해주는 함수
-        const createDate = (createdAt: Date): string => {
-            const date = dayjs(createdAt).format('D MMM, YYYY');
-            return date;
-        };
+        // // map 함수 사용을 위해 날짜 가공해주는 함수
+        // const createDate = (createdAt: Date): string => {
+        //     const date = dayjs(createdAt).format('D MMM, YYYY');
+        //     return date;
+        // };
 
-        // 최종 리턴될 data
-        const mumentHistory: MumentCardViewInterface[] = [];
-        originalMumentList.reduce((ac: MumentCardViewInterface[], cur, index) => {
-            // 카드뷰 태그 리스트
-            const cardTag: number[] = [];
-            const impressionTagLength = cur.impressionTag.length;
-            const feelingTagLength = cur.feelingTag.length;
+        // // 최종 리턴될 data
+        // const mumentHistory: MumentCardViewInterface[] = [];
+        // originalMumentList.reduce((ac: MumentCardViewInterface[], cur, index) => {
+        //     // 카드뷰 태그 리스트
+        //     const cardTag: number[] = [];
+        //     const impressionTagLength = cur.impressionTag.length;
+        //     const feelingTagLength = cur.feelingTag.length;
 
-            if (impressionTagLength >= 1 && feelingTagLength >= 1) {
-                cardTag.push(cur.impressionTag[0], cur.feelingTag[0]);
-            } else if (impressionTagLength >= 1 && feelingTagLength < 1) {
-                cardTag.push(...cur.impressionTag.slice(0, 2));
-            } else if (impressionTagLength < 1 && feelingTagLength >= 1) {
-                cardTag.push(...cur.feelingTag.slice(0, 2));
-            }
+        //     if (impressionTagLength >= 1 && feelingTagLength >= 1) {
+        //         cardTag.push(cur.impressionTag[0], cur.feelingTag[0]);
+        //     } else if (impressionTagLength >= 1 && feelingTagLength < 1) {
+        //         cardTag.push(...cur.impressionTag.slice(0, 2));
+        //     } else if (impressionTagLength < 1 && feelingTagLength >= 1) {
+        //         cardTag.push(...cur.feelingTag.slice(0, 2));
+        //     }
 
-            mumentHistory[index] = {
-                ...cur.toObject(),
-                cardTag: cardTag,
-                date: createDate(cur.createdAt),
-                isLiked: Boolean(mumentIdList[index] in likeList),
-            };
-            return mumentHistory;
-        }, []);
+        //     mumentHistory[index] = {
+        //         ...cur.toObject(),
+        //         cardTag: cardTag,
+        //         date: createDate(cur.createdAt),
+        //         isLiked: Boolean(mumentIdList[index] in likeList),
+        //     };
+        //     return mumentHistory;
+        // }, []);
 
-        const data: MumentHistoryResponseDto = {
-            music,
-            mumentHistory,
-        };
-
+        // const data: MumentHistoryResponseDto = {
+        //     music,
+        //     mumentHistory,
+        // };
+        const data: MumentHistoryResponseDto = dummyData.myHistoryDummy;
         return data;
     } catch (error) {
         console.log(error);
@@ -396,54 +442,63 @@ const getMumentHistory = async (userId: string, musicId: string, isLatestOrder: 
     }
 };
 
-// 좋아요 등록
+/**
+ * 뮤멘트 좋아요 등록 
+*/ 
 const createLike = async (mumentId: string, userId: string): Promise<LikeCountResponeDto | null | number> => {
     try {
-        // 해당 뮤멘트의 likeCount를 +1 해주고, 업데이트 이후의 값을 리턴
-        const updatedMument = await Mument.findOneAndUpdate({ _id: mumentId }, { $inc: { likeCount: +1 } }, { returnDocument: 'after' });
+        /**
+         * ✅몽고디비 연결 임시 주석처리 + 변수에 임시로 더미 넣어둠
+         */
+        // // 해당 뮤멘트의 likeCount를 +1 해주고, 업데이트 이후의 값을 리턴
+        // const updatedMument = await Mument.findOneAndUpdate({ _id: mumentId }, { $inc: { likeCount: +1 } }, { returnDocument: 'after' });
 
-        // 업데이트에 문제가 생겼을 경우 return null
-        if (!updatedMument) {
-            return null;
-        }
+        // // 업데이트에 문제가 생겼을 경우 return null
+        // if (!updatedMument) {
+        //     return null;
+        // }
 
-        // like 콜렉션에 추가하기 위해 music 정보 조회
-        const music = await Music.findById(updatedMument.music._id);
+        // // like 콜렉션에 추가하기 위해 music 정보 조회
+        // const music = await Music.findById(updatedMument.music._id);
 
-        // music 정보가 없으면 return NO_MUSIC
-        if (!music) {
-            return constant.NO_MUSIC;
-        }
+        // // music 정보가 없으면 return NO_MUSIC
+        // if (!music) {
+        //     return constant.NO_MUSIC;
+        // }
 
-        // like 콜렉션에 추가할 뮤멘트
-        const likedMument: LikeMumentInfo = {
-            _id: updatedMument._id,
-            user: {
-                _id: updatedMument.user._id,
-                name: updatedMument.user.name,
-                image: updatedMument.user.image,
-            },
-            music: {
-                name: music.name,
-                artist: music.artist,
-                image: music.image,
-            },
-            isFirst: updatedMument.isFirst,
-            impressionTag: updatedMument.impressionTag,
-            feelingTag: updatedMument.feelingTag,
-            content: updatedMument.content,
-            isPrivate: updatedMument.isPrivate,
-            createdAt: updatedMument.createdAt,
-        };
+        // // like 콜렉션에 추가할 뮤멘트
+        // const likedMument: LikeMumentInfo = {
+        //     _id: updatedMument._id,
+        //     user: {
+        //         _id: updatedMument.user._id,
+        //         name: updatedMument.user.name,
+        //         image: updatedMument.user.image,
+        //     },
+        //     music: {
+        //         name: music.name,
+        //         artist: music.artist,
+        //         image: music.image,
+        //     },
+        //     isFirst: updatedMument.isFirst,
+        //     impressionTag: updatedMument.impressionTag,
+        //     feelingTag: updatedMument.feelingTag,
+        //     content: updatedMument.content,
+        //     isPrivate: updatedMument.isPrivate,
+        //     createdAt: updatedMument.createdAt,
+        // };
 
-        // like 콜렉션에 해당 뮤멘트 추가
-        await Like.updateOne({ 'user._id': userId }, { $push: { mument: likedMument } }, { upsert: true });
+        // // like 콜렉션에 해당 뮤멘트 추가
+        // await Like.updateOne({ 'user._id': userId }, { $push: { mument: likedMument } }, { upsert: true });
 
-        // 리턴 데이터
+        // // 리턴 데이터
+        // const data: LikeCountResponeDto = {
+        //     mumentId: updatedMument._id,
+        //     likeCount: updatedMument.likeCount,
+        // };
         const data: LikeCountResponeDto = {
-            mumentId: updatedMument._id,
-            likeCount: updatedMument.likeCount,
-        };
+            mumentId: dummyData.mumentDummy._id,
+            likeCount: 0
+        }
 
         return data;
     } catch (error) {
@@ -452,24 +507,33 @@ const createLike = async (mumentId: string, userId: string): Promise<LikeCountRe
     }
 };
 
-// 좋아요 취소
+/**
+ * 뮤멘트 좋아요 취소
+ */
 const deleteLike = async (mumentId: string, userId: string): Promise<LikeCountResponeDto | null | number> => {
     try {
-        // 해당 뮤멘트의 likeCount를 -1 해주고, 업데이트 이후의 값을 리턴
-        const updatedMument = await Mument.findOneAndUpdate({ _id: mumentId }, { $inc: { likeCount: -1 } }, { returnDocument: 'after' });
+        /**
+         * ✅몽고디비 연결 임시 주석처리 + 변수에 임시로 더미 넣어둠
+         */
+        // // 해당 뮤멘트의 likeCount를 -1 해주고, 업데이트 이후의 값을 리턴
+        // const updatedMument = await Mument.findOneAndUpdate({ _id: mumentId }, { $inc: { likeCount: -1 } }, { returnDocument: 'after' });
 
-        // 업데이트에 문제가 생겼을 경우 return null
-        if (!updatedMument) {
-            return null;
-        }
+        // // 업데이트에 문제가 생겼을 경우 return null
+        // if (!updatedMument) {
+        //     return null;
+        // }
 
-        // like collection에서 해당 뮤멘트 삭제
-        await Like.updateOne({ 'user._id': userId }, { $pull: { mument: { _id: updatedMument._id } } });
+        // // like collection에서 해당 뮤멘트 삭제
+        // await Like.updateOne({ 'user._id': userId }, { $pull: { mument: { _id: updatedMument._id } } });
 
-        // 리턴 데이터
+        // // 리턴 데이터
+        // const data: LikeCountResponeDto = {
+        //     mumentId: updatedMument._id,
+        //     likeCount: updatedMument.likeCount,
+        // };
         const data: LikeCountResponeDto = {
-            mumentId: updatedMument._id,
-            likeCount: updatedMument.likeCount,
+            mumentId: dummyData.mumentDummy._id,
+            likeCount: -1
         };
 
         return data;
@@ -511,6 +575,10 @@ const getRandomMument = async (): Promise<RandomMumentResponseDto | null> => {
 
         const tagTitle: string = tagRandomTitle[detailTag as keyof typeof tagRandomTitle];
 
+
+        /**
+         * ✅몽고디비 연결 임시 주석처리 + 변수에 임시로 더미 넣어둠
+         */
         // 조건에 맞는 랜덤 뮤멘트 가져오기
         const randomMumentList: RandomMumentInterface[] = await HomeCandidate.aggregate([
             { $match: { $and: [{ isDeleted: false }, { isPrivate: false }, { $or: [{ impressionTag: detailTag }, { feelingTag: detailTag }] }] } },
@@ -541,6 +609,10 @@ const getTodayMument = async (): Promise<TodayMumentResponseDto | number> => {
         const todayUtcDate = dayjs(todayMidnight).utc().format();
         const todayDate = dayjs(todayMidnight).format('YYYY-MM-DD');
 
+
+        /**
+         * ✅몽고디비 연결 임시 주석처리 + 변수에 임시로 더미 넣어둠
+         */        
         const todayMument = await TodaySelection.findOne({
             displayDate: todayUtcDate,
         });
@@ -571,6 +643,10 @@ const getBanner = async (): Promise<TodayBannerResponseDto | number> => {
 
         const todayDate = dayjs().format('YYYY-MM-DD');
 
+
+        /**
+         * ✅몽고디비 연결 임시 주석처리 + 변수에 임시로 더미 넣어둠
+         */
         const bannerList: BannerSelectionInfo[] = await BannerSelection.find({
             displayDate: mondayMidnight,
         });
@@ -599,6 +675,10 @@ const getAgainMument = async (): Promise<AgainMumentResponseDto | number> => {
         const todayUtcDate = dayjs(todayMidnight).utc().format();
         const todayDate = dayjs(todayMidnight).format('YYYY-MM-DD');
 
+
+        /**
+         * ✅몽고디비 연결 임시 주석처리 + 변수에 임시로 더미 넣어둠
+         */
         const againMument: AgainSelectionInfo[] = await AgainSelection.find({
             displayDate: todayUtcDate,
         });
