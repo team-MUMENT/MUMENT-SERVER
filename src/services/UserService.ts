@@ -17,9 +17,12 @@ import pools from '../modules/pool';
  */
 const getMyMumentList = async (userId: string, tagList: number[]): Promise<UserMumentListResponseDto | null> => {
     try {
-        // ✅ mySql connection 쿼리 테스트 - 후에 삭제
+        // ✅ mySql connection query 테스트 - 후에 삭제
         const query = 'SELECT * FROM user';
         const result = await pools.query(query);
+        // ✅ mySql connection queryValue 테스트 - 후에 삭제
+        const query2= 'INSERT INTO user(name, profile_id, image) VALUES (?, ?, ?)';
+        await pools.queryValue(query2, ['쿼리테스트유저', 'querytestuser', 'http'])
 
         /**
          * ✅몽고디비 연결 임시 주석처리 + 변수에 임시로 더미 넣어둠
