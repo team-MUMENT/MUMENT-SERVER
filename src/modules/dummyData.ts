@@ -1,17 +1,26 @@
 import mongoose from "mongoose";
 
-// 마이그레이션을 위한 임시 더미
+/**
+ * 마이그레이션을 위한 임시 더미 데이터
+*/ 
 const musicDummy = {
     "_id": new mongoose.Types.ObjectId("62cd4416177f6e81ee8fa398"),
     "name": "더미 음악 제목",
     "artist": "THAMA",
-    "image": "https://mument.s3.ap-northeast-2.amazonaws.com/music/Chill%EC%9D%B4%EB%9E%80+%EB%82%B1%EB%A7%90%EC%9D%98+%EC%A1%B4%EC%9E%AC%EC%9D%B4%EC%9C%A0+(Feat.+Verbal+Jint)+-+THAMA.jpg"
+    "image": "dummy.jpg"
 };
 
 const userDummy = {
     "_id": new mongoose.Types.ObjectId("62cd5d4383956edb45d7d0ef"),
     "name": "유저더미",
-    "image": "https://mument.s3.ap-northeast-2.amazonaws.com/music/Chill%EC%9D%B4%EB%9E%80+%EB%82%B1%EB%A7%90%EC%9D%98+%EC%A1%B4%EC%9E%AC%EC%9D%B4%EC%9C%A0+(Feat.+Verbal+Jint)+-+THAMA.jpg"
+    "image": "dummy.jpg"
+};
+
+const loginDummy = {
+    "id": new mongoose.Types.ObjectId("62cd5d4383956edb45d7d0ef"),
+    "name": "유저더미",
+    "profileId": "user",
+    "image": "dummy.jpg"
 };
 
 const mumentDummy = {
@@ -22,7 +31,7 @@ const mumentDummy = {
     "user": {
         "_id": new mongoose.Types.ObjectId("62cd5d4383956edb45d7d0ef"),
         "name": "유저더미",
-        "image": "https://mument.s3.ap-northeast-2.amazonaws.com/music/Chill%EC%9D%B4%EB%9E%80+%EB%82%B1%EB%A7%90%EC%9D%98+%EC%A1%B4%EC%9E%AC%EC%9D%B4%EC%9C%A0+(Feat.+Verbal+Jint)+-+THAMA.jpg"
+        "image": "dummy.jpg"
     },
     "isFirst": true,
     "impressionTag": [
@@ -55,7 +64,7 @@ const getMumentListDummy = {
             "user": {
                 "_id": new mongoose.Types.ObjectId("62cd5d4383956edb45d7d0ef"),
                 "name": "더미유저",
-                "image": "https://mument.s3.ap-northeast-2.amazonaws.com/music/Chill%EC%9D%B4%EB%9E%80+%EB%82%B1%EB%A7%90%EC%9D%98+%EC%A1%B4%EC%9E%AC%EC%9D%B4%EC%9C%A0+(Feat.+Verbal+Jint)+-+THAMA.jpg"
+                "image": "dummy.jpg"
             },
             "isFirst": true,
             "impressionTag": [
@@ -90,10 +99,35 @@ const myHistoryDummy = {
     "mumentHistory": getMumentListDummy["mumentList"]
 };
 
+// 홈 임시 data
+const todaySelectionDummy = {
+    "mumentId": new mongoose.Types.ObjectId("62cd6d136500907694a2a548"),
+    "music": {
+        "_id": "62cd4416177f6e81ee8fa398",
+        "name": "더미 음악 제목",
+        "artist": "THAMA"
+    },
+    "user": {
+        "_id": "62cd5d4383956edb45d7d0ef",
+        "name": "유저더미",
+        "image": "dummy.jpg"
+    },
+    "content": "더미 텍스트",
+    "isFirst": false,
+    "feelingTag": [],
+    "impressionTag": [],
+    "cardTag": [],
+    "createdAt": new Date("2022-07-12T12:46:11.591Z"),
+    "date": "20 Jul, 2022",
+    "displayDate": new Date("2022-07-18T20:18:51.026Z")
+};
+
 export default {
     musicDummy,
     userDummy,
+    loginDummy,
     mumentDummy,
     getMumentListDummy,
     myHistoryDummy,
+    todaySelectionDummy,
 };

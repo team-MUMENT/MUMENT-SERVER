@@ -577,18 +577,21 @@ const getRandomMument = async (): Promise<RandomMumentResponseDto | null> => {
 
 
         /**
-         * ✅몽고디비 연결 임시 주석처리 + 변수에 임시로 더미 넣어둠
+         * ✅몽고디비 연결 임시 주석처리 + data 변수에 임시로 더미 넣어둠
          */
-        // 조건에 맞는 랜덤 뮤멘트 가져오기
-        const randomMumentList: RandomMumentInterface[] = await HomeCandidate.aggregate([
-            { $match: { $and: [{ isDeleted: false }, { isPrivate: false }, { $or: [{ impressionTag: detailTag }, { feelingTag: detailTag }] }] } },
-            { $sample: { size: 3 } },
-            { $project: { _id: '$mumentId', music: { name: 1, artist: 1 }, user: { name: 1, image: 1 }, impressionTag: 1, feelingTag: 1, content: 1, createdAt: 1 } },
-        ]);
-
+        // // 조건에 맞는 랜덤 뮤멘트 가져오기
+        // const randomMumentList: RandomMumentInterface[] = await HomeCandidate.aggregate([
+        //     { $match: { $and: [{ isDeleted: false }, { isPrivate: false }, { $or: [{ impressionTag: detailTag }, { feelingTag: detailTag }] }] } },
+        //     { $sample: { size: 3 } },
+        //     { $project: { _id: '$mumentId', music: { name: 1, artist: 1 }, user: { name: 1, image: 1 }, impressionTag: 1, feelingTag: 1, content: 1, createdAt: 1 } },
+        // ]);
+        // const data: RandomMumentResponseDto = {
+        //     title: tagTitle,
+        //     mumentList: randomMumentList,
+        // };
         const data: RandomMumentResponseDto = {
             title: tagTitle,
-            mumentList: randomMumentList,
+            mumentList: []
         };
 
         return data;
@@ -613,17 +616,21 @@ const getTodayMument = async (): Promise<TodayMumentResponseDto | number> => {
         /**
          * ✅몽고디비 연결 임시 주석처리 + 변수에 임시로 더미 넣어둠
          */        
-        const todayMument = await TodaySelection.findOne({
-            displayDate: todayUtcDate,
-        });
+        // const todayMument = await TodaySelection.findOne({
+        //     displayDate: todayUtcDate,
+        // });
 
-        if (!todayMument) {
-            return constant.NO_HOME_CONTENT;
-        }
+        // if (!todayMument) {
+        //     return constant.NO_HOME_CONTENT;
+        // }
 
+        // const data: TodayMumentResponseDto = {
+        //     todayDate,
+        //     todayMument,
+        // };
         const data: TodayMumentResponseDto = {
-            todayDate,
-            todayMument,
+            todayDate: todayDate,
+            todayMument: dummyData.todaySelectionDummy
         };
 
         return data;
@@ -633,7 +640,7 @@ const getTodayMument = async (): Promise<TodayMumentResponseDto | number> => {
     }
 };
 
-// 배너 조회
+// 배너
 const getBanner = async (): Promise<TodayBannerResponseDto | number> => {
     try {
         dayjs.extend(utc);
@@ -645,19 +652,23 @@ const getBanner = async (): Promise<TodayBannerResponseDto | number> => {
 
 
         /**
-         * ✅몽고디비 연결 임시 주석처리 + 변수에 임시로 더미 넣어둠
+         * ✅몽고디비 연결 임시 주석처리 + data 변수에 임시로 더미 넣어둠
          */
-        const bannerList: BannerSelectionInfo[] = await BannerSelection.find({
-            displayDate: mondayMidnight,
-        });
+        // const bannerList: BannerSelectionInfo[] = await BannerSelection.find({
+        //     displayDate: mondayMidnight,
+        // });
 
-        if (bannerList.length === 0) return constant.NO_HOME_CONTENT;
+        // if (bannerList.length === 0) return constant.NO_HOME_CONTENT;
 
+        // const data: TodayBannerResponseDto = {
+        //     todayDate,
+        //     bannerList,
+        // };
         const data: TodayBannerResponseDto = {
-            todayDate,
-            bannerList,
+            todayDate: todayDate,
+            bannerList: []
         };
-
+        
         return data;
     } catch (error) {
         console.log(error);
@@ -677,19 +688,23 @@ const getAgainMument = async (): Promise<AgainMumentResponseDto | number> => {
 
 
         /**
-         * ✅몽고디비 연결 임시 주석처리 + 변수에 임시로 더미 넣어둠
+         * ✅몽고디비 연결 임시 주석처리 + data 변수에 임시로 더미 넣어둠
          */
-        const againMument: AgainSelectionInfo[] = await AgainSelection.find({
-            displayDate: todayUtcDate,
-        });
+        // const againMument: AgainSelectionInfo[] = await AgainSelection.find({
+        //     displayDate: todayUtcDate,
+        // });
 
-        if (!againMument) {
-            return constant.NO_HOME_CONTENT;
-        }
+        // if (!againMument) {
+        //     return constant.NO_HOME_CONTENT;
+        // }
 
+        // const data: AgainMumentResponseDto = {
+        //     todayDate,
+        //     againMument,
+        // };
         const data: AgainMumentResponseDto = {
             todayDate,
-            againMument,
+            againMument: []
         };
 
         return data;
