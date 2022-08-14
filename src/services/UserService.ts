@@ -11,12 +11,16 @@ import Like from '../models/Like';
 import User from '../models/User';
 import constant from '../modules/serviceReturnConstant';
 import dummyData from '../modules/dummyData';
-
+import pools from '../modules/pool';
 /**
  * 내가 작성한 뮤멘트 리스트
  */
 const getMyMumentList = async (userId: string, tagList: number[]): Promise<UserMumentListResponseDto | null> => {
     try {
+        // ✅ mySql connection 쿼리 테스트 - 후에 삭제
+        const query = 'SELECT * FROM user';
+        const result = await pools.query(query);
+
         /**
          * ✅몽고디비 연결 임시 주석처리 + 변수에 임시로 더미 넣어둠
          */

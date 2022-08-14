@@ -1,18 +1,16 @@
 import express, { Request, Response } from 'express';
 const app = express();
-import connectDB from './loaders/db';
 import routes from './routes';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 require('dotenv').config();
 
-connectDB();
-
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-app.use(routes); //라우터
-// error handler
+// router
+app.use(routes);
 
+// error handler
 interface ErrorType {
     message: string;
     status: number;
