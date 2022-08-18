@@ -10,19 +10,34 @@ import Music from '../models/Music';
 import Like from '../models/Like';
 import User from '../models/User';
 import constant from '../modules/serviceReturnConstant';
-
+import dummyData from '../modules/dummyData';
+import pools from '../modules/pool';
+/**
+ * 내가 작성한 뮤멘트 리스트
+ */
 const getMyMumentList = async (userId: string, tagList: number[]): Promise<UserMumentListResponseDto | null> => {
     try {
-        let myMumentList: MumentInfo[] = await Mument.find({
-            $and: [
-                {
-                    'user._id': { $eq: userId },
-                },
-                {
-                    isDeleted: { $eq: false },
-                },
-            ],
-        }).sort({ createdAt: -1 });
+        // ✅ mySql connection query 테스트 - 후에 삭제
+        const query = 'SELECT * FROM user';
+        const result = await pools.query(query);
+        // ✅ mySql connection queryValue 테스트 - 후에 삭제
+        const query2= 'INSERT INTO user(name, profile_id, image) VALUES (?, ?, ?)';
+        await pools.queryValue(query2, ['쿼리테스트유저', 'querytestuser', 'http'])
+
+        /**
+         * ✅몽고디비 연결 임시 주석처리 + 변수에 임시로 더미 넣어둠
+         */
+        let myMumentList = [dummyData.mumentDummy, dummyData.mumentDummy];
+        // let myMumentList: MumentInfo[] = await Mument.find({
+        //     $and: [
+        //         {
+        //             'user._id': { $eq: userId },
+        //         },
+        //         {
+        //             isDeleted: { $eq: false },
+        //         },
+        //     ],
+        // }).sort({ createdAt: -1 });
 
         if (!myMumentList) {
             return {
@@ -43,18 +58,23 @@ const getMyMumentList = async (userId: string, tagList: number[]): Promise<UserM
 
         const data = await Promise.all(
             myMumentList.map(async (mument: any) => {
-                const music = await Music.findById(mument.music._id);
+                /**
+                * ✅몽고디비 연결 임시 주석처리 + 변수에 임시로 더미 넣어둠
+                */
+                const music = dummyData.musicDummy;
+                //const music = await Music.findById(mument.music._id);
 
-                const isLiked = await Like.findOne({
-                    $and: [
-                        {
-                            mument: { $elemMatch: { _id: mument._id } },
-                        },
-                        {
-                            'user._id': { $eq: userId },
-                        },
-                    ],
-                });
+                const isLiked = false;
+                // const isLiked = await Like.findOne({
+                //     $and: [
+                //         {
+                //             mument: { $elemMatch: { _id: mument._id } },
+                //         },
+                //         {
+                //             'user._id': { $eq: userId },
+                //         },
+                //     ],
+                // });
 
                 // 카드뷰 태그 리스트
                 const cardTag: number[] = [];
@@ -110,24 +130,29 @@ const getMyMumentList = async (userId: string, tagList: number[]): Promise<UserM
 
 const getLikeMumentList = async (userId: string, tagList: number[]): Promise<UserMumentListResponseDto | null> => {
     try {
-        const myMumentList: LikeInfo | null = await Like.findOne({
-            'user._id': userId,
-        });
+        /**
+         * ✅몽고디비 연결 임시 주석처리 + 변수에 임시로 더미 넣어둠
+         */
+        let likeMumentList = [dummyData.mumentDummy, dummyData.mumentDummy];
+        // [dummyData.mumentDummy, dummyData.mumentDummy]
+        // const myMumentList: LikeInfo | null = await Like.findOne({
+        //     'user._id': userId,
+        // });
 
-        // 좋아요 기록이 없다고 판단할 수 있는 케이스 두 가지 처리
-        if (!myMumentList || (myMumentList && myMumentList.mument.length === 0)) {
-            return {
-                muments: [],
-            };
-        }
+        // // 좋아요 기록이 없다고 판단할 수 있는 케이스 두 가지 처리
+        // if (!myMumentList || (myMumentList && myMumentList.mument.length === 0)) {
+        //     return {
+        //         muments: [],
+        //     };
+        // }
 
-        myMumentList.mument.sort((a, b) => {
+        likeMumentList.sort((a, b) => {
             return +new Date(b.createdAt) - +new Date(a.createdAt);
         });
 
         // 필터링 태그 존재시 뮤멘트 필터링
         if (tagList.length > 0) {
-            myMumentList.mument = myMumentList.mument.filter(mument => {
+            likeMumentList = likeMumentList.filter(mument => {
                 const mumentTagList = mument.impressionTag.concat(mument.feelingTag);
 
                 return tagList.every(tag => {
@@ -137,7 +162,7 @@ const getLikeMumentList = async (userId: string, tagList: number[]): Promise<Use
         }
 
         const data = await Promise.all(
-            myMumentList.mument.map((mument: any) => {
+            likeMumentList.map((mument: any) => {
                 // 카드뷰 태그 리스트
                 const cardTag: number[] = [];
                 const impressionTagLength = mument.impressionTag.length;
