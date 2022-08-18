@@ -17,12 +17,16 @@ export default {
     port: parseInt(process.env.PORT as string, 10) as number,
 
     /**
-     * MongoDB URI
-     */
-    mongoURI: process.env.MONGODB_URI as string,
-
-    /**
      * Connect to Slack with Webhook
      */
     webhookURI: process.env.WEBHOOK_URI as string,
+
+    /**
+     *  RDS MySQL
+     */
+    host: process.env.DB_HOST as string,
+    user: process.env.DB_USER as string,
+    password: process.env.DB_PASSWORD as string,
+    database: process.env.DB_DATABASE as string,
+    dbPort: parseInt(process.env.DB_PORT as string, 10) as number,
 };
