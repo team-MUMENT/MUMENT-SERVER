@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import axios from 'axios';
+import fs from "fs";
 const qs = require('querystring');
 require('dotenv').config();
 
@@ -9,7 +10,7 @@ require('dotenv').config();
  */
 
 //secret key 가져오기
-const signWithApplePrivateKey = process.env.APPLE_SECRET_KEY ?? '';
+const signWithApplePrivateKey = fs.readFileSync("src/config/apple/AuthKey_RP3MN9C698.p8").toString() ?? '';
 
 
 //인증키 만드는 함수
@@ -18,11 +19,11 @@ const createSignWithAppleSecret = () => {
     algorithm: 'ES256',
     expiresIn: '1h',
     audience: 'https://appleid.apple.com',
-    issuer: process.env.APPLE_TEAM_ID,
-    subject: process.env.APPLE_SERVICE_ID,
-    keyid: process.env.APPLE_KEY_ID,
+    issuer: process.env.APPLE_TEAM_ID as string,
+    subject: process.env.APPLE_SERVICE_ID as string,
+    keyid: process.env.APPLE_KEY_ID as string,
   });
-  console.log(process.env.APPLE_REDIRECT_URI);
+
   return token;
 };
 
