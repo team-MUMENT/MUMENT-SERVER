@@ -41,6 +41,11 @@ const message = {
     FIND_MUSIC_MYMUMENT_SUCCESS: '곡 상세, 나의 뮤멘트 조회 성공',
     READ_MUSIC_MUMENTLIST_SUCCESS: '뮤멘트 리스트 조회 성공',
     SEARCH_MUSIC_LIST_SUCCESS: '곡 검색하기 성공',
+
+    // auth
+    BODY_REQUIRED: '바디 리퀘스트에 필요한 값이 없습니다',
+    NO_IDENTITY_TOKEN_SUB: 'Identity token에 sub(id)값이 없습니다',
+    APPLE_LOGIN_SUCCESS: '애플 로그인 성공',
 };
 
 export default message;
