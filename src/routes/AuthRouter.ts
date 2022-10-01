@@ -10,4 +10,10 @@ router.post('/login', [
     body('password').notEmpty().isString(),
 ], AuthController.login);
 
+// 애플 로그인
+router.post('/apple', [
+    body('code').notEmpty(),
+    body('identity_token').notEmpty(),
+], AuthController.appleSignIn);
+
 export default router;
