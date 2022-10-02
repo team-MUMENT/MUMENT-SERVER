@@ -10,22 +10,38 @@ require('dotenv').config();
  */
 
 //secret key 가져오기
-const signWithApplePrivateKey = fs.readFileSync("src/config/apple/AuthKey_RP3MN9C698.p8").toString() ?? '';
+const signWithApplePrivateKey = fs.readFileSync("src/config/apple/AuthKey.p8").toString() ?? '';
 
 
 //인증키 만드는 함수
+// const createSignWithAppleSecret = () => {
+//   const token = jwt.sign({}, signWithApplePrivateKey, {
+//     algorithm: 'ES256',
+//     expiresIn: '1h',
+//     audience: 'https://appleid.apple.com',
+//     issuer: process.env.APPLE_TEAM_ID as string,
+//     subject: process.env.APPLE_SERVICE_ID as string,
+//     keyid: process.env.APPLE_KEY_ID as string,
+//   });
+
+//   return token;
+// };
 const createSignWithAppleSecret = () => {
   const token = jwt.sign({}, signWithApplePrivateKey, {
     algorithm: 'ES256',
-    expiresIn: '1h',
+    expiresIn: '180d',
     audience: 'https://appleid.apple.com',
     issuer: process.env.APPLE_TEAM_ID as string,
     subject: process.env.APPLE_SERVICE_ID as string,
-    keyid: process.env.APPLE_KEY_ID as string,
+    header: {
+      alg: "ES256",
+      kid: process.env.APPLE_KEY_ID as string
+    }
   });
 
   return token;
 };
+
 
 //클라에서 받은 code를 이용해 apple token api 호출해서 로그인에 사용될 access, refresh 포함 토큰 얻기
 const getAppleToken = async (code: string) => {
