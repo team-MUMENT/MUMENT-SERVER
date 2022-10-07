@@ -8,6 +8,11 @@ import Like from '../models/Like';
 import Mument from '../models/Mument';
 import Music from '../models/Music';
 import dummyData from '../modules/dummyData'; // 임시 더미 데이터
+import axios from 'axios';
+import constant from '../modules/serviceReturnConstant';
+const qs = require('querystring');
+require('dotenv').config();
+
 
 /**
  * 곡 상세보기 - 음악, 나의 뮤멘트 조회
@@ -201,29 +206,56 @@ const getMumentList = async (musicId: string, userId: string, isLikeOrder: boole
 };
 
 /**
- * 곡 검색
+ * 곡 검색 - apple music api 사용 곡 검색 / 최대 25개의 곡 리스트 반환 가능
  */
-const getMusicListBySearch = async (keyword: string): Promise<MusicResponseDto[]> => {
-    const regex = (pattern: string) => new RegExp(`.*${pattern}.*`);
+const getMusicListBySearch = async (keyword: string): Promise<MusicResponseDto[] | number | void> => {
+    try {        
+        const token = 'Bearer ' + process.env.APPLE_DEVELOPER_TOKEN as string;
+        let musiclist: MusicResponseDto[] = [];
 
-    try {
-        const musicRegex = regex(keyword);
+        const appleResponse = async (searchKeyword: string) => {
+            await axios.get('https://api.music.apple.com/v1/catalog/kr/search?types=songs&limit=25&term=' 
+                + encodeURI(searchKeyword), {
+                    headers: {
+                      'Content-Type': 'application/x-www-form-urlencoded',
+                      'Authorization': token
+                    },
+                }
+            )
+            .then(function (response) {
+                /* apple api에서 받을 수 있는 3개 status code 대응 - 200, 401, 500*/
+                // 200 - success
+                const appleMusicList = response.data.results.songs.data;
 
-        /**
-         * ✅몽고디비 연결 임시 주석처리
-         */
-        // const musicList = await Music.find({
-        //     $or: [
-        //         {
-        //             name: { $regex: musicRegex },
-        //         },
-        //         {
-        //             artist: { $regex: musicRegex },
-        //         },
-        //     ],
-        // });
-        // return musicList;
-        return [];
+                musiclist =  appleMusicList.map((music: any) => {
+                    let imageUrl = music.attributes.artwork.url;
+                    imageUrl = imageUrl.replace('{w}x{h}', '400x400'); //앨범 이미지 크기 400으로 지정
+
+                    const m: MusicResponseDto = {
+                        '_id': music.id,
+                        'name': music.attributes.name,
+                        'artist': music.attributes.artistName,
+                        'image': imageUrl
+                    };
+                    return m;
+                });
+                return musiclist;
+            })
+            .catch(function (error) {
+                // 401 - A response indicating an incorrect Authorization header
+                if (error.response.status == 401) return constant.APPLE_UNAUTHORIZED;
+
+                // 500 - indicating an error occurred on the apple music server
+                if (error.response.status == 500) return constant.APPLE_INTERNAL_SERVER_ERROR;
+
+                console.log(error);
+            });
+
+            return musiclist;
+        };
+        const data = await appleResponse(keyword);
+        console.log(data);
+        return data;
     } catch (error) {
         console.log(error);
         throw error;
