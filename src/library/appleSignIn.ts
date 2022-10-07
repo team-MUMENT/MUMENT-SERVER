@@ -6,26 +6,14 @@ require('dotenv').config();
 
 /**
  * 인증키 생성 라이브러리
- * .env에 넣어야할 값 : APPLE_SCRET_KEY, APPLE_TEAM_ID, APPLE_SERVICE_ID, APPLE_KEY_ID,APPLE_REDIRECT_URI
+ * .env에 넣어야할 값 : APPLE_TEAM_ID, APPLE_SERVICE_ID, APPLE_KEY_ID,APPLE_REDIRECT_URI
  */
 
-//secret key 가져오기
+//secret key
 const signWithApplePrivateKey = fs.readFileSync("src/config/apple/AuthKey.p8").toString() ?? '';
 
 
-//인증키 만드는 함수
-// const createSignWithAppleSecret = () => {
-//   const token = jwt.sign({}, signWithApplePrivateKey, {
-//     algorithm: 'ES256',
-//     expiresIn: '1h',
-//     audience: 'https://appleid.apple.com',
-//     issuer: process.env.APPLE_TEAM_ID as string,
-//     subject: process.env.APPLE_SERVICE_ID as string,
-//     keyid: process.env.APPLE_KEY_ID as string,
-//   });
-
-//   return token;
-// };
+//apple developer token(인증키) 생성 함수
 const createSignWithAppleSecret = () => {
   const token = jwt.sign({}, signWithApplePrivateKey, {
     algorithm: 'ES256',
@@ -36,7 +24,7 @@ const createSignWithAppleSecret = () => {
     header: {
       alg: "ES256",
       kid: process.env.APPLE_KEY_ID as string
-    }
+    },
   });
 
   return token;
