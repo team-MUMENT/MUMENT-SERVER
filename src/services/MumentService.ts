@@ -30,6 +30,7 @@ import { AgainMumentResponseDto } from '../interfaces/mument/AgainMumentResponse
 import { AgainSelectionInfo } from '../interfaces/home/AgainSelectionInfo';
 import AgainSelection from '../models/AgainSelection';
 import dummyData from '../modules/dummyData'; // 임시 더미 데이터
+import pools from '../modules/pool';
 
 /** 
  * 뮤멘트 기록하기
@@ -283,47 +284,31 @@ const deleteMument = async (mumentId: string): Promise<void | null> => {
  */
 const getIsFirst = async (userId: string, musicId: string): Promise<IsFirstResponseDto | null> => {
     try {
-        /**
-         * ✅몽고디비 연결 임시 주석처리 + 변수에 임시로 더미 넣어둠
-         */
-        const music = dummyData.musicDummy;
-        // const music = await Music.findById(musicId);
-        if (!music) return null;
-        
-        const userMument = [dummyData.mumentDummy, dummyData.mumentDummy];
-        // const userMument = await Mument.find({
-        //     $and: [
-        //         {
-        //             'user._id': { $eq: userId },
-        //         },
-        //         {
-        //             'music._id': { $eq: musicId },
-        //         },
-        //         {
-        //             isDeleted: { $eq: false },
-        //         },
-        //     ],
-        // });
+        const query1 = 'SELECT * FROM mument WHERE user_id=? AND music_id=? AND is_deleted=0;';
+        const result: any = await pools.queryValue(query1, [userId, musicId]);
+        console.log(result);
+        const userMument = result;
 
         if (userMument.length === 0) {
-            // 뮤멘트 기록이 처음인 경우
+            // 뮤멘트 기록이 처음인 경우 
             return {
                 isFirst: true,
                 firstAvailable: true,
             };
         } else {
-            const firstMument = userMument.some((mument: MumentInfo) => {
-                return mument.isFirst === true;
+            // 뮤멘트중 '처음 들었어요' 기록이 하나라도 존재하는 경우 true 반환
+            const firstMument = userMument.some((mument: any) => {
+                return mument.is_first == true;
             });
 
             if (firstMument === false) {
-                // 처음 들었어요 기록이 존재하지않는 경우 - 처음 선택 가능
+                // '처음 들었어요' 기록이 존재하지 않는 경우 - 처음 선택 가능
                 return {
                     isFirst: false,
                     firstAvailable: true,
                 };
             } else {
-                // 처음 들었어요 기록이 존재하지않는 경우 - 처음 선택 불가
+                // '처음 들었어요' 기록이 존재하는 경우 - 처음 선택 불가
                 return {
                     isFirst: false,
                     firstAvailable: false,
