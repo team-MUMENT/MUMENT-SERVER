@@ -142,7 +142,7 @@ const updateMument = async (mumentId: string, mumentUpdateDto: MumentCreateDto):
         // );
         //const mument = dummyData.mumentDummy;
         const data = {
-            _id: mument._id,
+            _id: mumentId,
         };
 
         return data;
