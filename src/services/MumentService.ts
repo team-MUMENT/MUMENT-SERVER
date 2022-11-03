@@ -46,6 +46,7 @@ const createMument = async (userId: string, musicId: string, mumentCreateDto: Mu
     try {    
         await connection.beginTransaction(); // 트랜잭션 적용 시작
 
+        // 뮤멘트 생성
         const query1 = 'INSERT INTO mument(user_id, music_id, content, is_first, is_Private) VALUES(?, ?, ?, ?, ?)';
         const query1Result = await connection.query(query1, [
             userId, musicId, 
@@ -53,16 +54,10 @@ const createMument = async (userId: string, musicId: string, mumentCreateDto: Mu
             mumentCreateDto.isFirst, 
             mumentCreateDto.isPrivate
         ]);
-        const tagList = mumentCreateDto.impressionTag.concat(mumentCreateDto.feelingTag);
 
-        for(let idx in tagList) {
-            const query2 = 'INSERT INTO mument_tag(mument_id, tag_id) VALUES(?, ?)';
-            await connection.query(query2, [
-                query1Result.insertId, // 생성된 뮤멘트 id값
-                tagList[idx] // tag 번호
-            ]);
-        }
-
+        // 뮤멘트 태그 생성
+        await mumentDB.mumentTagCreate(mumentCreateDto.impressionTag, mumentCreateDto.feelingTag, connection, query1Result.insertId);
+        
         await connection.commit(); // query1, query2 모두 성공시 커밋(데이터 적용)
         
         const data = {
