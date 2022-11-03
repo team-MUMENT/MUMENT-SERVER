@@ -34,6 +34,7 @@ import pools from '../modules/pool';
 import poolPromise from '../loaders/db';
 import { Connection } from 'promise-mysql';
 import { StringBaseResponseDto } from '../interfaces/common/StringBaseResponseDto';
+import mumentDB from '../modules/db/Mument';
 
 /** 
  * 뮤멘트 기록하기
@@ -81,66 +82,39 @@ const createMument = async (userId: string, musicId: string, mumentCreateDto: Mu
 /**
  * 뮤멘트 수정하기
  */
-const updateMument = async (mumentId: string, mumentUpdateDto: MumentCreateDto): Promise<StringBaseResponseDto | null> => {
+const updateMument = async (mumentId: string, mumentUpdateDto: MumentCreateDto): Promise<StringBaseResponseDto | null | number> => {
+    const pool: any = await poolPromise;
+    const connection = await pool.getConnection();
+
     try {
-        // 존재하지 않는 뮤멘트이면 null 반환
-        // const mument = await Mument.findById(mumentId);
-        const query1 = 'SELECT EXISTS(SELECT * FROM mument WHERE id=?);'
-        const mument = await pools.queryValue(query1, [mumentId]);
+        await connection.beginTransaction(); // 트랜잭션 적용 시작
 
-        if (!mument) return null;
+        // 쿼리 : 뮤멘트 존재하는지 확인
+        const query1 = 'SELECT * FROM mument WHERE id=?;'
+        const mument: any = await pools.queryValue(query1, [mumentId]);
 
-        // // 공개글에서 비밀글로 수정한 경우
-        // if (mumentUpdateDto.isPrivate !== undefined) {
-        //     if (mument.isPrivate === false && mumentUpdateDto.isPrivate === true) {
-        //         await Mument.findByIdAndUpdate(mumentId, {
-        //             $set: {
-        //                 isFirst: mumentUpdateDto.isFirst,
-        //                 impressionTag: mumentUpdateDto.impressionTag,
-        //                 feelingTag: mumentUpdateDto.feelingTag,
-        //                 content: mumentUpdateDto.content ? mumentUpdateDto.content : null,
-        //                 isPrivate: mumentUpdateDto.isPrivate ? mumentUpdateDto.isPrivate : false,
-        //                 likeCount: 0, // 좋아요 수 초기화
-        //             },
-        //         });
+        // 존재하지 않는 id의 뮤멘트를 수정하려고 할 때
+        if (mument.length===0) return constant.NO_MUMENT;
 
-        //         //모든 유저의 Like에서 뮤멘트 제거 - 좋아요 삭제
-        //         await Like.updateMany(
-        //             {},
-        //             {
-        //                 $pull: { mument: { _id: mumentId } },
-        //             },
-        //         );
+        //뮤멘트 수정사항 update
+        const query2 = 'UPDATE mument SET is_first=?, content=?, is_private=? WHERE id=?;';
 
-        //         return data;
-        //     }
-        // }
+        // 뮤멘트 업데이트
+        await connection.query(query2, [
+            mumentUpdateDto.isFirst,
+            mumentUpdateDto.content != undefined ? mumentUpdateDto.content : null,
+            mumentUpdateDto.isPrivate != undefined ? mumentUpdateDto.isPrivate : 0,
+            mumentId
+        ]);
 
-        // //뮤멘트 업데이트
-        // await Mument.findByIdAndUpdate(mumentId, {
-        //     $set: {
-        //         isFirst: mumentUpdateDto.isFirst,
-        //         impressionTag: mumentUpdateDto.impressionTag,
-        //         feelingTag: mumentUpdateDto.feelingTag,
-        //         content: mumentUpdateDto.content != undefined ? mumentUpdateDto.content : null,
-        //         isPrivate: mumentUpdateDto.isPrivate != undefined ? mumentUpdateDto.isPrivate : false,
-        //     },
-        // });
+        // 뮤멘트 태그 업데이트 : 기존 태그 모두 삭제 후 새로 삽입
+        const query3 = 'DELETE FROM mument_tag where mument_id = ?;';
+        await connection.query(query3, [mumentId]);
 
-        // //모든 유저의 뮤멘트 업데이트
-        // await Like.updateMany(
-        //     { mument: { $elemMatch: { _id: mumentId } } },
-        //     {
-        //         $set: {
-        //             'mument.$.isFirst': mumentUpdateDto.isFirst,
-        //             'mument.$.impressionTag': mumentUpdateDto.impressionTag,
-        //             'mument.$.feelingTag': mumentUpdateDto.feelingTag,
-        //             'mument.$.content': mumentUpdateDto.content != undefined ? mumentUpdateDto.content : null,
-        //             'mument.$.isPrivate': mumentUpdateDto.isPrivate != undefined ? mumentUpdateDto.isPrivate : false,
-        //         },
-        //     },
-        // );
-        //const mument = dummyData.mumentDummy;
+        await mumentDB.mumentTagCreate(mumentUpdateDto.impressionTag, mumentUpdateDto.feelingTag, connection, mumentId);
+
+        await connection.commit(); // query1, query2 모두 성공시 커밋(데이터 적용)
+
         const data = {
             _id: mumentId,
         };
@@ -148,7 +122,10 @@ const updateMument = async (mumentId: string, mumentUpdateDto: MumentCreateDto):
         return data;
     } catch (error) {
         console.log(error);
+        await connection.rollback(); // query1, query2 중 하나라도 에러시 롤백 (데이터 적용 원상복귀)
         throw error;
+    } finally {
+        connection.release(); // pool connection 회수
     }
 };
 

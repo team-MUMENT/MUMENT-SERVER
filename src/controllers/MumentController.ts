@@ -21,9 +21,9 @@ const createMument = async (req: Request, res: Response) => {
         const data: PostBaseResponseDto | null = await MumentService.createMument(userId, musicId, mumentCreateDto);
 
         if (!data) {
-            res.status(statusCode.NOT_FOUND).send(util.fail(statusCode.NOT_FOUND, message.NOT_FOUND_ID));
+            return res.status(statusCode.NOT_FOUND).send(util.fail(statusCode.NOT_FOUND, message.NOT_FOUND_ID));
         } else {
-            res.status(statusCode.CREATED).send(util.success(statusCode.CREATED, message.CREATE_MUMENT_SUCCESS, data));
+            return res.status(statusCode.CREATED).send(util.success(statusCode.CREATED, message.CREATE_MUMENT_SUCCESS, data));
         }
     } catch (error) {
         console.log(error);
@@ -60,11 +60,11 @@ const updateMument = async (req: Request, res: Response) => {
     try {
         const data = await MumentService.updateMument(mumentId, mumentUpdateDto);
 
-        if (!data) {
-            res.status(statusCode.NOT_FOUND).send(util.fail(statusCode.NOT_FOUND, message.NO_MUMENT_ID));
-        }
-
-        res.status(statusCode.OK).send(util.success(statusCode.OK, message.UPDATE_MUMENT_SUCCESS, data));
+        if (data===constant.NO_MUMENT) {
+            return res.status(statusCode.NOT_FOUND).send(util.fail(statusCode.NOT_FOUND, message.NO_MUMENT_ID));
+        } 
+        
+        return res.status(statusCode.OK).send(util.success(statusCode.OK, message.UPDATE_MUMENT_SUCCESS, data));
     } catch (error) {
         console.log(error);
 
