@@ -33,6 +33,7 @@ import dummyData from '../modules/dummyData'; // 임시 더미 데이터
 import pools from '../modules/pool';
 import poolPromise from '../loaders/db';
 import { Connection } from 'promise-mysql';
+import { StringBaseResponseDto } from '../interfaces/common/StringBaseResponseDto';
 
 /** 
  * 뮤멘트 기록하기
@@ -80,13 +81,14 @@ const createMument = async (userId: string, musicId: string, mumentCreateDto: Mu
 /**
  * 뮤멘트 수정하기
  */
-const updateMument = async (mumentId: string, mumentUpdateDto: MumentCreateDto): Promise<PostBaseResponseDto | null> => {
+const updateMument = async (mumentId: string, mumentUpdateDto: MumentCreateDto): Promise<StringBaseResponseDto | null> => {
     try {
-        /**
-         * ✅몽고디비 연결 임시 주석처리 + 변수에 임시로 더미 넣어둠
-         */
+        // 존재하지 않는 뮤멘트이면 null 반환
         // const mument = await Mument.findById(mumentId);
-        // if (!mument) return null;
+        const query1 = 'SELECT EXISTS(SELECT * FROM mument WHERE id=?);'
+        const mument = await pools.queryValue(query1, [mumentId]);
+
+        if (!mument) return null;
 
         // // 공개글에서 비밀글로 수정한 경우
         // if (mumentUpdateDto.isPrivate !== undefined) {
@@ -138,7 +140,7 @@ const updateMument = async (mumentId: string, mumentUpdateDto: MumentCreateDto):
         //         },
         //     },
         // );
-        const mument = dummyData.mumentDummy;
+        //const mument = dummyData.mumentDummy;
         const data = {
             _id: mument._id,
         };
