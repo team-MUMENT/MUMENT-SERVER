@@ -8,8 +8,6 @@ router.post('/:userId/:musicId', MumentController.createMument);
 
 router.put('/:mumentId', [
     body('isFirst').notEmpty(),
-    body('impressionTag').notEmpty(),
-    body('feelingTag').notEmpty(),
 ], MumentController.updateMument);
 router.get('/:mumentId/:userId', MumentController.getMument);
 router.get('/:userId/:musicId/is-first', MumentController.getIsFirst);
