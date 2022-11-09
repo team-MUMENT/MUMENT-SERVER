@@ -170,3 +170,6 @@ dist
 # End of https://www.toptal.com/developers/gitignore/api/node,visualstudiocode
 
 .DS_Store
+
+# Apple login
+src/config/apple

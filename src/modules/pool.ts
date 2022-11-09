@@ -1,4 +1,4 @@
-import poolPromise from "../loaders/db";
+import poolPromise from '../loaders/db';
 
 /**
  * 쿼리 처리 3가지 모듈
@@ -58,10 +58,10 @@ const queryValue = async (query: string, value: any) => {
     });
 };
 
-// // 트랜잭션 필요 시
-// const transaction =async (...args: any[]) => {
+// 트랜잭션 필요 시
+const transaction =async (...args: any[]) => {
     
-// };
+};
 
 export default {
     query,
