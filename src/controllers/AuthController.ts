@@ -51,6 +51,37 @@ const login = async (req: Request, res: Response) => {
     }
 };
 
+/**
+ * @ROUTE POST /auth/apple
+ * @DESC apple signin
+ */
+const appleSignIn = async (req: Request, res: Response) => {
+    const { authorization_code, identity_token } = req.body;
+    const error = validationResult(req);
+    if (!error.isEmpty()) {
+        // request body에 code or identity token을 보내지 않을 경우 400
+        res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.BODY_REQUIRED));
+    }
+
+    try {
+        const data = await AuthService.appleSignIn(authorization_code, identity_token);
+
+        if (data===constant.NO_IDENTITY_TOKEN_SUB) {
+            // Identity token에 sub(id)값이 없을 경우 400
+            res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.NO_IDENTITY_TOKEN_SUB));
+        }
+
+        res.status(statusCode.OK).send(util.success(statusCode.OK, message.LOGIN_SUCCESS, data));
+
+    } catch (error) {
+        console.log(error);
+        res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
+    }
+
+
+};
+
 export default {
     login,
+    appleSignIn
 };

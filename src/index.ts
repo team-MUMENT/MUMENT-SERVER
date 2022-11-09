@@ -35,3 +35,5 @@ app.listen(process.env.PORT, () => {
     console.error(err);
     process.exit(1);
 });
+
+export default app;

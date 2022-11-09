@@ -160,9 +160,6 @@ const getIsFirst = async (req: Request, res: Response) => {
     try {
         const data = await MumentService.getIsFirst(userId, musicId);
 
-        // 존재하지않는 musicId를 보낼 경우
-        if (!data) res.status(statusCode.NOT_FOUND).send(util.fail(statusCode.NOT_FOUND, message.NOT_FOUND_ID));
-
         res.status(statusCode.OK).send(util.success(statusCode.OK, message.READ_ISFIRST_SUCCESS, data));
     } catch (error) {
         console.log(error);

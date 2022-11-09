@@ -30,71 +30,50 @@ import { AgainMumentResponseDto } from '../interfaces/mument/AgainMumentResponse
 import { AgainSelectionInfo } from '../interfaces/home/AgainSelectionInfo';
 import AgainSelection from '../models/AgainSelection';
 import dummyData from '../modules/dummyData'; // 임시 더미 데이터
+import pools from '../modules/pool';
+import poolPromise from '../loaders/db';
+import { Connection } from 'promise-mysql';
 
 /** 
  * 뮤멘트 기록하기
 */
 const createMument = async (userId: string, musicId: string, mumentCreateDto: MumentCreateDto): Promise<PostBaseResponseDto | null> => {
-    try {
-        /**
-         * ✅몽고디비 연결 임시 주석처리 + 변수에 임시로 더미 넣어둠
-         */
-        // const user = await User.findById(userId);
-        // if (!user) return null;
+    const pool: any = await poolPromise;
+    const connection = await pool.getConnection();
 
-        // const music = await Music.findById(musicId);
-        // if (!music) return null;
+    try {    
+        await connection.beginTransaction(); // 트랜잭션 적용 시작
 
-        // const mument = new Mument({
-        //     music: {
-        //         _id: musicId,
-        //     },
-        //     user: {
-        //         _id: userId,
-        //         name: user.name,
-        //         image: user.image,
-        //     },
-        //     isFirst: mumentCreateDto.isFirst,
-        //     impressionTag: mumentCreateDto.impressionTag,
-        //     feelingTag: mumentCreateDto.feelingTag,
-        //     content: mumentCreateDto.content ? mumentCreateDto.content : null,
-        //     isPrivate: mumentCreateDto.isPrivate,
-        // });
-        //const savedMument = await mument.save();
+        const query1 = 'INSERT INTO mument(user_id, music_id, content, is_first, is_Private) VALUES(?, ?, ?, ?, ?)';
+        const query1Result = await connection.query(query1, [
+            userId, musicId, 
+            !mumentCreateDto.content ? null : mumentCreateDto.content, 
+            mumentCreateDto.isFirst, 
+            mumentCreateDto.isPrivate
+        ]);
+        const tagList = mumentCreateDto.impressionTag.concat(mumentCreateDto.feelingTag);
 
-        // // 조건에 부합하면 homeCandidate collection에도 저장 -> RDB에서는 homeCandidate 없음 
-        // if (mumentCreateDto.isPrivate === false && mumentCreateDto.content) {
-        //     const date = dayjs(savedMument.createdAt).format('D MMM, YYYY');
+        for(let idx in tagList) {
+            const query2 = 'INSERT INTO mument_tag(mument_id, tag_id) VALUES(?, ?)';
+            await connection.query(query2, [
+                query1Result.insertId, // 생성된 뮤멘트 id값
+                tagList[idx] // tag 번호
+            ]);
+        }
 
-        //     const homeCandidateMument = new HomeCandidate({
-        //         mumentId: savedMument._id,
-        //         music: music,
-        //         user: {
-        //             _id: user._id,
-        //             name: user.name,
-        //             image: user.image,
-        //         },
-        //         isFirst: mumentCreateDto.isFirst,
-        //         impressionTag: mumentCreateDto.impressionTag,
-        //         feelingTag: mumentCreateDto.feelingTag,
-        //         content: mumentCreateDto.content,
-        //         isPrivate: mumentCreateDto.isPrivate,
-        //         createdAt: savedMument.createdAt,
-        //         date,
-        //     });
-
-        //     await homeCandidateMument.save();
-        // }
-        const mument = dummyData.mumentDummy;
-
+        await connection.commit(); // query1, query2 모두 성공시 커밋(데이터 적용)
+        
         const data = {
-            _id: mument._id,
+            _id: query1Result.insertId,
         };
 
         return data;
     } catch (error) {
         console.log(error);
+        await connection.rollback(); // query1, query2 중 하나라도 에러시 롤백 (데이터 적용 원상복귀)
         throw error;
+    } finally {
+        connection.release(); // pool connection 회수
     }
 };
 
@@ -283,47 +262,31 @@ const deleteMument = async (mumentId: string): Promise<void | null> => {
  */
 const getIsFirst = async (userId: string, musicId: string): Promise<IsFirstResponseDto | null> => {
     try {
-        /**
-         * ✅몽고디비 연결 임시 주석처리 + 변수에 임시로 더미 넣어둠
-         */
-        const music = dummyData.musicDummy;
-        // const music = await Music.findById(musicId);
-        if (!music) return null;
-        
-        const userMument = [dummyData.mumentDummy, dummyData.mumentDummy];
-        // const userMument = await Mument.find({
-        //     $and: [
-        //         {
-        //             'user._id': { $eq: userId },
-        //         },
-        //         {
-        //             'music._id': { $eq: musicId },
-        //         },
-        //         {
-        //             isDeleted: { $eq: false },
-        //         },
-        //     ],
-        // });
+        const query1 = 'SELECT * FROM mument WHERE user_id=? AND music_id=? AND is_deleted=0;';
+        const result: any = await pools.queryValue(query1, [userId, musicId]);
+        console.log(result);
+        const userMument = result;
 
         if (userMument.length === 0) {
-            // 뮤멘트 기록이 처음인 경우
+            // 뮤멘트 기록이 처음인 경우 
             return {
                 isFirst: true,
                 firstAvailable: true,
             };
         } else {
-            const firstMument = userMument.some((mument: MumentInfo) => {
-                return mument.isFirst === true;
+            // 뮤멘트중 '처음 들었어요' 기록이 하나라도 존재하는 경우 true 반환
+            const firstMument = userMument.some((mument: any) => {
+                return mument.is_first == true;
             });
 
             if (firstMument === false) {
-                // 처음 들었어요 기록이 존재하지않는 경우 - 처음 선택 가능
+                // '처음 들었어요' 기록이 존재하지 않는 경우 - 처음 선택 가능
                 return {
                     isFirst: false,
                     firstAvailable: true,
                 };
             } else {
-                // 처음 들었어요 기록이 존재하지않는 경우 - 처음 선택 불가
+                // '처음 들었어요' 기록이 존재하는 경우 - 처음 선택 불가
                 return {
                     isFirst: false,
                     firstAvailable: false,
