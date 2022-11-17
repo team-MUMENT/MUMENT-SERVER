@@ -142,47 +142,51 @@ const getMument = async (mumentId: string, userId: string): Promise<MumentRespon
         //  비밀글인데, 본인의 뮤멘트가 아닐 경우 -> 조회하지 못하도록
         if (mument.is_private === 1 && mument.user_id.toString() !== userId) return constant.PRIVATE_MUMENT;
 
+    
         // 사용자가 이 뮤멘트에 좋아요 눌렀으면 1, 아니면 0
         const isLiked = await mumentDB.isLiked(mumentId, userId);
+
 
         // 사용자 정보 가져오기
         const user = await userDB.userInfo(userId);
         
 
-        // // to-do: 뮤멘트 히스토리 개수 - 뮤멘트의 작성자가 해당 곡에 쓴 뮤멘트 개수 : 조건 추가사항 - isDeleted와 isPrivate가 false이어야함
-        // const historyCount = 0;
-        // // const historyCount = await Mument.countDocuments({
-        // //     $and: [
-        // //         {
-        // //             'music._id': { $eq: mument.music._id },
-        // //         },
-        // //         {
-        // //             'user._id': { $eq: mument.user._id },
-        // //         },
-        // //     ],
-        // // });
+        // 뮤멘트 히스토리 개수 - 뮤멘트의 작성자가 해당 곡에 쓴 뮤멘트 개수 : 조건 isDeleted와 isPrivate가 false인 뮤멘트 개수
+        const historyCount = await mumentDB.mumentHistoryCount(mument.music_id.toString(), mument.user_id.toString());
 
-        // const createdTime = dayjs(mument.createdAt).format('YYYY.MM.DD h:mm A');
 
-        // const data: MumentResponseDto = {
-        //     user: {
-        //         _id: user.id, //수정완
-        //         image: user.image, //수정완
-        //         name: user.profile_id, //수정완
-        //     },
-        //     isFirst: mument.isFirst,
-        //     impressionTag: mument.impressionTag,
-        //     feelingTag: mument.feelingTag,
-        //     content: mument.content,
-        //     likeCount: mument.likeCount,
-        //     isLiked: Boolean(isLiked), //수정완
-        //     createdAt: createdTime,
-        //     count: historyCount,
-        // };
+        // 작성 시간
+        const createdTime = dayjs(mument.created_at).format('YYYY.MM.DD h:mm A');
+
+
+        // 좋아요 개수
+        const likeCount = await mumentDB.likeCount(mumentId);
+
+        
+        // 뮤멘트의 태그 검색해서 impressionTag, feelingTag 리스트로 반환
+        const tagList = await mumentDB.mumentTagListGet(mumentId);
+        const impressionTag: number[] = tagList.impressionTag;
+        const feelingTag: number[] = tagList.feelingTag;
+
+        const data: MumentResponseDto = {
+            user: {
+                _id: user.id, 
+                image: user.image, 
+                name: user.profile_id, 
+            },
+            isFirst: Boolean(mument.is_first),
+            impressionTag: impressionTag,
+            feelingTag: feelingTag,
+            content: !mument.content ? null : mument.content,
+            likeCount: likeCount,
+            isLiked: Boolean(isLiked),
+            createdAt: createdTime,
+            count: historyCount,
+        };
 
         await connection.commit(); // query1, query2 모두 성공시 커밋(데이터 적용)
 
-        const data = null;
+        
         return data;
     } catch (error) {
         console.log(error);
