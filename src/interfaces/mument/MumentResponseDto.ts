@@ -9,7 +9,7 @@ export interface MumentResponseDto {
         name: string;
         image: string;
     };
-    music: {
+    music?: {
         _id: mongoose.Types.ObjectId | null; // 보관함때문에 잠시 null
         name: string;
         artist: string;
