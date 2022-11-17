@@ -59,9 +59,58 @@ const isLiked = async (mumentId: string, userId: string) => {
 };
 
 
+// 뮤멘트의 좋아요 개수 count
+const likeCount = async (mumentId: string) => {
+    const query = `SELECT COUNT(*) as exist FROM mument.like WHERE mument_id=${mumentId};`;
+
+    const likeCount: NumberBaseResponseDto[] = await pools.query(query);
+
+    return likeCount[0].exist;
+};
+
+
+// 사용자의 뮤멘트 히스토리 개수 count
+const mumentHistoryCount = async (musicId: string, userId: string) => {
+    // 삭제되지않고 & 비밀글이 아닌 뮤멘트 개수
+    const query = 'SELECT COUNT(*) as exist FROM mument WHERE music_id=? AND user_id=? AND NOT is_deleted=1 AND NOT is_private=1;';
+
+    const historyCount: NumberBaseResponseDto[] = await pools.queryValue(query, [musicId, userId]);
+
+    return historyCount[0].exist;
+};
+
+
+// 뮤멘트의 태그 검색해서 impressionTag, feelingTag 리스트로 반환
+const mumentTagListGet = async (mumentId: string) => {
+    // 뮤멘트의 태그 모두 검색
+    const query = `SELECT tag_id as exist FROM mument_tag WHERE mument_id=${mumentId};`;
+
+    const tagList: NumberBaseResponseDto[] = await pools.query(query);
+    
+    let impressionTag: number[] = [], feelingTag: number[] = [];
+
+    // 100이상 200미만 - impression tag, 200이상 300미만 - feeling tag
+    for (let idx in tagList) {
+        if (tagList[idx].exist < 200) {
+            impressionTag.push(tagList[idx].exist);
+        } else if (tagList[idx].exist < 300) {
+            feelingTag.push(tagList[idx].exist);
+        }
+    }
+
+    return {
+        impressionTag: impressionTag,
+        feelingTag: feelingTag
+    };
+};
+
+
 export default {
     mumentTagCreate,
     isExistMument,
     isExistMumentInfo,
     isLiked,
+    likeCount,
+    mumentHistoryCount,
+    mumentTagListGet,
 }
