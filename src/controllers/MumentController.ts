@@ -94,7 +94,7 @@ const getMument = async (req: Request, res: Response) => {
     try {
         const data = await MumentService.getMument(mumentId, userId);
 
-        if (!data || constant.NO_MUMENT) {
+        if (!data || data === constant.NO_MUMENT) {
             res.status(statusCode.NOT_FOUND).send(util.fail(statusCode.NOT_FOUND, message.NOT_FOUND_ID));
         } else if (data === constant.PRIVATE_MUMENT) {
             res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.NOT_YOUR_MUMENT));

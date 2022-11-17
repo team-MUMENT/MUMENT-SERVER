@@ -36,6 +36,7 @@ import { Connection } from 'promise-mysql';
 import { StringBaseResponseDto } from '../interfaces/common/StringBaseResponseDto';
 import mumentDB from '../modules/db/Mument';
 import { ExistMumentDto } from '../interfaces/mument/ExistMumentRDBDto';
+import { MumentInfoRDB } from '../interfaces/mument/MumentInfoRdb';
 
 /** 
  * 뮤멘트 기록하기
@@ -132,14 +133,14 @@ const getMument = async (mumentId: string, userId: string): Promise<MumentRespon
     try {
         // 존재하지 않는 id의 뮤멘트를 수정하려고 할 때
         const isExistMumentInfo: ExistMumentDto = await mumentDB.isExistMumentInfo(mumentId, connection);
+        
         if (isExistMumentInfo.isExist === false) return constant.NO_MUMENT;
-        console.log(isExistMumentInfo.mument);
 
-        const mument = isExistMumentInfo.mument; // 뮤멘트 데이터 가져오기
-    
+        const mument = isExistMumentInfo.mument as MumentInfoRDB; // 뮤멘트 데이터 가져오기
+
         //  비밀글인데, 본인의 뮤멘트가 아닐 경우 -> 조회하지 못하도록
-        if (mument?.is_private === 1 && mument.user_id.toString() !== userId) return constant.PRIVATE_MUMENT;
-
+        if (mument.is_private === 1 && mument.user_id.toString() !== userId) return constant.PRIVATE_MUMENT;
+        
         // // to-do: 사용자가 이 뮤멘트에 좋아요 눌렀는지
         // const isLiked = false;
         // // const isLiked = await Like.findOne({
