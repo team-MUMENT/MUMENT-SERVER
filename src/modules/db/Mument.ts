@@ -54,8 +54,6 @@ const isLiked = async (mumentId: string, userId: string) => {
 
     // 좋아요 존재하면 1, 존재하지 않으면 0 반환함
     const isLiked: NumberBaseResponseDto[] = await pools.queryValue(query, [mumentId, userId]);
-    console.log(isLiked);
-    //console.log(isLiked.exist);
 
     return isLiked[0].exist;
 };
