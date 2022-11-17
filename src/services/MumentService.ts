@@ -140,19 +140,11 @@ const getMument = async (mumentId: string, userId: string): Promise<MumentRespon
 
         //  비밀글인데, 본인의 뮤멘트가 아닐 경우 -> 조회하지 못하도록
         if (mument.is_private === 1 && mument.user_id.toString() !== userId) return constant.PRIVATE_MUMENT;
+
+
+        // 사용자가 이 뮤멘트에 좋아요 눌렀으면 1, 아니면 0
+        const isLiked = await mumentDB.isLiked(mumentId, userId);
         
-        // // to-do: 사용자가 이 뮤멘트에 좋아요 눌렀는지
-        // const isLiked = false;
-        // // const isLiked = await Like.findOne({
-        // //     $and: [
-        // //         {
-        // //             mument: { $elemMatch: { _id: mumentId } },
-        // //         },
-        // //         {
-        // //             'user._id': { $eq: userId },
-        // //         },
-        // //     ],
-        // // });
 
         // // to-do: 뮤멘트 히스토리 개수 - 뮤멘트의 작성자가 해당 곡에 쓴 뮤멘트 개수 : 조건 추가사항 - isDeleted와 isPrivate가 false이어야함
         // const historyCount = 0;
@@ -180,7 +172,7 @@ const getMument = async (mumentId: string, userId: string): Promise<MumentRespon
         //     feelingTag: mument.feelingTag,
         //     content: mument.content,
         //     likeCount: mument.likeCount,
-        //     isLiked: !isLiked ? false : true,
+        //     isLiked: Boolean(isLiked), //수정완
         //     createdAt: createdTime,
         //     count: historyCount,
         // };
