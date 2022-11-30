@@ -201,29 +201,31 @@ const getMument = async (mumentId: string, userId: string): Promise<MumentRespon
  * 뮤멘트 삭제하기
 */
 const deleteMument = async (mumentId: string): Promise<void | null> => {
-    try {
-        /**
-         * ✅몽고디비 연결 임시 주석처리
-         */
-        // 추가 - 이미 isDelted 된거면 오류 메시지
-    
-        // //Mument soft delete
-        // await Mument.findByIdAndUpdate(mumentId, {
-        //     $set: {
-        //         isDeleted: true,
-        //     },
-        // });
+    const pool: any = await poolPromise;
+    const connection = await pool.getConnection();
 
-        // //Like에서 Mument 제거
-        // await Like.updateMany(
-        //     {},
-        //     {
-        //         $pull: { mument: { _id: mumentId } },
-        //     },
-        // );
+    try {
+        await connection.beginTransaction(); // 트랜잭션 적용 시작
+
+        // 뮤멘트 삭제하기
+        const query1 = 'UPDATE mument SET is_deleted=1 WHERE id=?';
+        await connection.query(query1, [mumentId]);
+
+        // 뮤멘트의 태그들 삭제하기
+        const query2 = 'DELETE FROM mument_tag where mument_id = ?;';
+        await connection.query(query2, [mumentId]);
+
+        // 뮤멘트의 좋아요들 삭제하기
+        const query3 = 'DELETE FROM mument.like where mument_id = ?;';
+        await connection.query(query3, [mumentId]);
+
+        await connection.commit(); // query1, query2 모두 성공시 커밋(데이터 적용)
     } catch (error) {
         console.log(error);
+        await connection.rollback(); // query1, query2 중 하나라도 에러시 롤백 (데이터 적용 원상복귀)
         throw error;
+    } finally {
+        connection.release(); // pool connection 회수
     }
 };
 
