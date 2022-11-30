@@ -90,8 +90,9 @@ const appleSignIn = async (authorization_code: string, identity_token: string): 
             
         //     return data; 
         // }
-        // // id가 존재하지 않으면
-        // return constant.NO_IDENTITY_TOKEN_SUB;
+        
+        // id가 존재하지 않으면
+        return constant.NO_IDENTITY_TOKEN_SUB;
     } catch (error) {
         console.log(error);
         throw error;

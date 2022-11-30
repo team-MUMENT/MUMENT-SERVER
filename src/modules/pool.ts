@@ -5,7 +5,7 @@ import poolPromise from '../loaders/db';
  */
 
 // 완성된 query만 받을 시
-const query = async (query: string) => {
+const query = async (query: string): Promise<any[]> => {
     return new Promise ( async (resolve, reject) => {
         try {
             //Connection Pool 생성
@@ -34,7 +34,7 @@ const query = async (query: string) => {
 };
 
 // // query에 필요한 value를 따로 받을 시 
-const queryValue = async (query: string, value: any) => {
+const queryValue = async (query: string, value: any): Promise<any[]> => {
     return new Promise(async (resolve, reject) => {
         try {
             //Connection Pool 생성
