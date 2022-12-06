@@ -15,6 +15,9 @@ const constant = {
     APPLE_UNAUTHORIZED: -51, // 애플 API 개발자 토큰 유효하지 않을 때
     APPLE_INTERNAL_SERVER_ERROR: -51, // 애플 API 서버 에러났을 때
 
+    // jwt token
+    TOKEN_EXPIRED: -100,
+    TOKEN_INVALID: -101,
 };
 
 export default constant;
