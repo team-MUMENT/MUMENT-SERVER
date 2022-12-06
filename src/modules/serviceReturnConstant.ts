@@ -18,6 +18,9 @@ const constant = {
     // jwt token
     TOKEN_EXPIRED: -100, // 토큰이 만료되었을 때
     TOKEN_INVALID: -101, // 유효하지 않은 토큰일 때
+    WRONG_TOKEN: -102, // 올바르지 않은 토큰일 때
+    TOKEN_NOT_BEFORE: -103, // 아직 갱신할 수 없는 토큰일 때
+    TOKEN_UNKNOWN_ERROR: -199, // 알 수 없는 토큰 에러
 };
 
 export default constant;
