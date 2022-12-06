@@ -16,8 +16,8 @@ const constant = {
     APPLE_INTERNAL_SERVER_ERROR: -51, // 애플 API 서버 에러났을 때
 
     // jwt token
-    TOKEN_EXPIRED: -100,
-    TOKEN_INVALID: -101,
+    TOKEN_EXPIRED: -100, // 토큰이 만료되었을 때
+    TOKEN_INVALID: -101, // 유효하지 않은 토큰일 때
 };
 
 export default constant;
