@@ -26,17 +26,11 @@ const userInfo = async (userId: string) => {
 // 내가 작성한 뮤멘트 리스트 가져오기 - 최신순
 const myMumentList = async (userId: string) => {
     interface mumentAndLikeInfo {
-        mument: MyMumentInfoRDB;
-        LikeCount: number;
-    }
-    let myMumentLikeCountList = [];
-
-    // mument & mument tag & music 테이블 조인
     const mumentListQuery = `
         SELECT mument.id as mument_id, user_id,
-            music_id, is_first, like_count,
+            music_id, is_first, like_count, content,
             is_private, mument.created_at as created_at,
-            artist, image, name, tag_id
+            artist, music.image as music_image, name, tag_id
             FROM mument
             JOIN music
             ON mument.music_id = music.id
@@ -46,7 +40,6 @@ const myMumentList = async (userId: string) => {
             ORDER BY mument.created_at DESC;`;
     
     const myMumentList: MyMumentInfoRDB[] = await pools.query(mumentListQuery);
-    console.log(myMumentList);
 
     return myMumentList;
 };
