@@ -5,11 +5,14 @@ export interface MyMumentInfoRDB {
     user_id: number;
     music_id: number;
     is_first: boolean;
+    content: string;
     like_count: number;
     is_private: boolean;
     created_at: Date; // 뮤멘트 작성일
     artist: string; // 곡 아티스트
-    iamge: string; //곡 이미지
+    music_image: string; //곡 이미지
     name: string; //곡 제목
-    tag_id: number; //태그 번호
+    tag_id: number; //태그 번호;
+    profile_id?: string; // 유저 프로필 이름
+    user_image?: string; // 유저 프로필 이미지
 }
