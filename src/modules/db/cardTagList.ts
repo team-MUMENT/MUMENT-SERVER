@@ -32,8 +32,6 @@ const cardTag  = async (tagList: number[]) => { //인자로 뮤멘트의 전체 
         // 감정 태그만 존재 시 - 감정태그만 최대 2개 삽입
         cardTag.push(...feelingTag.slice(0, 2));
     }
-    console.log('인상태그 ', impressionTag);
-    console.log('감정태그 ', feelingTag);
 
     return cardTag;
 };
