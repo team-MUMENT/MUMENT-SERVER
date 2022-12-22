@@ -16,6 +16,7 @@ import { UserInfoRDB } from '../interfaces/user/UserInfoRDB';
 import mumentDB from '../modules/db/Mument';
 import userDB from '../modules/db/User';
 import { MyMumentInfoRDB } from '../interfaces/mument/MyMumentInfoRDB';
+import cardTag from '../modules/db/cardTagList';
 
 /**
  * 내가 작성한 뮤멘트 리스트
@@ -39,10 +40,13 @@ const getMyMumentList = async (userId: string, tagList: number[]): Promise<UserM
                 
                 // isLiked 좋아요 유무
                 const isLiked = await mumentDB.isLiked(item.mument_id.toString(), item.user_id.toString());
-                // 뮤멘트 태그 합치기
+                // 뮤멘트 태그 전체 합치기
                 cardTagList.push(item.tag_id);
-                // 태그 리스트 3개 이하로 자르기
-                cardTagList = cardTagList.slice(0, 3);
+
+                console.log('가공 전 태그리스트 ', cardTagList);
+                cardTagList = await cardTag.cardTag(cardTagList);
+                console.log('가공된 카드태그리스트 ', cardTagList);
+                console.log('');
 
                 result.push({
                     _id: item.mument_id,
