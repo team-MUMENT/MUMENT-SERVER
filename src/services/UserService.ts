@@ -47,12 +47,6 @@ const getMyMumentList = async (userId: string, tagList: number[]): Promise<UserM
                 // 뮤멘트 태그 전체 합치기
                 allCardTagList.push(item.tag_id);
 
-                console.log('가공 전 태그리스트 ', allCardTagList);
-                cardTagList = await cardTag.cardTag(allCardTagList);
-                console.log('가공된 카드태그리스트 ', cardTagList);
-                console.log('');
-                console.log('');
-
                 result.push({
                     _id: item.mument_id,
                     user: {
