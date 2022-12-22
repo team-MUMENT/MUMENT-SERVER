@@ -18,7 +18,8 @@ export interface MumentResponseDto {
     isFirst: boolean;
     impressionTag?: number[];
     feelingTag?: number[];
-    cardTag?: number[];
+    allCardTag?: number[]; // 전체 뮤멘트 태그 리스트 - 보관함때문에 추가
+    cardTag?: number[]; // 뮤멘트 카드에 띄우는 최대 2개의 태그 리스트
     content: string | null;
     isPrivate?: boolean;
     likeCount: number;
