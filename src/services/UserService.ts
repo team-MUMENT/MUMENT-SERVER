@@ -17,6 +17,7 @@ import mumentDB from '../modules/db/Mument';
 import userDB from '../modules/db/User';
 import { MyMumentInfoRDB } from '../interfaces/mument/MyMumentInfoRDB';
 import cardTag from '../modules/db/cardTagList';
+import cardTagList from '../modules/db/cardTagList';
 
 /**
  * 내가 작성한 뮤멘트 리스트
@@ -30,7 +31,10 @@ const getMyMumentList = async (userId: string, tagList: number[]): Promise<UserM
         let result: MumentResponseDto[] = [];
 
         // for문을 통해 하나의 뮤멘트에 대해 tag 합칠 배열
-        let cardTagList: number[] = []
+        let allCardTagList: number[] = [];
+
+        // 카드뷰에 띄울 가공된 태그 리스트를 넣을 배열
+        let cardTagList: number[] = [];
 
         // 나의 유저 정보
         const user = await userDB.userInfo(myMumentList[0].user_id.toString());
@@ -41,11 +45,12 @@ const getMyMumentList = async (userId: string, tagList: number[]): Promise<UserM
                 // isLiked 좋아요 유무
                 const isLiked = await mumentDB.isLiked(item.mument_id.toString(), item.user_id.toString());
                 // 뮤멘트 태그 전체 합치기
-                cardTagList.push(item.tag_id);
+                allCardTagList.push(item.tag_id);
 
-                console.log('가공 전 태그리스트 ', cardTagList);
-                cardTagList = await cardTag.cardTag(cardTagList);
+                console.log('가공 전 태그리스트 ', allCardTagList);
+                cardTagList = await cardTag.cardTag(allCardTagList);
                 console.log('가공된 카드태그리스트 ', cardTagList);
+                console.log('');
                 console.log('');
 
                 result.push({
@@ -62,7 +67,8 @@ const getMyMumentList = async (userId: string, tagList: number[]): Promise<UserM
                         image: item.music_image
                     },
                     isFirst: Boolean(item.is_first),
-                    cardTag: cardTagList,
+                    allCardTag: allCardTagList, // 전체 태그 리스트
+                    cardTag: cardTagList, // 카드뷰에 띄우는 로직으로 처리한 최대 2개의 태그 리스트
                     content: item.content,
                     isPrivate: Boolean(item.is_private),
                     likeCount: item.like_count,
@@ -71,11 +77,13 @@ const getMyMumentList = async (userId: string, tagList: number[]): Promise<UserM
                     year: Number(dayjs(item.created_at).format('YYYY')),
                     month: Number(dayjs(item.created_at).format('M'))
                 });
-                cardTagList = []; // 리셋
+
+                // 리셋
+                allCardTagList = []; 
+                cardTagList = []; 
             } else {
-                
                 // 뮤멘트 태그 합치기
-                cardTagList.push(item.tag_id);
+                allCardTagList.push(item.tag_id);
             }
         };
 
@@ -83,11 +91,11 @@ const getMyMumentList = async (userId: string, tagList: number[]): Promise<UserM
                 return pre.then(() => myMumentListFunc(curr, index));
         }, Promise.resolve());
 
-        // 필링 태그 존재시 뮤멘트 필터링
+        // 필링 태그 존재시 뮤멘트 필터링 - 전체 태그 리스트에서 필터링하고, 카드뷰에 띄우는건 cardTag
         if (tagList.length > 0) {
             result = result.filter(mument => {
                 return tagList.every(tag => {
-                    return mument.cardTag?.includes(tag);
+                    return mument.allCardTag?.includes(tag);
                 });
             });
         }
