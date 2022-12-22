@@ -104,6 +104,8 @@ const mumentTagListGet = async (mumentId: string) => {
     };
 };
 
+// 뮤멘트 id에 해당하는 태그 리스트로 반환하기
+
 
 export default {
     mumentTagCreate,

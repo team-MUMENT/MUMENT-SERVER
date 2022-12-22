@@ -43,6 +43,29 @@ const myMumentList = async (userId: string) => {
     return myMumentList;
 };
 
+// 좋아요한 뮤멘트 리스트 가져오기 - 최신순
+const myLikeMumentList = async (userId: string) => {
+    const mumentListQuery = `
+        SELECT mument.id as mument_id, user_id,
+            music_id, is_first, like_count, content,
+            is_private, mument.created_at as created_at,
+            artist, music.image as music_image, name, tag_id,
+            profile_id, user.image as user_image
+            FROM mument
+            JOIN music
+            ON mument.music_id = music.id
+            JOIN mument_tag
+            ON mument.id = mument_tag.mument_id
+            JOIN user
+            ON mument.user_id = user.id
+            WHERE user_id=${userId} AND mument.is_deleted=0
+            ORDER BY mument.created_at DESC;`;
+    
+    const myMumentList: MyMumentInfoRDB[] = await pools.query(mumentListQuery);
+
+    return myMumentList;
+};
+
 
 export default {
     userInfo,
