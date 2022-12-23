@@ -1,52 +1,104 @@
-import { UserResponseDto } from '../interfaces/user/UserResponseDto';
-import { UserInfo } from '../interfaces/user/UserInfo';
-import User from '../models/User';
-import constant from '../modules/serviceReturnConstant';
-import dummyData from '../modules/dummyData';
-import { AppleResponseDto } from '../interfaces/auth/AppleResponseDto';
-import jwt, { JwtPayload } from 'jsonwebtoken';
-import appleSignInLibrary from '../library/appleSignIn';
+import pools from '../modules/pool';
+import poolPromise from '../loaders/db'
 
-//방법1
+import { AuthTokenResponseDto } from '../interfaces/auth/AuthTokenResponseDto';
+import constant from '../modules/serviceReturnConstant';
+import { UserInfoRDB } from '../interfaces/user/UserInfoRDB';
+
+import kakaoAuth from '../library/kakaoAuth';
 import AppleAuth from 'apple-auth';
+import { AppleResponseDto } from '../interfaces/auth/AppleResponseDto';
+import appleSignInLibrary from '../library/appleSignIn';
+import jwt, { JwtPayload } from 'jsonwebtoken';
+import jwtHandler from '../library/jwtHandler';
+
 const path = require('path');
 const appleConfig = require('../config/apple/appleConfig.json');
 
-const login = async (profileId: string, password: string): Promise<UserResponseDto | number> => {
+/**
+* 로그인
+*/
+const login = async (provider: string, authenticationCode?: string): Promise<AuthTokenResponseDto | number> => {
+    const pool: any = await poolPromise;
+    const connection = await pool.getConnection();
+    
     try {
-        /**
-         * ✅ 몽고디비 연결 임시 주석처리 + 변수에 임시로 더미 넣어둠
-         */
-        // // 프로필 아이디로 다큐멘트 조회
-        // const user: UserInfo | null = await User.findOne({
-        //     profileId: profileId,
-        // });
+        let user: UserInfoRDB;
+        if (provider === 'kakao') {
+            // authentication code가 없는 경우
+            if (!authenticationCode) return constant.NO_AUTHENTICATION_CODE;
+            
+            // authentication code로 카카오 토큰 발급 받아오기
+            const kakaoToken: Promise<string> = kakaoAuth.getKakaoToken(authenticationCode);
+            
+            // 카카오 토큰으로 프로필 조회
+            const kakaoProfile = kakaoAuth.getKakaoProfile(await kakaoToken);
 
-        // // 프로필 아이디가 존재하지 않으면 NO_USER 리턴
-        // if (!user) {
-        //     return constant.NO_USER;
-        // }
+            // 해당 유저가 이미 가입한 유저인지 확인
+            const findUserQuery = `
+            SELECT *
+            FROM user
+            WHERE authentication_code = ?
+                AND is_deleted = 0;
+            `;
+            const findUserResult = await connection.query(findUserQuery, [authenticationCode]);
+            user = findUserResult;
 
-        // // 비밀번호 검증
-        // const isMatch = !!(password === user.password);
+            // 회원가입이 필요한 유저인 경우
+            if (findUserResult.length === 0) {
+                // db에 유저 정보 insert
+                const insertUserQuery = `
+                INSERT INTO user (provider, authentication_code, email, gender, age_range)
+                VALUE (kakao, ?, ?, ?, ?);
+                `;
 
-        // // 비밀번호 틀렸을 경우
-        // if (!isMatch) {
-        //     return constant.WRONG_PASSWORD;
-        // }
+                await connection.query(insertUserQuery, [
+                    authenticationCode, 
+                    kakaoProfile.account_email,
+                    kakaoProfile.gender,
+                    kakaoProfile.age_range,
+                ]);
 
-        // const data: UserResponseDto = {
-        //     id: user._id,
-        //     profileId: user.profileId,
-        //     name: user.name,
-        //     image: user.image,
-        // };
-        const data: UserResponseDto = dummyData.loginDummy;
+                // 유저 insert 결과 조회
+                const findUserAfterInsertResult = await connection.query(findUserQuery, [authenticationCode]);
+                if (findUserAfterInsertResult.length === 0) return constant.NO_USER;
+
+                user = findUserAfterInsertResult;
+            }
+        } else if (provider === 'apple') {
+
+        }
+
+        // jwt token 발급
+        const accessToken = jwtHandler.accessSign(user);
+        const refreshToken = jwtHandler.refreshSign(user);
+
+        // refresh token db에 update
+        const updateTokenQuery = `
+        UPDATE user
+        SET refresh_token = ?
+        WHERE id = ?
+            AND is_deleted = 0;
+        `;
+
+        await connection.query(updateTokenQuery, [
+            refreshToken,
+            user.id,
+        ])
+
+        // 새로 발급한 jwt token 리턴
+        const data: AuthTokenResponseDto = {
+            accessToken,
+            refreshToken,
+        };
 
         return data;
     } catch (error) {
         console.log(error);
+        await connection.rollback();
         throw error;
+    } finally {
+        connection.release();
     }
 };
 
