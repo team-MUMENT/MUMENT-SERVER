@@ -2,7 +2,6 @@
 export interface UserInfoRDB {
     id: number;
     provider: string;
-    name?: string;
     profile_id?: string;
     image?: string;
     refresh_token?: string;
