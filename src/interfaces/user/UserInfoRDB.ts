@@ -5,6 +5,7 @@ export interface UserInfoRDB {
     name?: string;
     profile_id?: string;
     image?: string;
+    refresh_token?: string;
     is_deleted: number;
     created_at: Date;
     updated_at: Date;
