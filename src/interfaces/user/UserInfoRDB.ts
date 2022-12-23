@@ -2,14 +2,14 @@
 export interface UserInfoRDB {
     id: number;
     provider: string;
-    name: string;
-    profile_id: string;
-    image: string;
+    name?: string;
+    profile_id?: string;
+    image?: string;
     is_deleted: number;
     created_at: Date;
     updated_at: Date;
-    authentication_code: string;
-    gender: string;
-    age_render: string;
-    email: string;
+    authentication_code?: string;
+    gender?: string;
+    age_render?: string;
+    email?: string;
 }
