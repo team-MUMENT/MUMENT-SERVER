@@ -24,6 +24,7 @@ const login = async (provider: string, authenticationCode?: string): Promise<Aut
     
     try {
         let user: UserInfoRDB;
+        
         if (provider === 'kakao') {
             // authentication code가 없는 경우
             if (!authenticationCode) return constant.NO_AUTHENTICATION_CODE;
