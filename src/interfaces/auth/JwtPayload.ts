@@ -1,5 +1,5 @@
 export interface JwtPayloadInfo  {
     "id": number,
-    "profileId": string,
-    "image": string
+    "profileId"?: string,
+    "image"?: string
 };
