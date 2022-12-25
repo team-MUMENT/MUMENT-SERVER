@@ -5,8 +5,8 @@ export interface MyMumentInfoRDB {
     user_id: number;
     music_id: number;
     is_first: boolean;
-    content: string;
     like_count: number;
+    content: string;
     is_private: boolean;
     created_at: Date; // 뮤멘트 작성일
     artist: string; // 곡 아티스트
