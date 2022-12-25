@@ -16,8 +16,7 @@ import { UserInfoRDB } from '../interfaces/user/UserInfoRDB';
 import mumentDB from '../modules/db/Mument';
 import userDB from '../modules/db/User';
 import { MyMumentInfoRDB } from '../interfaces/mument/MyMumentInfoRDB';
-import cardTag from '../modules/db/cardTagList';
-import cardTagList from '../modules/db/cardTagList';
+import cardTagListProvider from '../modules/cardTagList';
 
 /**
  * 내가 작성한 뮤멘트 리스트
@@ -44,8 +43,12 @@ const getMyMumentList = async (userId: string, tagList: number[]): Promise<UserM
                 
                 // isLiked 좋아요 유무
                 const isLiked = await mumentDB.isLiked(item.mument_id.toString(), item.user_id.toString());
+                
                 // 뮤멘트 태그 전체 합치기
                 allCardTagList.push(item.tag_id);
+
+                // 뮤멘트 카드뷰 태그 리스트 개수 처리
+                cardTagList = await cardTagListProvider.cardTag(allCardTagList);
 
                 result.push({
                     _id: item.mument_id,
@@ -130,6 +133,9 @@ const getLikeMumentList = async (userId: string, tagList: number[]): Promise<Use
                 
                 // 뮤멘트 태그 전체 합치기
                 allCardTagList.push(item.tag_id);
+
+                // 뮤멘트 카드뷰 태그 리스트 개수 처리
+                cardTagList = await cardTagListProvider.cardTag(allCardTagList);
 
                 result.push({
                     _id: item.mument_id,
