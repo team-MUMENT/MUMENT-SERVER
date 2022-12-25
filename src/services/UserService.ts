@@ -54,8 +54,8 @@ const getMyMumentList = async (userId: string, tagList: number[]): Promise<UserM
                     _id: item.mument_id,
                     user: {
                         _id: item.user_id,
-                        image: user.image,
-                        name: user.profile_id
+                        image: user.image as string,
+                        name: user.profile_id as string
                     },
                     music: {
                         _id: item.music_id,
