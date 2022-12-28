@@ -16,19 +16,19 @@ const path = require('path');
 const appleConfig = require('../config/apple/appleConfig.json');
 
 /**
-* 로그인
+* 로그인/회원가입
 */
-const login = async (provider: string, authenticationCode?: string): Promise<AuthTokenResponseDto | number> => {
+const login = async (provider: string, authenticationCode: string): Promise<AuthTokenResponseDto | number> => {
     const pool: any = await poolPromise;
     const connection = await pool.getConnection();
     
+    // authentication code가 없는 경우
+    if (!authenticationCode) return constant.NO_AUTHENTICATION_CODE;
+
     try {
         let user: UserInfoRDB;
-        
-        if (provider === 'kakao') {
-            // authentication code가 없는 경우
-            if (!authenticationCode) return constant.NO_AUTHENTICATION_CODE;
             
+        if (provider === 'kakao') {
             // authentication code로 카카오 토큰 발급 받아오기
             const kakaoToken: Promise<string> = kakaoAuth.getKakaoToken(authenticationCode);
             
@@ -37,10 +37,9 @@ const login = async (provider: string, authenticationCode?: string): Promise<Aut
 
             // 해당 유저가 이미 가입한 유저인지 확인
             const findUserQuery = `
-            SELECT *
-            FROM user
-            WHERE authentication_code = ?
-                AND is_deleted = 0;
+                SELECT *
+                FROM user
+                WHERE authentication_code = ? AND is_deleted = 0;
             `;
             const findUserResult = await connection.query(findUserQuery, [authenticationCode]);
             user = findUserResult;
@@ -49,8 +48,8 @@ const login = async (provider: string, authenticationCode?: string): Promise<Aut
             if (findUserResult.length === 0) {
                 // db에 유저 정보 insert
                 const insertUserQuery = `
-                INSERT INTO user (provider, authentication_code, email, gender, age_range)
-                VALUE (kakao, ?, ?, ?, ?);
+                    INSERT INTO user (provider, authentication_code, email, gender, age_range)
+                    VALUE (kakao, ?, ?, ?, ?);
                 `;
 
                 await connection.query(insertUserQuery, [
@@ -103,7 +102,7 @@ const login = async (provider: string, authenticationCode?: string): Promise<Aut
     }
 };
 
-const appleSignIn = async (authorization_code: string, identity_token: string): Promise<AppleResponseDto | number> => {
+const appleSignIn = async (authorization_code: string): Promise<AppleResponseDto | number> => {
     try {
         /* 방법1 -이거 되면 클라에서 code만 받으면됨*/ 
         const auth = new AppleAuth(appleConfig, path.join(__dirname, `../config/apple/${appleConfig.private_key_path}`), 'text');
@@ -116,6 +115,7 @@ const appleSignIn = async (authorization_code: string, identity_token: string): 
         const sub = id_token?.sub;
         if (!sub) {
             //id_token의 sub값이 null 이라면 400
+            return constant.NO_IDENTITY_TOKEN_SUB; // to-do : 컨트롤러에 상수 추가
         }
 
         /*방법2 */
