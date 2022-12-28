@@ -12,7 +12,9 @@ import sendMessage, { SlackMessageFormat } from '../library/slackWebHook';
  * @DESC match user profileId and password
  */
 const login = async (req: Request, res: Response) => {
-    const { profileId, password } = req.body;
+    // **리팩토링 전 코드**
+    // const { profileId, password } = req.body;
+    const { provider, authentication_code } = req.body;
 
     const error = validationResult(req);
     if (!error.isEmpty()) {
@@ -20,15 +22,32 @@ const login = async (req: Request, res: Response) => {
     }
 
     try {
-        const data = await AuthService.login(profileId, password);
+        // **리팩토링 전 코드**
+        //const data = await AuthService.login(profileId, password);
+        // // 실패했을 때
+        // switch (data) {
+        //     case constant.NO_USER: {
+        //         res.status(statusCode.NOT_FOUND).send(util.fail(statusCode.NOT_FOUND, message.NO_USER_PROFILEID));
+        //     }
+        //     case constant.WRONG_PASSWORD: {
+        //         res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.LOGIN_FAIL));
+        //     }
+        // }
 
-        // 실패했을 때
+        const data = await AuthService.login(provider, authentication_code);
+
         switch (data) {
-            case constant.NO_USER: {
-                res.status(statusCode.NOT_FOUND).send(util.fail(statusCode.NOT_FOUND, message.NO_USER_PROFILEID));
+            case constant.NO_AUTHENTICATION_CODE: {
+                // 공통 - authentication code가 없는 경우
+                res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.no));
             }
-            case constant.WRONG_PASSWORD: {
-                res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.LOGIN_FAIL));
+            case constant.NO_IDENTITY_TOKEN_SUB: {
+                // 애플 - authorization code에 sub값이 없을 때
+                res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.NO_IDENTITY_TOKEN_SUB));
+            }
+            case constant.NO_USER: {
+                // 카카오 - 회원가입 진행 중 유저가 생성되지 않았을 때
+                res.status(statusCode.NOT_FOUND).send(util.fail(statusCode.NOT_FOUND, message.NO_USER_PROFILEID));
             }
         }
 
@@ -56,7 +75,7 @@ const login = async (req: Request, res: Response) => {
  * @DESC apple signin
  */
 const appleSignIn = async (req: Request, res: Response) => {
-    const { authorization_code, identity_token } = req.body;
+    const { authorization_code } = req.body;
     const error = validationResult(req);
     if (!error.isEmpty()) {
         // request body에 code or identity token을 보내지 않을 경우 400
@@ -64,7 +83,7 @@ const appleSignIn = async (req: Request, res: Response) => {
     }
 
     try {
-        const data = await AuthService.appleSignIn(authorization_code, identity_token);
+        const data = await AuthService.appleSignIn(authorization_code);
 
         if (data===constant.NO_IDENTITY_TOKEN_SUB) {
             // Identity token에 sub(id)값이 없을 경우 400
