@@ -1,7 +1,7 @@
 import { ExistMumentDto } from "../../interfaces/mument/ExistMumentRDBDto";
 import { NumberBaseResponseDto } from "../../interfaces/common/NumberBaseResponseDto";
 import pools from '../pool';
-import { MumentInfoRDB } from "../../interfaces/mument/MumentInfoRdb";
+import { MumentInfoRDB } from "../../interfaces/mument/MumentInfoRDB";
 
 /**
  * mument 관련 재사용 쿼리 - 트랜잭션 쓸 때 사용가능

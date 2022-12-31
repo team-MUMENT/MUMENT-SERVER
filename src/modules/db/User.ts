@@ -1,7 +1,5 @@
 import { UserInfoRDB } from '../../interfaces/user/UserInfoRDB';
 import pools from '../pool';
-import { MumentInfoRDB } from "../../interfaces/mument/MumentInfoRdb";
-import mumentDB from './Mument';
 import { MyMumentInfoRDB } from '../../interfaces/mument/MyMumentInfoRDB';
 
 /**
