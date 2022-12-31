@@ -89,7 +89,7 @@ const login = async (provider: string, authenticationCode: string): Promise<Auth
 
 
             /** 카카오랑 비슷한 코드~ */
-            // 해당 유저가 이미 가입한 유저인지 확인 - sub 사용(애플은 code 유효기간이 10분이어서 유니크한 sub값으로 저장함)
+            // 해당 유저가 이미 가입한 유저인지 확인 - sub 사용(유니크한 sub값으로 저장함)
             const findUserQuery = `
                 SELECT *
                 FROM user
@@ -144,7 +144,6 @@ const login = async (provider: string, authenticationCode: string): Promise<Auth
             user.id,
         ])
 
-        appleSignIn.createSignWithAppleSecret();
         // 새로 발급한 jwt token과 유저 id, 로그인/회원가입 타입 return
         const data: AuthTokenResponseDto = {
             _id: user.id.toString(),
