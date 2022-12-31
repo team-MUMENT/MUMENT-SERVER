@@ -26,7 +26,9 @@ const login = async (provider: string, authenticationCode: string): Promise<Auth
     if (!authenticationCode) return constant.NO_AUTHENTICATION_CODE;
 
     try {
-        let user: UserInfoRDB;
+        // **리팩토링 전 코드**
+        //let user: UserInfoRDB;
+        let user: UserInfoRDB | undefined = undefined;
             
         if (provider === 'kakao') {
             // authentication code로 카카오 토큰 발급 받아오기
@@ -68,6 +70,10 @@ const login = async (provider: string, authenticationCode: string): Promise<Auth
         } else if (provider === 'apple') {
 
         }
+
+        
+        //유저가 생성 안됐다면
+        if (user === undefined) return constant.NO_USER; 
 
         // jwt token 발급
         const accessToken = jwtHandler.accessSign(user);
