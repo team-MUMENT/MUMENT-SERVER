@@ -35,7 +35,7 @@ const myMumentList = async (userId: string) => {
             ON mument.music_id = music.id
             JOIN mument_tag
             ON mument.id = mument_tag.mument_id
-            WHERE user_id=${userId} AND mument.is_deleted=0
+            WHERE mument.user_id=${userId} AND mument.is_deleted=0
             ORDER BY mument.created_at DESC;`;
     
     const myMumentList: MyMumentInfoRDB[] = await pools.query(mumentListQuery);

@@ -242,7 +242,7 @@ const getIsFirst = async (userId: string, musicId: string): Promise<IsFirstRespo
     try {
         const query1 = 'SELECT * FROM mument WHERE user_id=? AND music_id=? AND is_deleted=0;';
         const result: any = await pools.queryValue(query1, [userId, musicId]);
-        console.log(result);
+
         const userMument = result;
 
         if (userMument.length === 0) {
