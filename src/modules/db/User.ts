@@ -25,7 +25,6 @@ const userInfo = async (userId: string) => {
 
 // 내가 작성한 뮤멘트 리스트 가져오기 - 최신순
 const myMumentList = async (userId: string) => {
-    console.log(userId);
     const mumentListQuery = `
         SELECT mument.id as mument_id, user_id,
             music_id, is_first, like_count, content,
