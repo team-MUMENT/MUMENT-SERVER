@@ -33,7 +33,12 @@ const login = async (provider: string, authenticationCode: string): Promise<Auth
         let user: UserInfoRDB | undefined = undefined;
         let type: string = 'login'; // 회원가입이면 -> 'signUp' 재할당, 로그인이면 -> 'login'
             
+
         if (provider === 'kakao') {
+            /**
+             * 카카오 로그인/회원가입
+             */
+
             // authentication code로 카카오 토큰 발급 받아오기
             const kakaoToken: Promise<string> = kakaoAuth.getKakaoToken(authenticationCode);
             
@@ -77,6 +82,10 @@ const login = async (provider: string, authenticationCode: string): Promise<Auth
             }
 
         } else if (provider === 'apple') {
+            /**
+             * 애플 로그인/회원가입
+             */
+            
             const id_token = jwt.decode(authenticationCode) as JwtPayload;
 
             const email: string = id_token.email;
@@ -88,7 +97,6 @@ const login = async (provider: string, authenticationCode: string): Promise<Auth
             }
 
 
-            /** 카카오랑 비슷한 코드~ */
             // 해당 유저가 이미 가입한 유저인지 확인 - sub 사용(유니크한 sub값으로 저장함)
             const findUserQuery = `
                 SELECT *
@@ -97,7 +105,6 @@ const login = async (provider: string, authenticationCode: string): Promise<Auth
             `;
             const findUserResult = await connection.query(findUserQuery, ['apple', sub]);
             user = findUserResult;
-            //console.log("로그인한 유저 객체 : ", user);
 
 
             // 회원가입이 필요한 유저인 경우 - db에 유저 정보 insert
