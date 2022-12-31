@@ -10,8 +10,9 @@ const message = {
     // user
     NO_USER_ID: '해당 아이디의 유저가 존재하지 않습니다.',
     NO_USER_PROFILEID: '존재하지 않는 프로필 아이디입니다',
-    LOGIN_SUCCESS: '로그인에 성공했습니다',
+    LOGIN_SUCCESS: '로그인 성공',
     LOGIN_FAIL: '로그인에 실패했습니다',
+    SIGNUP_SUCCESS: '회원가입 성공',
     READ_MY_MUMENT_LIST_SUCCESS: '나의 뮤멘트 리스트 조회 성공',
     READ_LIKE_MUMENT_LIST_SUCCESS: '좋아요한 뮤멘트 리스트 조회 성공',
 
