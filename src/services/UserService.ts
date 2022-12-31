@@ -45,7 +45,7 @@ const getMyMumentList = async (userId: string, tagList: number[]): Promise<UserM
                 const isLiked = await mumentDB.isLiked(item.mument_id.toString(), item.user_id.toString());
                 
                 // 뮤멘트 태그 전체 합치기
-                allCardTagList.push(item.tag_id);
+                if (item.tag_id) allCardTagList.push(item.tag_id);
 
                 // 뮤멘트 카드뷰 태그 리스트 개수 처리
                 cardTagList = await cardTagListProvider.cardTag(allCardTagList);
@@ -80,7 +80,7 @@ const getMyMumentList = async (userId: string, tagList: number[]): Promise<UserM
                 cardTagList = []; 
             } else {
                 // 뮤멘트 태그 합치기
-                allCardTagList.push(item.tag_id);
+                if (item.tag_id) allCardTagList.push(item.tag_id);
             }
         };
 
@@ -132,7 +132,7 @@ const getLikeMumentList = async (userId: string, tagList: number[]): Promise<Use
             if (idx === likeMumentList.length - 1 || (idx < likeMumentList.length - 1 && likeMumentList[idx + 1].mument_id !== item.mument_id)) {
                 
                 // 뮤멘트 태그 전체 합치기
-                allCardTagList.push(item.tag_id);
+                if (item.tag_id) allCardTagList.push(item.tag_id);
 
                 // 뮤멘트 카드뷰 태그 리스트 개수 처리
                 cardTagList = await cardTagListProvider.cardTag(allCardTagList);
@@ -167,7 +167,7 @@ const getLikeMumentList = async (userId: string, tagList: number[]): Promise<Use
                 cardTagList = []; 
             } else {
                 // 뮤멘트 태그 합치기
-                allCardTagList.push(item.tag_id);
+                if (item.tag_id) allCardTagList.push(item.tag_id);
             }
         };
 
