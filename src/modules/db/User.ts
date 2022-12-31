@@ -16,7 +16,7 @@ import { MyMumentInfoRDB } from '../../interfaces/mument/MyMumentInfoRDB';
 
 // userId로 유저 레코드 가져오기
 const userInfo = async (userId: string) => {
-    const query = 'SELECT * FROM user WHERE id=? AND NOT is_deleted=1'; //탈퇴하지 않은 유저
+    const query = 'SELECT * FROM user WHERE id=? AND is_deleted=0'; //탈퇴하지 않은 유저
     
     const user: UserInfoRDB[] = await pools.queryValue(query, [userId]);
 

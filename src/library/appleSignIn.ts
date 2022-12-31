@@ -31,7 +31,7 @@ const createSignWithAppleSecret = () => {
 };
 
 
-//클라에서 받은 code를 이용해 apple token api 호출해서 로그인에 사용될 access, refresh 포함 토큰 얻기
+//iOS client에서 받은 code를 이용해 apple token api 호출해서 로그인에 사용될 access, refresh 포함 토큰 얻기
 const getAppleToken = async (code: string) => {
   return axios.post('https://appleid.apple.com/auth/token',
   //body를 URL encoding해서 보냄

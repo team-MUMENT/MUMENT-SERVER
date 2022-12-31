@@ -10,8 +10,9 @@ const message = {
     // user
     NO_USER_ID: '해당 아이디의 유저가 존재하지 않습니다.',
     NO_USER_PROFILEID: '존재하지 않는 프로필 아이디입니다',
-    LOGIN_SUCCESS: '로그인에 성공했습니다',
+    LOGIN_SUCCESS: '로그인 성공',
     LOGIN_FAIL: '로그인에 실패했습니다',
+    SIGNUP_SUCCESS: '회원가입 성공',
     READ_MY_MUMENT_LIST_SUCCESS: '나의 뮤멘트 리스트 조회 성공',
     READ_LIKE_MUMENT_LIST_SUCCESS: '좋아요한 뮤멘트 리스트 조회 성공',
 
@@ -44,10 +45,11 @@ const message = {
 
     // auth
     BODY_REQUIRED: '바디 리퀘스트에 필요한 값이 없습니다',
-    NO_IDENTITY_TOKEN_SUB: 'Identity token에 sub(id)값이 없습니다',
+    NO_IDENTITY_TOKEN_SUB: 'apple authorization code에 sub(id)값이 없습니다',
     APPLE_LOGIN_SUCCESS: '애플 로그인 성공',
     APPLE_TOKEN_UNAUTHORIZED: '애플 API 개발자 토큰이 유효하지 않습니다',
     APPLE_SERVER_INTERNAL_ERROR: '애플 API 서버 자체 에러',
+    NO_AUTHENTICATION_CODE: 'authentication code값이 없습니다',
 };
 
 export default message;
