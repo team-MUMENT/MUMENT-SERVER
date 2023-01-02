@@ -11,10 +11,10 @@ import sendMessage, { SlackMessageFormat } from '../library/slackWebHook';
  */
 const getMyMumentList = async (req: Request, res: Response) => {
     const { tag1, tag2, tag3 } = req.query;
+    const userId = req.body.userId;
+
     let tagList = [Number(tag1), Number(tag2), Number(tag3)];
     tagList = tagList.filter(tag => isNaN(tag) === false);
-
-    const { userId } = req.params;
 
     try {
         const data = await UserService.getMyMumentList(userId, tagList);
@@ -45,10 +45,10 @@ const getMyMumentList = async (req: Request, res: Response) => {
  */
 const getLikeMumentList = async (req: Request, res: Response) => {
     const { tag1, tag2, tag3 } = req.query;
+    const userId = req.body.userId;
+
     let tagList = [Number(tag1), Number(tag2), Number(tag3)];
     tagList = tagList.filter(tag => isNaN(tag) === false);
-
-    const { userId } = req.params;
 
     try {
         const data = await UserService.getLikeMumentList(userId, tagList);

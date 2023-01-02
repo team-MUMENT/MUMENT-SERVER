@@ -1,12 +1,6 @@
 import dayjs from 'dayjs';
 import { UserMumentListResponseDto } from '../interfaces/user/UserMumentListResponseDto';
 import { MumentResponseDto } from '../interfaces/mument/MumentResponseDto';
-import { LikeInfo } from '../interfaces/like/LikeInfo';
-import { MumentInfo } from '../interfaces/mument/MumentInfo';
-import { UserInfo } from '../interfaces/user/UserInfo';
-import pools from '../modules/pool';
-import { MumentInfoRDB } from '../interfaces/mument/MumentInfoRDB';
-import { UserInfoRDB } from '../interfaces/user/UserInfoRDB';
 import mumentDB from '../modules/db/Mument';
 import userDB from '../modules/db/User';
 import { MyMumentInfoRDB } from '../interfaces/mument/MyMumentInfoRDB';
