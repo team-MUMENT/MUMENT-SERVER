@@ -151,11 +151,15 @@ const deleteMument = async (req: Request, res: Response) => {
 };
 
 /**
- *  @ROUTE GET /mument/:userId/:musicId/is-first
+ *  @ROUTE GET /mument/:musicId/is-first
  *  @DESC 특정 음악에 대해 뮤멘트 기록하기 전 처음/다시 태그 판단
  */
 const getIsFirst = async (req: Request, res: Response) => {
     const { userId, musicId } = req.params;
+    const { musicId } = req.params;
+    
+    const userId = req.body.userId;
+    console.log(userId);
 
     try {
         const data = await MumentService.getIsFirst(userId, musicId);
