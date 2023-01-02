@@ -50,6 +50,13 @@ const message = {
     APPLE_TOKEN_UNAUTHORIZED: '애플 API 개발자 토큰이 유효하지 않습니다',
     APPLE_SERVER_INTERNAL_ERROR: '애플 API 서버 자체 에러',
     NO_AUTHENTICATION_CODE: 'authentication code값이 없습니다',
+
+    //JWT
+    NULL_VALUE_TOKEN: 'request-header에 토큰이 없습니다',
+    TOKEN_EXPIRED: '토큰이 만료되었습니다',
+    TOKEN_INVALID: '유효하지 않은 토큰입니다',
+    WRONG_TOKEN: '잘못된 토큰입니다', //'jwt malformed' || 'jwt signature is required' || 'invalid signature'경우,
+    TOKEN_UNKNOWN_ERROR: '토큰 에러' // 그외의 토큰 에러
 };
 
 export default message;
