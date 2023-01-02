@@ -6,7 +6,7 @@ import auth from '../middlewares/auth';
 const router: Router = Router();
 
 // 뮤멘트 기록하기
-router.post('/:userId/:musicId', MumentController.createMument);
+router.post('/:musicId', auth, MumentController.createMument);
 
 // 처음/다시 조회
 router.get('/:musicId/is-first', auth, MumentController.getIsFirst);
@@ -17,7 +17,7 @@ router.put('/:mumentId', [
 ], MumentController.updateMument);
 
 // 뮤멘트 상세보기
-router.get('/:mumentId/:userId', MumentController.getMument);
+router.get('/:mumentId', auth, MumentController.getMument);
 
 //뮤멘트 삭제하기
 router.delete('/:mumentId', MumentController.deleteMument);
