@@ -10,12 +10,13 @@ import { PostBaseResponseDto } from '../interfaces/common/PostBaseResponseDto';
 import sendMessage, { SlackMessageFormat } from '../library/slackWebHook';
 
 /**
- *  @ROUTE POST /mument/:userId/:musicId
- *  @DESC Create Mument
+ *  @ROUTE POST /mument/:musicId
+ *  @DESC Create Mument 뮤멘트 기록하기
  */
 const createMument = async (req: Request, res: Response) => {
     const mumentCreateDto: MumentCreateDto = req.body;
-    const { userId, musicId } = req.params;
+    const { musicId } = req.params;
+    const userId = req.body.userId;
 
     try {
         const data: PostBaseResponseDto | null = await MumentService.createMument(userId, musicId, mumentCreateDto);
@@ -46,7 +47,7 @@ const createMument = async (req: Request, res: Response) => {
 
 /**
  *  @ROUTE PUT /mument/:mumentId
- *  @DESC Update Mument
+ *  @DESC Update Mument 뮤멘트 수정하기
  */
 const updateMument = async (req: Request, res: Response) => {
     const error = validationResult(req);
@@ -85,11 +86,12 @@ const updateMument = async (req: Request, res: Response) => {
 };
 
 /**
- *  @ROUTE GET /:mumentId/:userId
- *  @DESC Get Mument
+ *  @ROUTE GET /:mumentId
+ *  @DESC Get Mument 뮤멘트 상세보기
  */
 const getMument = async (req: Request, res: Response) => {
-    const { mumentId, userId } = req.params;
+    const { mumentId} = req.params;
+    const userId = req.body.userId;
 
     try {
         const data = await MumentService.getMument(mumentId, userId);
@@ -155,11 +157,8 @@ const deleteMument = async (req: Request, res: Response) => {
  *  @DESC 특정 음악에 대해 뮤멘트 기록하기 전 처음/다시 태그 판단
  */
 const getIsFirst = async (req: Request, res: Response) => {
-    const { userId, musicId } = req.params;
-    const { musicId } = req.params;
-    
+    const { musicId } = req.params;    
     const userId = req.body.userId;
-    console.log(userId);
 
     try {
         const data = await MumentService.getIsFirst(userId, musicId);
