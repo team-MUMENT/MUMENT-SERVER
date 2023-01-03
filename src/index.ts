@@ -1,4 +1,4 @@
-import express, { Request, Response } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 const app = express();
 import routes from './routes';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -16,7 +16,7 @@ interface ErrorType {
     status: number;
 }
 
-app.use(function (err: ErrorType, req: Request, res: Response) {
+app.use(function (err: ErrorType, req: Request, res: Response, next: NextFunction) {
     res.locals.message = err.message;
     res.locals.error = req.app.get('env') === 'production' ? err : {};
 
