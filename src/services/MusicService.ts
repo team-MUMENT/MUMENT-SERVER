@@ -254,7 +254,7 @@ const getMusicListBySearch = async (keyword: string): Promise<MusicResponseDto[]
             return musiclist;
         };
         const data = await appleResponse(keyword);
-        console.log(data);
+
         return data;
     } catch (error) {
         console.log(error);

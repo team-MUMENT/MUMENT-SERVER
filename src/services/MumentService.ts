@@ -9,6 +9,7 @@ import jwtHandler from '../library/jwtHandler';
 
 import mumentDB from '../modules/db/Mument';
 import userDB from '../modules/db/User';
+import musicDB from '../modules/db/Music';
 
 import { tagBannerTitle } from '../modules/tagTitle';
 import { tagRandomTitle } from '../modules/tagTitle';
@@ -19,6 +20,7 @@ import { MumentResponseDto } from '../interfaces/mument/MumentResponseDto';
 import { IsFirstResponseDto } from '../interfaces/mument/IsFirstResponseDto';
 import { MumentHistoryResponseDto } from '../interfaces/mument/MumentHistoryResponseDto';
 import { LikeCountResponeDto } from '../interfaces/like/LikeCountResponseDto';
+
 import { RandomMumentResponseDto } from '../interfaces/mument/RandomMumentResponeDto';
 import { TodayMumentResponseDto } from '../interfaces/mument/TodayMumentResponseDto';
 import { TodayBannerResponseDto } from '../interfaces/mument/TodayBannerResponseDto';
@@ -32,9 +34,12 @@ import AgainSelection from '../models/AgainSelection';
 
 import { BannerSelectionInfo } from '../interfaces/home/BannerSelectionInfo';
 import { AgainSelectionInfo } from '../interfaces/home/AgainSelectionInfo';
+import { LikeMumentInfo } from '../interfaces/like/LikeInfo';
+
 import { ExistMumentDto } from '../interfaces/mument/ExistMumentRDBDto';
-import { MumentInfoRDB } from '../interfaces/mument/MumentInfoRdb';
+import { MumentInfoRDB } from '../interfaces/mument/MumentInfoRDB';
 import { UserInfoRDB } from '../interfaces/user/UserInfoRDB';
+
 
 /** 
  * 뮤멘트 기록하기
@@ -45,6 +50,10 @@ const createMument = async (userId: string, musicId: string, mumentCreateDto: Mu
 
     try {    
         await connection.beginTransaction(); // 트랜잭션 적용 시작
+
+        // 음악 db에 존재안하면 db에 삽입하기
+        await musicDB.SearchAndCreateMusic(mumentCreateDto, connection);
+
 
         // 뮤멘트 생성
         const query1 = 'INSERT INTO mument(user_id, music_id, content, is_first, is_Private) VALUES(?, ?, ?, ?, ?)';
@@ -137,7 +146,7 @@ const getMument = async (mumentId: string, userId: string): Promise<MumentRespon
         const mument = isExistMumentInfo.mument as MumentInfoRDB; // 뮤멘트 데이터 가져오기
 
         //  비밀글인데, 본인의 뮤멘트가 아닐 경우 -> 조회하지 못하도록
-        if (mument.is_private === 1 && mument.user_id.toString() !== userId) return constant.PRIVATE_MUMENT;
+        if (mument.is_private === 1 && mument.user_id.toString() != userId) return constant.PRIVATE_MUMENT;
 
     
         // 사용자가 이 뮤멘트에 좋아요 눌렀으면 1, 아니면 0
@@ -168,8 +177,8 @@ const getMument = async (mumentId: string, userId: string): Promise<MumentRespon
         const data: MumentResponseDto = {
             user: {
                 _id: user.id, 
-                image: user.image, 
-                name: user.profile_id, 
+                image: user.image as string, 
+                name: user.profile_id as string, 
             },
             isFirst: Boolean(mument.is_first),
             impressionTag: impressionTag,
@@ -233,7 +242,7 @@ const getIsFirst = async (userId: string, musicId: string): Promise<IsFirstRespo
     try {
         const query1 = 'SELECT * FROM mument WHERE user_id=? AND music_id=? AND is_deleted=0;';
         const result: any = await pools.queryValue(query1, [userId, musicId]);
-        console.log(result);
+
         const userMument = result;
 
         if (userMument.length === 0) {

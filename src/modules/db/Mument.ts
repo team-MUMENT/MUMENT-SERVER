@@ -1,7 +1,7 @@
 import { ExistMumentDto } from "../../interfaces/mument/ExistMumentRDBDto";
 import { NumberBaseResponseDto } from "../../interfaces/common/NumberBaseResponseDto";
 import pools from '../pool';
-import { MumentInfoRDB } from "../../interfaces/mument/MumentInfoRdb";
+import { MumentInfoRDB } from "../../interfaces/mument/MumentInfoRDB";
 
 /**
  * mument 관련 재사용 쿼리 - 트랜잭션 쓸 때 사용가능
@@ -105,6 +105,16 @@ const mumentTagListGet = async (mumentId: string) => {
 };
 
 // 뮤멘트 id에 해당하는 태그 리스트로 반환하기
+const mumentTagList = async (mumentId: string) => {
+    const query = `SELECT * FROM mument_tag WHERE mument_id=${mumentId};`;
+
+    let tagList: number[] = [];
+    for (let tag in tagList) {
+        
+    }
+
+    return tagList;
+};
 
 
 export default {
@@ -115,4 +125,5 @@ export default {
     likeCount,
     mumentHistoryCount,
     mumentTagListGet,
+    mumentTagList
 }
