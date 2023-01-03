@@ -1,17 +1,25 @@
 import { Router } from 'express';
 import { MumentController } from '../controllers';
 import { body, param, query } from 'express-validator';
+import auth from '../middlewares/auth';
 
 const router: Router = Router();
 
-router.post('/:userId/:musicId', MumentController.createMument);
+// 뮤멘트 기록하기
+router.post('/:musicId', auth, MumentController.createMument);
 
+// 처음/다시 조회
+router.get('/:musicId/is-first', auth, MumentController.getIsFirst);
+
+// 뮤멘트 수정하기
 router.put('/:mumentId', [
     body('isFirst').notEmpty(),
 ], MumentController.updateMument);
-router.get('/:mumentId/:userId', MumentController.getMument);
-router.get('/:userId/:musicId/is-first', MumentController.getIsFirst);
 
+// 뮤멘트 상세보기
+router.get('/:mumentId', auth, MumentController.getMument);
+
+//뮤멘트 삭제하기
 router.delete('/:mumentId', MumentController.deleteMument);
 
 // 히스토리 조회

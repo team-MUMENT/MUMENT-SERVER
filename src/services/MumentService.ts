@@ -138,7 +138,7 @@ const getMument = async (mumentId: string, userId: string): Promise<MumentRespon
         const mument = isExistMumentInfo.mument as MumentInfoRDB; // 뮤멘트 데이터 가져오기
 
         //  비밀글인데, 본인의 뮤멘트가 아닐 경우 -> 조회하지 못하도록
-        if (mument.is_private === 1 && mument.user_id.toString() !== userId) return constant.PRIVATE_MUMENT;
+        if (mument.is_private === 1 && mument.user_id.toString() != userId) return constant.PRIVATE_MUMENT;
 
     
         // 사용자가 이 뮤멘트에 좋아요 눌렀으면 1, 아니면 0

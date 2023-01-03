@@ -5,9 +5,7 @@ import { decode } from 'punycode';
 import { JwtPayloadInfo } from '../interfaces/auth/JwtPayload';
 import { UserInfoRDB } from '../interfaces/user/UserInfoRDB';
 import constant from '../modules/serviceReturnConstant';
-
-// .env에서 시크릿키 가져오기
-const secretKey = process.env.JWT_SECRET;
+import config from '../config';
 
 const accessOption = {
     expiresIn: '30d',
@@ -27,7 +25,7 @@ const accessSign = (user: UserInfoRDB) => {
         image: user.image 
     };
 
-    const accessToken: string = jwt.sign(payload, secretKey, accessOption);
+    const accessToken: string = jwt.sign(payload, config.jwtSecret, accessOption);
 
     return accessToken;
 }
@@ -40,7 +38,7 @@ const refreshSign = (user: UserInfoRDB) => {
         image: user.image 
     };
 
-    const refreshToken: string = jwt.sign(payload, secretKey, refreshOption);
+    const refreshToken: string = jwt.sign(payload, config.jwtSecret, refreshOption);
 
     return refreshToken;
 }
@@ -48,7 +46,7 @@ const refreshSign = (user: UserInfoRDB) => {
 // 토큰 decode 함수
 const verify = (token: string) => {
     try {
-        const decoded: UserInfoRDB = jwt.verify(token, secretKey);
+        const decoded: UserInfoRDB = jwt.verify(token, config.jwtSecret);
         return decoded;
     } catch (err: any) {
         if (err.name == TokenExpiredError) {
