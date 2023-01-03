@@ -6,15 +6,15 @@ import { UserService } from '../services';
 import sendMessage, { SlackMessageFormat } from '../library/slackWebHook';
 
 /**
- *  @ROUTE GET /my/:userId/list?tag1=&tag2=&tag3=
+ *  @ROUTE GET /my/list?tag1=&tag2=&tag3=
  *  @DESC 보관함에서 나의 뮤멘트 리스트를 조회합니다. 필터링이 필요한 경우 필터링합니다.
  */
 const getMyMumentList = async (req: Request, res: Response) => {
     const { tag1, tag2, tag3 } = req.query;
+    const userId = req.body.userId;
+
     let tagList = [Number(tag1), Number(tag2), Number(tag3)];
     tagList = tagList.filter(tag => isNaN(tag) === false);
-
-    const { userId } = req.params;
 
     try {
         const data = await UserService.getMyMumentList(userId, tagList);
@@ -40,15 +40,15 @@ const getMyMumentList = async (req: Request, res: Response) => {
 };
 
 /**
- *  @ROUTE GET /like/:userId/list
+ *  @ROUTE GET /like/list?tag1=&tag2=&tag3=
  *  @DESC 보관함에서 좋아요한 뮤멘트 리스트를 조회합니다. 필터링이 필요한 경우 필터링합니다.
  */
 const getLikeMumentList = async (req: Request, res: Response) => {
     const { tag1, tag2, tag3 } = req.query;
+    const userId = req.body.userId;
+
     let tagList = [Number(tag1), Number(tag2), Number(tag3)];
     tagList = tagList.filter(tag => isNaN(tag) === false);
-
-    const { userId } = req.params;
 
     try {
         const data = await UserService.getLikeMumentList(userId, tagList);
