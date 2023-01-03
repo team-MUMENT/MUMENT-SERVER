@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { MumentController } from '../controllers';
-import { body, param, query } from 'express-validator';
+import { body, header, param, query } from 'express-validator';
 
 const router: Router = Router();
 
@@ -22,15 +22,15 @@ router.get('/:userId/:musicId/history', [
 ], MumentController.getMumentHistory);
 
 // 좋아요 등록
-router.post('/:mumentId/:userId/like', [
-    param('mumentId').isString().isLength({ min: 24, max: 24}),
-    param('userId').isString().isLength({ min: 24, max: 24}),
+router.post('/:mumentId/like', [
+    param('mumentId').toInt().isInt(),
+    header('bearer').notEmpty().isString(),
 ], MumentController.createLike);
 
 // 좋아요 삭제
 router.delete('/:mumentId/:userId/like', [
-    param('mumentId').isString().isLength({ min: 24, max: 24}),
-    param('userId').isString().isLength({ min: 24, max: 24}),
+    param('mumentId').toInt().isInt(),
+    header('bearer').notEmpty().isString(),
 ], MumentController.deleteLike);
 
 // 랜덤 뮤멘트
