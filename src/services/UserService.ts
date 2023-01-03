@@ -115,9 +115,19 @@ const getLikeMumentList = async (userId: string, tagList: number[]): Promise<Use
         // 카드뷰에 띄울 가공된 태그 리스트를 넣을 배열
         let cardTagList: number[] = [];
 
+        // 사용자가 차단한 유저 배열
+        const blockedUserList = await userDB.blockedUserList(userId);
 
-        const likeMumentListFunc = async (item: MyMumentInfoRDB, idx: number) => {
-            if (idx === likeMumentList.length - 1 || (idx < likeMumentList.length - 1 && likeMumentList[idx + 1].mument_id !== item.mument_id)) {
+        const likeMumentListFunc = async (acc: any, item: MyMumentInfoRDB, idx: number) => {
+            
+            const isBlocked = blockedUserList.find(({ exist }) => exist == item.user_id);
+            if (isBlocked !== undefined) {
+                //차단된 유저의 뮤멘트라면 reduce가 다음 코드 실행안함
+                return acc;
+            }
+
+            if (idx === likeMumentList.length - 1 
+                || (idx < likeMumentList.length - 1 && likeMumentList[idx + 1].mument_id !== item.mument_id)) {
                 
                 // 뮤멘트 태그 전체 합치기
                 if (item.tag_id) allCardTagList.push(item.tag_id);
@@ -159,8 +169,8 @@ const getLikeMumentList = async (userId: string, tagList: number[]): Promise<Use
             }
         };
 
-        await likeMumentList.reduce(async (pre, curr, index) => {
-                return pre.then(() => likeMumentListFunc(curr, index));
+        await likeMumentList.reduce(async (acc, curr, index) => {
+                return acc.then(() => likeMumentListFunc(acc, curr, index));
         }, Promise.resolve());
 
 
