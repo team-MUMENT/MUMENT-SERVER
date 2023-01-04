@@ -32,14 +32,12 @@ router.get('/:userId/:musicId/history', [
 // 좋아요 등록
 router.post('/:mumentId/like', [
     param('mumentId').toInt().isInt(),
-    header('bearer').notEmpty().isString(),
-], MumentController.createLike);
+], auth, MumentController.createLike);
 
 // 좋아요 삭제
 router.delete('/:mumentId/:userId/like', [
-    param('mumentId').toInt().isInt(),
-    header('bearer').notEmpty().isString(),
-], MumentController.deleteLike);
+    param('mumentId').toInt().isInt()
+], auth, MumentController.deleteLike);
 
 // 랜덤 뮤멘트
 router.get('/random', MumentController.getRandomMument);

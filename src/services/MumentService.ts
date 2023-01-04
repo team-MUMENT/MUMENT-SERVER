@@ -38,7 +38,6 @@ import { LikeMumentInfo } from '../interfaces/like/LikeInfo';
 
 import { ExistMumentDto } from '../interfaces/mument/ExistMumentRDBDto';
 import { MumentInfoRDB } from '../interfaces/mument/MumentInfoRDB';
-import { UserInfoRDB } from '../interfaces/user/UserInfoRDB';
 
 
 /** 
@@ -386,45 +385,35 @@ const getMumentHistory = async (userId: string, musicId: string, isLatestOrder: 
 /**
  * 뮤멘트 좋아요 등록 
 */ 
-const createLike = async (mumentId: number, token: string): Promise<LikeCountResponeDto | null | number> => {
-    const decoded = jwtHandler.verify(token);
-
-    // jwt token 해독 결과 에러 났을 때
-    if (typeof decoded === 'number') {
-        switch (decoded) {
-            case constant.TOKEN_EXPIRED :
-                return constant.TOKEN_EXPIRED;
-            case constant.TOKEN_INVALID :
-                return constant.TOKEN_INVALID;
-            case constant.WRONG_TOKEN :
-                return constant.WRONG_TOKEN;
-            case constant.TOKEN_UNKNOWN_ERROR:
-                return constant.TOKEN_UNKNOWN_ERROR;
-        }
-    }
-
-    const user: UserInfoRDB = decoded;
+const createLike = async (mumentId: string, userId: string): Promise<LikeCountResponeDto | null | number> => {
     const pool: any = await poolPromise;
     const connection = await pool.getConnection();
 
     try {
+        await connection.beginTransaction();
+        const findMumentResult = await mumentDB.isExistMument(mumentId, connection);
+
+        if (findMumentResult === false) return constant.NO_MUMENT;
+
         // 좋아요 등록
         const postLikeQuery = `
-        INSERT INTO like (user_id, mument_id)
+        INSERT INTO mument.like (user_id, mument_id)
         VALUE (?, ?);
         `;
 
-        await connection.query(postLikeQuery, [user.id, mumentId]);
+        await connection.query(postLikeQuery, [userId, mumentId]);
 
         // likeCount 업데이트
         const updateLikeCountQuery = `
         UPDATE mument
-        SET like_count 
+        SET like_count = like_count + 1
         WHERE id = ?
             AND is_deleted = 0;
         `;
 
         await connection.query(updateLikeCountQuery, [mumentId]);
+        
+        await connection.commit();
 
         // 결과 조회
         const getLikeResultQuery = `
@@ -437,13 +426,13 @@ const createLike = async (mumentId: number, token: string): Promise<LikeCountRes
             AND mument.like.user_id = ?;
         `;
 
-        const LikeResult = await connection.query(getLikeResultQuery, [mumentId, user.id]);
+        const likeResult = await connection.query(getLikeResultQuery, [mumentId, userId]);
 
-        if (LikeResult.length === 0) return constant.CREATE_FAIL;
+        if (likeResult.length === 0) return constant.CREATE_FAIL;
 
         const data: LikeCountResponeDto = {
-            mumentId,
-            likeCount: LikeResult.like_count
+            mumentId: likeResult[0].mument_id,
+            likeCount: likeResult[0].like_count
         };
 
         return data;
