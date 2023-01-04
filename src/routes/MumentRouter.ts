@@ -35,7 +35,7 @@ router.post('/:mumentId/like', [
 ], auth, MumentController.createLike);
 
 // 좋아요 삭제
-router.delete('/:mumentId/:userId/like', [
+router.delete('/:mumentId/like', [
     param('mumentId').toInt().isInt()
 ], auth, MumentController.deleteLike);
 

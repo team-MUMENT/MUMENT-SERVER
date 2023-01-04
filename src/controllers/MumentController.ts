@@ -289,7 +289,8 @@ const createLike = async (req: Request, res: Response) => {
  * @DESC 좋아요 취소
  */
 const deleteLike = async (req: Request, res: Response) => {
-    const { mumentId, userId } = req.params;
+    const { mumentId } = req.params;
+    const userId = req.body.userId;
 
     const error = validationResult(req);
     if (!error.isEmpty()) {
@@ -299,8 +300,16 @@ const deleteLike = async (req: Request, res: Response) => {
     try {
         const data = await MumentService.deleteLike(mumentId, userId);
 
-        if (!data) {
-            res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.DELETE_LIKE_FAIL));
+        // 실패했을 때
+        switch (data) {
+            case constant.DELETE_FAIL: {
+                // 업데이트가 실패했을 때
+                res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.DELETE_LIKE_FAIL));
+            }
+            case constant.NO_MUMENT: {
+                // 존재하지 않는 뮤멘트일 때
+                res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.NO_MUMENT_ID));
+            }
         }
 
         res.status(statusCode.OK).send(util.success(statusCode.OK, message.DELETE_LIKE_SUCCESS, data));

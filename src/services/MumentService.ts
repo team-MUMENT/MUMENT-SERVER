@@ -449,34 +449,66 @@ const createLike = async (mumentId: string, userId: string): Promise<LikeCountRe
  * 뮤멘트 좋아요 취소
  */
 const deleteLike = async (mumentId: string, userId: string): Promise<LikeCountResponeDto | null | number> => {
+    const pool: any = await poolPromise;
+    const connection = await pool.getConnection();
+    
     try {
-        /**
-         * ✅몽고디비 연결 임시 주석처리 + 변수에 임시로 더미 넣어둠
-         */
-        // // 해당 뮤멘트의 likeCount를 -1 해주고, 업데이트 이후의 값을 리턴
-        // const updatedMument = await Mument.findOneAndUpdate({ _id: mumentId }, { $inc: { likeCount: -1 } }, { returnDocument: 'after' });
+        await connection.beginTransaction();
+        const findMumentResult = await mumentDB.isExistMument(mumentId, connection);
 
-        // // 업데이트에 문제가 생겼을 경우 return null
-        // if (!updatedMument) {
-        //     return null;
-        // }
+        if (findMumentResult === false) return constant.NO_MUMENT;
 
-        // // like collection에서 해당 뮤멘트 삭제
-        // await Like.updateOne({ 'user._id': userId }, { $pull: { mument: { _id: updatedMument._id } } });
+        const deleteLikeQuery = `
+        DELETE FROM mument.like
+        WHERE mument_id = ?
+            AND user_id = ?;
+        `;
 
-        // // 리턴 데이터
-        // const data: LikeCountResponeDto = {
-        //     mumentId: updatedMument._id,
-        //     likeCount: updatedMument.likeCount,
-        // };
+        await connection.query(deleteLikeQuery, [mumentId, userId]);
+
+        // 삭제 되었는지 확인
+        const getLikeResultQuery = `
+        SELECT *
+        FROM mument.like
+        WHERE mument_id = ?
+            AND user_id = ?;
+        `;
+
+        const getLikeResult = await connection.query(getLikeResultQuery, [mumentId, userId]);
+
+        if (getLikeResult.length != 0) return constant.DELETE_FAIL;
+
+        // 삭제 확인 후 좋아요 카운트 수 -1
+        const updateLikeCountQuery = `
+        UPDATE mument
+        SET like_count = like_count - 1
+        WHERE id = ?
+            AND is_deleted = 0;
+        `;
+
+        await connection.query(updateLikeCountQuery, [mumentId]);
+
+        await connection.commit();
+
+        // 좋아요 카운트 수 가져오기
+        const getLikeCountQuery = `
+        SELECT id, like_count
+        FROM mument
+        WHERE id = ?
+            AND is_deleted = 0;
+        `;
+
+        const getLikeCountResult = await connection.query(getLikeCountQuery, [mumentId]);
+
         const data: LikeCountResponeDto = {
-            mumentId: dummyData.mumentDummy._id,
-            likeCount: -1
+            mumentId: getLikeCountResult[0].id,
+            likeCount: getLikeCountResult[0].like_count
         };
 
         return data;
     } catch (error) {
         console.log(error);
+        await connection.rollback();
         throw error;
     }
 };
