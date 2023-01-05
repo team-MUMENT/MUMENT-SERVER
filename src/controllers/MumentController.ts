@@ -184,35 +184,37 @@ const getIsFirst = async (req: Request, res: Response) => {
 };
 
 /**
- * @ROUTE GET /mument/:userId/:musicId/history?default=
+ * @ROUTE GET /mument/:musicId/:userId/history?default=&limit=&offset=
  * @DESC get mument history
  */
 const getMumentHistory = async (req: Request, res: Response) => {
-    const { musicId, userId } = req.params;
-    const { default: orderOption } = req.query;
+    const { musicId, userId: writerId } = req.params;
+    const userId = req.body.userId;
+    const { default: orderOption, limit, offset } = req.query;
 
     const error = validationResult(req);
     if (!error.isEmpty()) {
         res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.WRONG_PARAMS));
     }
 
-    let isLatestOrder: boolean = true;
+    let orderBy: string = 'DESC';
     switch (orderOption) {
         case 'Y': {
-            isLatestOrder = true;
+            orderBy = 'DESC';
             break;
         }
         case 'N': {
-            isLatestOrder = false;
+            orderBy = 'ASC';
             break;
         }
-    }
+    };
+
 
     try {
-        const data = await MumentService.getMumentHistory(userId, musicId, isLatestOrder);
+        const data = await MumentService.getMumentHistory(userId, musicId, writerId, orderBy, limit, offset);
 
         // 곡 검색 결과가 없을 경우
-        if (!data) {
+        if (data === constant.NO_MUSIC) {
             res.status(statusCode.NOT_FOUND).send(util.fail(statusCode.NOT_FOUND, message.NOT_FOUND));
         }
 
@@ -237,7 +239,7 @@ const getMumentHistory = async (req: Request, res: Response) => {
 };
 
 /**
- * @ROUTE POST /mument/:mumentId/:userId/like
+ * @ROUTE POST /mument/:mumentId/like
  * @DESC 좋아요 등록
  */
 const createLike = async (req: Request, res: Response) => {
@@ -285,7 +287,7 @@ const createLike = async (req: Request, res: Response) => {
 };
 
 /**
- * @ROUTE DELETE /mument/:mumentId/:userId/like
+ * @ROUTE DELETE /mument/:mumentId/like
  * @DESC 좋아요 취소
  */
 const deleteLike = async (req: Request, res: Response) => {

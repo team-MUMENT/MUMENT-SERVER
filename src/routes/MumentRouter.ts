@@ -23,11 +23,13 @@ router.get('/:mumentId', auth, MumentController.getMument);
 router.delete('/:mumentId', MumentController.deleteMument);
 
 // 히스토리 조회
-router.get('/:userId/:musicId/history', [
-    param('musicId').isString().isLength({ min: 24, max: 24 }),
-    param('userId').isString().isLength({ min: 24, max: 24 }),
+router.get('/:musicId/:userId/history', [
+    param('musicId').toInt().isInt(),
+    param('userId').toInt().isInt(),
     query('default').isString().isIn(['Y', 'N']),
-], MumentController.getMumentHistory);
+    query('limit').toInt().isInt(),
+    query('offset').toInt().isInt(),
+], auth, MumentController.getMumentHistory);
 
 // 좋아요 등록
 router.post('/:mumentId/like', [
