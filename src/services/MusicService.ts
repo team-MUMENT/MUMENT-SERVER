@@ -1,15 +1,19 @@
 import dayjs from 'dayjs';
-import { MumentCardViewInterface } from '../interfaces/mument/MumentCardViewInterface';
-import { MumentInfo } from '../interfaces/mument/MumentInfo';
-import { MusicMumentListResponseDto } from '../interfaces/music/MusicMumentListResponseDto';
-import { MusicMyMumentResponseDto } from '../interfaces/music/MusicMyMumentResponseDto';
-import { MusicResponseDto } from '../interfaces/music/MusicResponseDto';
-import Like from '../models/Like';
-import Mument from '../models/Mument';
-import Music from '../models/Music';
 import dummyData from '../modules/dummyData'; // 임시 더미 데이터
 import axios from 'axios';
 import constant from '../modules/serviceReturnConstant';
+import pools from '../modules/pool';
+import poolPromise from '../loaders/db';
+
+import { MumentCardViewInterface } from '../interfaces/mument/MumentCardViewInterface';
+import { MusicMumentListResponseDto } from '../interfaces/music/MusicMumentListResponseDto';
+import { MusicMyMumentResponseDto } from '../interfaces/music/MusicMyMumentResponseDto';
+import { MusicResponseDto } from '../interfaces/music/MusicResponseDto';
+
+import musicDB from '../modules/db/Music';
+
+import cardTagList from '../modules/cardTagList';
+
 const qs = require('querystring');
 require('dotenv').config();
 
@@ -17,94 +21,117 @@ require('dotenv').config();
 /**
  * 곡 상세보기 - 음악, 나의 뮤멘트 조회
  */
-const getMusicAndMyMument = async (musicId: string, userId: string): Promise<MusicMyMumentResponseDto | null> => {
-    try {
-        /**
-         * ✅ 몽고디비 연결 임시 주석처리 + 변수에 임시로 더미 넣어둠
-         */
-        const music = dummyData.musicDummy;
-        const latestMument = dummyData.mumentDummy;
+const getMusicAndMyMument = async (musicId: string, userId: string): Promise<MusicMyMumentResponseDto | number> => {
+    const pool: any = await poolPromise;
+    const connection = await pool.getConnection();
 
-        // // 곡 조회
-        // const music = await Music.findById(musicId);
+    try {
+        // 곡 조회
+        const music = await connection.query(musicDB.SearchMusic(musicId));
 
         // 음악 조회 결과가 없을 때 404 에러
-        if (!music) {
-            return null;
+        if (music.length === 0) {
+            return constant.NO_MUSIC;
         }
 
-        // // 가장 최근에 작성한 뮤멘트 조회
-        // const latestMument = await Mument.findOne({
-        //     'user._id': userId,
-        //     'music._id': musicId,
-        //     isDeleted: false,
-        // }).sort({
-        //     createdAt: -1,
-        // });   
-        
+        // 가장 최근에 작성한 뮤멘트 조회
+        const getLatestMumentQuery = `
+        SELECT mument.*, user.profile_id as user_name, user.image as user_image
+        FROM mument
+        JOIN user
+            ON mument.user_id = user.id
+        WHERE mument.music_id = ?
+            AND mument.user_id =?
+            AND mument.is_deleted = 0
+        ORDER BY mument.created_at DESC
+        LIMIT 1;
+        `;
+
+        const latestMument = await connection.query(getLatestMumentQuery, [musicId, userId]);
 
         // myMument가 null일 경우 return
-        if (latestMument === null) {
-            const data = {
-                music,
+        if (latestMument.length === 0) {
+            const data: MusicMyMumentResponseDto = {
+                music: {
+                    _id: music[0].id,
+                    name: music[0].name,
+                    artist: music[0].artist,
+                    image: music[0].image,
+                },
                 myMument: null,
             };
 
             return data;
-        }
+        };
+
+        
+        // 뮤멘트의 태그 전부 가져오기
+        const getTagQuery = `
+        SELECT tag_id
+        FROM mument_tag
+        WHERE mument_id = ?
+            AND is_deleted = 0;
+        `;
+
+        const getTagResult = await connection.query(getTagQuery, [latestMument[0].id]);
+
+        const tagList: number[] = [];
+        const impressionTag: number[] = [];
+        const feelingTag: number[] = [];
+
+        for (const object of getTagResult) {
+            tagList.push(object.tag_id);
+            if (object.tag_id < 200) {
+                impressionTag.push(object.tag_id);
+            } else if (object.tag_id < 300) {
+                feelingTag.push(object.tag_id);
+            }
+        };
+
+        const mumentCardTag: number[] = await cardTagList.cardTag(tagList);
+
 
         // 날짜 가공
-        const mumentDate = dayjs(latestMument.createdAt).format('D MMM, YYYY');
+        const mumentDate = dayjs(latestMument[0].createdAt).format('D MMM, YYYY');
 
-        const myMumentId: string = latestMument._id.toString();
-        
-
-        /**
-         * ✅ 몽고디비 연결 임시 주석처리 + 변수에 임시로 더미 넣어둠
-         */
-        const isLiked = false;
-        // // isLiked 조회
-        // const isLiked = Boolean(
-        //     await Like.findOne({
-        //         $and: [
-        //             {
-        //                 'user._id': { $eq: userId },
-        //             },
-        //             {
-        //                 mument: { $elemMatch: { _id: latestMument._id } },
-        //             },
-        //         ],
-        //     }),
-        // );
-
-        // 카드뷰 태그 리스트
-        const cardTag: number[] = [];
-        const impressionTagLength = latestMument.impressionTag.length;
-        const feelingTagLength = latestMument.feelingTag.length;
-
-        if (impressionTagLength >= 1 && feelingTagLength >= 1) {
-            cardTag.push(latestMument.impressionTag[0], latestMument.feelingTag[0]);
-        } else if (impressionTagLength >= 1 && feelingTagLength < 1) {
-            cardTag.push(...latestMument.impressionTag.slice(0, 2));
-        } else if (impressionTagLength < 1 && feelingTagLength >= 1) {
-            cardTag.push(...latestMument.feelingTag.slice(0, 2));
-        }
-
-        const data = {
-            music: music,
-            myMument: {
-                //...latestMument.toObject(), // ✅ 오류나서 잠깐 주석처리했어요! - 채은
-                ...latestMument,
-                cardTag: cardTag,
-                date: mumentDate,
-                isLiked: isLiked,
+        const myMument: MumentCardViewInterface = {
+            _id: latestMument[0].id,
+            musicId: latestMument[0].music_id,
+            user: {
+                _id: latestMument[0].user_id,
+                name: latestMument[0].user_name,
+                image: latestMument[0].user_image,
             },
+            isFirst: latestMument[0].is_first,
+            impressionTag,
+            feelingTag,
+            cardTag: mumentCardTag,
+            content: latestMument[0].content,
+            isPrivate: latestMument[0].is_private,
+            likeCount: latestMument[0].like_count,
+            isDeleted: latestMument[0].is_deleted,
+            createdAt: latestMument[0].created_at,
+            updatedAt: latestMument[0].updated_at,
+            date: mumentDate,
+            isLiked: latestMument[0].is_liked
+        };
+
+        const data: MusicMyMumentResponseDto = {
+            music: {
+                _id: music[0].id,
+                name: music[0].name,
+                artist: music[0].artist,
+                image: music[0].image,
+            },
+            myMument
         };
 
         return data;
     } catch (error) {
         console.log(error);
         throw error;
+    } finally {
+        connection.release(); // pool connection 회수
     }
 };
 
