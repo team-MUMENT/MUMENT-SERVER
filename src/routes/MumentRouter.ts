@@ -17,11 +17,6 @@ router.put('/:mumentId', [
     body('isFirst').notEmpty(),
 ], auth, reportRestriction, MumentController.updateMument);
 
-// 뮤멘트 상세보기
-router.get('/:mumentId', auth, MumentController.getMument);
-
-//뮤멘트 삭제하기
-router.delete('/:mumentId', MumentController.deleteMument);
 
 // 히스토리 조회
 router.get('/:musicId/:userId/history', [
@@ -53,5 +48,14 @@ router.get('/banner', MumentController.getBanner);
 
 // 다시 들은 뮤멘트
 router.get('/again', MumentController.getAgainMument);
+
+// 공시자항 리스트 조회
+router.get('/notice', MumentController.getNoticeList);
+
+// 뮤멘트 상세보기
+router.get('/:mumentId', auth, MumentController.getMument);
+
+//뮤멘트 삭제하기
+router.delete('/:mumentId', MumentController.deleteMument);
 
 export default router;

@@ -39,6 +39,7 @@ import { LikeMumentInfo } from '../interfaces/like/LikeInfo';
 import { ExistMumentDto } from '../interfaces/mument/ExistMumentRDBDto';
 import { MumentInfoRDB } from '../interfaces/mument/MumentInfoRDB';
 import cardTagList from '../modules/cardTagList';
+import { NoticeInfoRDB } from '../interfaces/mument/NoticeInfoRDB';
 
 
 /** 
@@ -746,6 +747,23 @@ const getAgainMument = async (): Promise<AgainMumentResponseDto | number> => {
     }
 };
 
+
+
+const getNoticeList = async (): Promise<NoticeInfoRDB[]> => {
+    const todayDate = dayjs().format('YYYY-MM-DD');
+    try {
+        const selectNoticeQuery = 'SELECT * FROM notice ORDER BY created_at DESC;'
+        const data: NoticeInfoRDB[] = await pools.query(selectNoticeQuery);
+        
+        return data;
+
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+};
+
+
 export default {
     createMument,
     updateMument,
@@ -759,4 +777,5 @@ export default {
     getTodayMument,
     getBanner,
     getAgainMument,
+    getNoticeList,
 };
