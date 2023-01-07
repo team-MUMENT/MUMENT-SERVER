@@ -38,6 +38,7 @@ import { LikeMumentInfo } from '../interfaces/like/LikeInfo';
 
 import { ExistMumentDto } from '../interfaces/mument/ExistMumentRDBDto';
 import { MumentInfoRDB } from '../interfaces/mument/MumentInfoRDB';
+import cardTagList from '../modules/cardTagList';
 
 
 /** 
@@ -368,59 +369,32 @@ const getMumentHistory = async (userId: string, musicId: string, writerId: strin
             tagList.push({ id: element, impressionTag: [], feelingTag: [], cardTag: []})
         });
 
-        // 해당 뮤멘트들의 인상 태그 모두 가져오기
-        const getImpressionTagQuery = `
+        // 해당 뮤멘트들의 태그 모두 가져오기
+        const getAllTagQuery = `
         SELECT mument_id, tag_id
         FROM mument_tag
         WHERE mument_id IN ${strMumentIdList}
             AND is_deleted = 0
-            AND tag_id BETWEEN 100 AND 199
         ORDER BY mument_id, updated_at ASC;
         `;
 
-        const getImpressionTagList = await connection.query(getImpressionTagQuery);
+        const getAllTagList = await connection.query(getAllTagQuery);
 
-        getImpressionTagList.reduce((ac: any[], cur: any) =>  {
+        // impression tag, feeling tag 분류하기
+        getAllTagList.reduce((ac: any[], cur: any) =>  {
             ac = tagList;
             const mumentIdx = tagList.findIndex(o => o.id === cur.mument_id);
-            tagList[mumentIdx].impressionTag.push(cur.tag_id);
+            if (cur.tag_id < 200) {
+                tagList[mumentIdx].impressionTag.push(cur.tag_id);
+            } else if (cur.tag_id < 300) {
+                tagList[mumentIdx].impressionTag.push(cur.tag_id);
+            };
         });
 
-        // 감정 태그 가져오기
-        const getFeelingTagQuery = `
-        SELECT mument_id, tag_id
-        FROM mument_tag
-        WHERE mument_id IN ${strMumentIdList}
-            AND is_deleted = 0
-            AND tag_id BETWEEN 200 AND 299
-        ORDER BY mument_id, updated_at ASC;
-        `;
-
-        const getFeelingTagList = await connection.query(getFeelingTagQuery);
-
-        getFeelingTagList.reduce((ac: any[], cur: any) =>  {
-            ac = tagList;
-            const mumentIdx = tagList.findIndex(o => o.id === cur.mument_id);
-            tagList[mumentIdx].impressionTag.push(cur.tag_id);
-        });
-
-        // 각각의 태그에 따라 카드에 표시할 태그 선택
-        tagList.forEach((o) => {
-            if (o.impressionTag.length >= 1 && o.feelingTag.length >= 1) {
-                o.cardTag.push(o.impressionTag[0]);
-                o.cardTag.push(o.feelingTag[0]);
-            } else if (o.impressionTag.length >= 2 && o.feelingTag.length < 1) {
-                o.cardTag.push(o.impressionTag[0]);
-                o.cardTag.push(o.impressionTag[1]);
-            } else if (o.impressionTag.length < 1 && o.feelingTag.length >= 2) {
-                o.cardTag.push(o.feelingTag[0]);
-                o.cardTag.push(o.feelingTag[1]);
-            } else if (o.impressionTag.length === 1 && o.feelingTag.length < 1) {
-                o.cardTag.push(o.impressionTag[0]);
-            } else if (o.impressionTag.length < 1 && o.feelingTag.length === 1) {
-                o.cardTag.push(o.feelingTag[0]);
-            }
-        });
+        for (const object of tagList) {
+            const allTagList = object.impressionTag.concat(object.feelingTag);
+            object.cardTag = await cardTagList.cardTag(allTagList);
+        };
 
         // string으로 날짜 생성해주는 함수
         const createDate = (createdAt: Date): string => {
