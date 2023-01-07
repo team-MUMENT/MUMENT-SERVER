@@ -49,8 +49,11 @@ router.get('/banner', MumentController.getBanner);
 // 다시 들은 뮤멘트
 router.get('/again', MumentController.getAgainMument);
 
-// 공시자항 리스트 조회
+// 공시자항 상세보기
 router.get('/notice', MumentController.getNoticeList);
+
+// 공시자항 상세보기
+router.get('/notice/:noticeId', MumentController.getNoticeDetail);
 
 // 뮤멘트 상세보기
 router.get('/:mumentId', auth, MumentController.getMument);
