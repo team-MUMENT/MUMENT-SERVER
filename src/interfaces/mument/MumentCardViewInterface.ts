@@ -1,14 +1,10 @@
-import mongoose from 'mongoose';
-
 export interface MumentCardViewInterface {
-    _id: mongoose.Types.ObjectId;
-    music: {
-        _id: mongoose.Types.ObjectId;
-    };
+    _id: number;
+    musicId: number;
     user: {
-        _id: mongoose.Types.ObjectId;
+        _id: number;
         name: string;
-        image: string;
+        image?: string;
     };
     isFirst: boolean;
     impressionTag: number[];
@@ -19,8 +15,7 @@ export interface MumentCardViewInterface {
     likeCount: number;
     isDeleted: boolean;
     createdAt: Date;
-    updatedAt?: Date;
-    __v?: number;
+    updatedAt: Date;
     date: string;
     isLiked: boolean;
 }
