@@ -39,6 +39,7 @@ import { LikeMumentInfo } from '../interfaces/like/LikeInfo';
 import { ExistMumentDto } from '../interfaces/mument/ExistMumentRDBDto';
 import { MumentInfoRDB } from '../interfaces/mument/MumentInfoRDB';
 import cardTagList from '../modules/cardTagList';
+import { NoticeInfoRDB } from '../interfaces/mument/NoticeInfoRDB';
 
 
 /** 
@@ -746,6 +747,59 @@ const getAgainMument = async (): Promise<AgainMumentResponseDto | number> => {
     }
 };
 
+// 공지사항 상세보기
+const getNoticeDetail = async (noticeId: string): Promise<NoticeInfoRDB | number> => {
+    try {
+        const selectNoticeQuery = 'SELECT * FROM notice WHERE id=?'
+        const notice: NoticeInfoRDB[] = await pools.queryValue(selectNoticeQuery, [noticeId]);
+        
+        if (notice.length === 0) return constant.NO_NOTICE;
+
+        
+        const data: NoticeInfoRDB = {
+            id: notice[0].id,
+            title: notice[0].title,
+            content: notice[0].content,
+            created_at: dayjs(notice[0].created_at).format('YYYY-MM-DD')
+        };
+
+        return data;
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+};
+
+
+// 공지사항 리스트 조회
+const getNoticeList = async (): Promise<NoticeInfoRDB[]> => {
+    const todayDate = dayjs().format('YYYY-MM-DD');
+    try {
+        const selectNoticeQuery = 'SELECT * FROM notice ORDER BY created_at DESC;'
+        let noticeList: NoticeInfoRDB[] = await pools.query(selectNoticeQuery);
+        
+        const noticeListDateFormat = async (item: NoticeInfoRDB, idx: number) => {
+            noticeList[idx] = {
+                id: item.id,
+                title: item.title,
+                content: item.content,
+                created_at: dayjs(item.created_at).format('YYYY-MM-DD')
+            };
+        };
+
+        await noticeList.reduce(async (acc, curr, index) => {
+            return acc.then(() => noticeListDateFormat(curr, index));
+        }, Promise.resolve());
+
+
+        return noticeList;
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+};
+
+
 export default {
     createMument,
     updateMument,
@@ -759,4 +813,6 @@ export default {
     getTodayMument,
     getBanner,
     getAgainMument,
+    getNoticeDetail,
+    getNoticeList,
 };
