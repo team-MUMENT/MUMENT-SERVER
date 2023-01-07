@@ -382,19 +382,47 @@ const getMumentHistory = async (userId: string, musicId: string, writerId: strin
 
         // impression tag, feeling tag 분류하기
         getAllTagList.reduce((ac: any[], cur: any) =>  {
-            ac = tagList;
             const mumentIdx = tagList.findIndex(o => o.id === cur.mument_id);
             if (cur.tag_id < 200) {
                 tagList[mumentIdx].impressionTag.push(cur.tag_id);
             } else if (cur.tag_id < 300) {
-                tagList[mumentIdx].impressionTag.push(cur.tag_id);
+                tagList[mumentIdx].feelingTag.push(cur.tag_id);
             };
-        });
+        }, getAllTagList);
 
         for (const object of tagList) {
             const allTagList = object.impressionTag.concat(object.feelingTag);
             object.cardTag = await cardTagList.cardTag(allTagList);
         };
+
+
+        // id와 좋아요 여부 담은 리스트 생성
+        const isLikedList: {id: number, isLiked: boolean}[] = [];
+
+        mumentIdList.forEach((element: number) => {
+            isLikedList.push({id: element, isLiked: false});
+        });
+        
+
+        // 좋아요 여부 확인
+        const getIsLikedQuery = `
+        SELECT mument_id, EXISTS (
+            SELECT *
+            FROM mument.like
+            WHERE mument_id IN ${strMumentIdList}
+                AND user_id = ?
+        ) as is_liked
+        FROM mument.like
+        WHERE mument_id IN ${strMumentIdList};
+        `;
+
+        const isLikedResult = await connection.query(getIsLikedQuery, [userId]);
+
+        // 쿼리 결과에 있을 시에만 isLiked를 true로 바꿈
+        isLikedResult.reduce((ac: any[], cur: any) => {
+            const mumentIdx = isLikedList.findIndex(o => o.id === cur.mument_id);
+            isLikedList[mumentIdx].isLiked = true;
+        }, isLikedResult);
 
         // string으로 날짜 생성해주는 함수
         const createDate = (createdAt: Date): string => {
@@ -425,7 +453,7 @@ const getMumentHistory = async (userId: string, musicId: string, writerId: strin
                 createdAt: mument.created_at,
                 updatedAt: mument.updated_at,
                 date: createDate(mument.created_at),
-                isLiked: mument.is_liked
+                isLiked: isLikedList[isLikedList.findIndex(o => o.id === mument.id)].isLiked,
             });
         }
 
