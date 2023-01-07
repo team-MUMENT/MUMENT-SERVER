@@ -2,11 +2,12 @@ import { Router } from 'express';
 import { MumentController } from '../controllers';
 import { body, header, param, query } from 'express-validator';
 import auth from '../middlewares/auth';
+import reportRestriction from '../middlewares/reportRestriction';
 
 const router: Router = Router();
 
 // 뮤멘트 기록하기
-router.post('/:musicId', auth, MumentController.createMument);
+router.post('/:musicId', auth, reportRestriction, MumentController.createMument);
 
 // 처음/다시 조회
 router.get('/:musicId/is-first', auth, MumentController.getIsFirst);
@@ -14,7 +15,7 @@ router.get('/:musicId/is-first', auth, MumentController.getIsFirst);
 // 뮤멘트 수정하기
 router.put('/:mumentId', [
     body('isFirst').notEmpty(),
-], MumentController.updateMument);
+], auth, reportRestriction, MumentController.updateMument);
 
 // 뮤멘트 상세보기
 router.get('/:mumentId', auth, MumentController.getMument);
