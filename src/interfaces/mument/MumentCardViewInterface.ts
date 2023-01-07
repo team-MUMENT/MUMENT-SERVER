@@ -1,6 +1,6 @@
 export interface MumentCardViewInterface {
     _id: number;
-    music: number;
+    musicId: number;
     user: {
         _id: number;
         name: string;
