@@ -114,17 +114,18 @@ const blockUser = async (req: Request, res: Response) => {
 };
 
 /**
- *  @ROUTE GET /block
- *  @DESC 차단한 유저 리스트를 조회합니다.
+ *  @ROUTE DELETE /block/:blockedUserId
+ *  @DESC 차단한 유저를 차단 해제합니다.
  */
-const getBlockedUserList =  async (req: Request, res: Response) => {
+const deleteBlockUser = async (req: Request, res: Response) => {
+    const { blockedUserId } = req.params;
     const userId: number = req.body.userId;
-
+    
     try {
-        const data = await UserService.getBlockedUserList(userId);
+        const data = await UserService.deleteBlockUser(userId, blockedUserId);
 
-        return res.status(statusCode.OK).send(util.success(statusCode.OK, message.READ_BLOCK_LIST, data));
-    }  catch (error) {
+        return res.status(statusCode.NO_CONTENT).send(util.success(statusCode.NO_CONTENT, message.DELETE_BLOCKED_USER_SUCCESS));
+    } catch (error) {
         console.log(error);
 
         const slackMessage: SlackMessageFormat = {
@@ -143,9 +144,41 @@ const getBlockedUserList =  async (req: Request, res: Response) => {
     }
 };
 
+/**
+ *  @ROUTE GET /block
+ *  @DESC 차단한 유저 리스트를 조회합니다.
+ */
+const getBlockedUserList =  async (req: Request, res: Response) => {
+    const userId: number = req.body.userId;
+
+    try {
+        const data = await UserService.getBlockedUserList(userId);
+
+        return res.status(statusCode.OK).send(util.success(statusCode.OK, message.READ_BLOCK_LIST, data));
+    } catch (error) {
+        console.log(error);
+
+        const slackMessage: SlackMessageFormat = {
+            title: 'MUMENT ec2 서버 오류',
+            text: '서버 내부 오류입니다',
+            fields: [
+                {
+                    title: 'Error Stack:',
+                    value: `\`\`\`${error}\`\`\``,
+                },
+            ],
+        };
+        sendMessage(slackMessage);
+
+        res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
+    }
+};
+
+
 export default {
     getMyMumentList,
     getLikeMumentList,
     blockUser,
+    deleteBlockUser,
     getBlockedUserList,
 };
