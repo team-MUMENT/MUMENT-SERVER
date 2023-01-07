@@ -1,8 +1,10 @@
+import mongoose from "mongoose";
+
 export interface MumentCardViewInterface {
-    _id: number;
-    musicId: number;
+    _id: number | mongoose.Types.ObjectId; // 서버 배포시 에러나서 리팩토링 끝나기전까지 추가
+    musicId?: number;
     user: {
-        _id: number;
+        _id: number | mongoose.Types.ObjectId;  // 서버 배포시 에러나서 리팩토링 끝나기전까지 추가
         name: string;
         image?: string;
     };
