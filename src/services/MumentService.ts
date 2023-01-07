@@ -457,10 +457,10 @@ const getMumentHistory = async (userId: string, musicId: string, writerId: strin
 
         const data: MumentHistoryResponseDto = {
             music: {
-                _id: getMusicResult.id,
-                name: getMusicResult.name,
-                artist: getMusicResult.artist,
-                image: getMusicResult.image
+                _id: getMusicResult[0].id,
+                name: getMusicResult[0].name,
+                artist: getMusicResult[0].artist,
+                image: getMusicResult[0].image
             },
             mumentHistory
         };
