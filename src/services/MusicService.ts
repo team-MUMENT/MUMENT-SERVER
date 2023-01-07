@@ -90,6 +90,18 @@ const getMusicAndMyMument = async (musicId: string, userId: string): Promise<Mus
 
         const mumentCardTag: number[] = await cardTagList.cardTag(tagList);
 
+        const getIsLikedQuery = `
+        SELECT EXISTS (
+            SELECT *
+            FROM mument.like
+            WHERE mument_id = ?
+                AND user_id = ?
+        ) as is_liked;
+        `;
+
+        const isLikedResult = await connection.query(getIsLikedQuery, [latestMument[0].id, userId]);
+        const isLiked: boolean = isLikedResult[0].is_liked;
+
 
         // 날짜 가공
         const mumentDate = dayjs(latestMument[0].createdAt).format('D MMM, YYYY');
@@ -113,7 +125,7 @@ const getMusicAndMyMument = async (musicId: string, userId: string): Promise<Mus
             createdAt: latestMument[0].created_at,
             updatedAt: latestMument[0].updated_at,
             date: mumentDate,
-            isLiked: latestMument[0].is_liked
+            isLiked
         };
 
         const data: MusicMyMumentResponseDto = {
@@ -202,18 +214,18 @@ const getMumentList = async (musicId: string, userId: string, isLikeOrder: boole
         ORDER BY mument_id, updated_at ASC;
         `;
 
-        const getAllTagList = await connection.query(getAllTagQuery);
+        const getAllTagResult = await connection.query(getAllTagQuery);
+
 
         // impression tag, feeling tag 분류하기
-        getAllTagList.reduce((ac: any[], cur: any) =>  {
-            ac = tagList;
+        getAllTagResult.reduce((ac: any[], cur: any) =>  {
             const mumentIdx = tagList.findIndex(o => o.id === cur.mument_id);
             if (cur.tag_id < 200) {
                 tagList[mumentIdx].impressionTag.push(cur.tag_id);
             } else if (cur.tag_id < 300) {
-                tagList[mumentIdx].impressionTag.push(cur.tag_id);
+                tagList[mumentIdx].feelingTag.push(cur.tag_id);
             };
-        });
+        }, getAllTagResult);
 
         for (const object of tagList) {
             const allTagList = object.impressionTag.concat(object.feelingTag);
@@ -234,19 +246,18 @@ const getMumentList = async (musicId: string, userId: string, isLikeOrder: boole
             FROM mument.like
             WHERE mument_id IN ${strMumentIdList}
                 AND user_id = ?
-        )
+        ) as is_liked
         FROM mument.like
         WHERE mument_id IN ${strMumentIdList}
         `;
 
-        const getisLikedResult = await connection.query(getisLikedQuery, [userId]);
+        const getIsLikedResult = await connection.query(getisLikedQuery, [userId]);
 
         // 쿼리 결과에 존재하는 경우에만 isLiked를 true로 바꿈
-        getisLikedResult.reduce((ac: any[], cur: any) => {
-            ac = isLikedList;
+        getIsLikedResult.reduce((ac: any[], cur: any) => {
             const mumentIdx = isLikedList.findIndex(o => o.id === cur.mument_id);
-            isLikedList[mumentIdx].isLiked = true;
-        })
+            if (mumentIdx != -1) isLikedList[mumentIdx].isLiked = true;
+        }, getIsLikedResult);
 
         // string으로 날짜 생성해주는 함수
         const createDate = (createdAt: Date): string => {
