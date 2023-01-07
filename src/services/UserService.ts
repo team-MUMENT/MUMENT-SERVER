@@ -8,6 +8,9 @@ import cardTagListProvider from '../modules/cardTagList';
 import poolPromise from '../loaders/db';
 import constant from '../modules/serviceReturnConstant';
 import { NumberBaseResponseDto } from '../interfaces/common/NumberBaseResponseDto';
+import { UserResponseDto } from '../interfaces/user/UserResponseDto';
+import pools from '../modules/pool';
+
 
 /**
  * 내가 작성한 뮤멘트 리스트
@@ -255,9 +258,30 @@ const blockUser = async (userId: number, mumentId: string): Promise<number | Num
     }
 };
 
+const getBlockedUserList = async (userId: number): Promise<UserResponseDto[] | number> => {
+    try {
+        const selectBlockQuery = `
+            SELECT blocked_user_id as id, user.profile_id, user.image FROM block
+            JOIN user ON block.blocked_user_id=user.id
+            WHERE block.user_id=? AND user.is_deleted=0;
+        `;
+        const blockedUserList: UserResponseDto[] = await pools.queryValue(selectBlockQuery, [
+            userId
+        ]);
+
+        const data: UserResponseDto[] = blockedUserList;
+
+        return data;
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+};
+
 
 export default {
     getMyMumentList,
     getLikeMumentList,
     blockUser,
+    getBlockedUserList,
 };
