@@ -747,8 +747,25 @@ const getAgainMument = async (): Promise<AgainMumentResponseDto | number> => {
     }
 };
 
+// 공지사항 상세보기
+const getNoticeDetail = async (noticeId: string): Promise<NoticeInfoRDB | number> => {
+    const todayDate = dayjs().format('YYYY-MM-DD');
+    try {
+        const selectNoticeQuery = 'SELECT * FROM notice WHERE id=?'
+        const data: NoticeInfoRDB[] = await pools.queryValue(selectNoticeQuery, [noticeId]);
+        
+        if (data.length === 0) return constant.NO_NOTICE;
+
+        return data[0];
+
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+};
 
 
+// 공지사항 리스트 조회
 const getNoticeList = async (): Promise<NoticeInfoRDB[]> => {
     const todayDate = dayjs().format('YYYY-MM-DD');
     try {
@@ -777,5 +794,6 @@ export default {
     getTodayMument,
     getBanner,
     getAgainMument,
+    getNoticeDetail,
     getNoticeList,
 };

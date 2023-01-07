@@ -465,6 +465,38 @@ const getAgainMument = async (req: Request, res: Response) => {
 };
 
 
+const getNoticeDetail = async (req: Request, res: Response) => {
+    const { noticeId } = req.params;
+
+    try {
+        const data = await MumentService.getNoticeDetail(noticeId);
+
+        if (data === constant.NO_NOTICE) {
+            return res.status(statusCode.NOT_FOUND).send(util.success(statusCode.NOT_FOUND, message.NOT_FOUND_ID));
+        } 
+
+        res.status(statusCode.OK).send(util.success(statusCode.OK, message.READ_NOTICE_DETAIL_SUCCESS, data));
+
+    } catch (error) {
+        console.log(error);
+
+        const slackMessage: SlackMessageFormat = {
+            title: 'MUMENT ec2 서버 오류',
+            text: '서버 내부 오류입니다',
+            fields: [
+                {
+                    title: 'Error Stack:',
+                    value: `\`\`\`${error}\`\`\``,
+                },
+            ],
+        };
+        sendMessage(slackMessage);
+
+        res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
+    }
+};
+
+
 const getNoticeList = async (req: Request, res: Response) => {
     try {
         const data = await MumentService.getNoticeList();
@@ -504,5 +536,6 @@ export default {
     getTodayMument,
     getBanner,
     getAgainMument,
+    getNoticeDetail,
     getNoticeList,
 };
