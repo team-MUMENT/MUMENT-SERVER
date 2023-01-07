@@ -8,11 +8,12 @@ import sendMessage, { SlackMessageFormat } from '../library/slackWebHook';
 import constant from '../modules/serviceReturnConstant';
 
 /**
- * @ROUTE GET /:musicId/:userId
+ * @ROUTE GET /:musicId/
  * @DESC 곡 상세보기 뷰에서 music 정보와 나의 뮤멘트 정보 가져오기
  */
 const getMusicAndMyMument = async (req: Request, res: Response) => {
-    const { musicId, userId } = req.params;
+    const { musicId } = req.params;
+    const { userId } = req.body;
     const error = validationResult(req);
 
     if (!error.isEmpty()) {
@@ -22,8 +23,8 @@ const getMusicAndMyMument = async (req: Request, res: Response) => {
     try {
         const data = await MusicService.getMusicAndMyMument(musicId, userId);
 
-        if (!data) {
-            res.status(statusCode.NOT_FOUND).send(util.fail(statusCode.NOT_FOUND, message.NOT_FOUND));
+        if (data === constant.NO_MUSIC) {
+            res.status(statusCode.NOT_FOUND).send(util.fail(statusCode.NOT_FOUND, message.NO_MUSIC_ID));
         } else {
             res.status(statusCode.OK).send(util.success(statusCode.OK, message.FIND_MUSIC_MYMUMENT_SUCCESS, data));
         }
