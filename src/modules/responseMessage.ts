@@ -61,7 +61,10 @@ const message = {
     TOKEN_EXPIRED: '토큰이 만료되었습니다',
     TOKEN_INVALID: '유효하지 않은 토큰입니다',
     WRONG_TOKEN: '잘못된 토큰입니다', //'jwt malformed' || 'jwt signature is required' || 'invalid signature'경우,
-    TOKEN_UNKNOWN_ERROR: '토큰 에러' // 그외의 토큰 에러
+    TOKEN_UNKNOWN_ERROR: '토큰 에러', // 그외의 토큰 에러
+
+    //신고 제재
+    REPORT_RESTRICTION_USER: '신고 제재를 받고있는 유저입니다',
 };
 
 export default message;
