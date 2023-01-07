@@ -5,6 +5,9 @@ import mumentDB from '../modules/db/Mument';
 import userDB from '../modules/db/User';
 import { MyMumentInfoRDB } from '../interfaces/mument/MyMumentInfoRDB';
 import cardTagListProvider from '../modules/cardTagList';
+import poolPromise from '../loaders/db';
+import constant from '../modules/serviceReturnConstant';
+import { NumberBaseResponseDto } from '../interfaces/common/NumberBaseResponseDto';
 
 /**
  * 내가 작성한 뮤멘트 리스트
@@ -192,7 +195,69 @@ const getLikeMumentList = async (userId: string, tagList: number[]): Promise<Use
     }
 };
 
+
+/**
+ *  유저 차단하기
+ */
+const blockUser = async (userId: number, mumentId: string): Promise<number | NumberBaseResponseDto> => {
+    const pool: any = await poolPromise;
+    const connection = await pool.getConnection();
+
+    try {
+        // 뮤멘트 작성자 id 가져오기
+        const blockedMument = await mumentDB.isExistMumentInfo(mumentId, connection);
+        let blockedUser: number;
+
+        if (!blockedMument.isExist) return constant.NO_MUMENT;
+        blockedUser = blockedMument.mument?.user_id as number;
+
+
+        // 자기자신을 차단하려는 경우
+        if (blockedUser === userId) return constant.SELF_BLOCK;
+
+
+        // 차단 이력이 없는 유저인지 확인
+        const blockCheckQuery = `
+            SELECT * FROM block WHERE user_id=? AND blocked_user_id=?
+        `;
+        const blockHistory = await connection.query(blockCheckQuery, [
+            userId, 
+            blockedUser
+        ]);
+
+        if (blockHistory.length > 0) {
+            return constant.ALREADY_BLOCK;
+        }
+     
+        
+        // 차단하기
+        const blockInsertQuery = `
+            INSERT INTO block(user_id, blocked_user_id) VALUES(?, ?);
+        `;
+        const blockRow = await connection.query(blockInsertQuery, [
+            userId,
+            blockedUser
+        ]);
+
+        await connection.commit(); // 성공시 commit
+
+        const data: NumberBaseResponseDto = {
+            exist : blockRow.insertId
+        };
+
+        return data;
+    } catch (error) {
+        console.log(error);
+        await connection.rollback(); // 쿼리 에러시 롤백
+        throw error;
+    } finally {
+        connection.release(); // pool connection 회수
+    }
+};
+
+
 export default {
     getMyMumentList,
     getLikeMumentList,
+    blockUser,
 };
