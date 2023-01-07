@@ -258,6 +258,21 @@ const blockUser = async (userId: number, mumentId: string): Promise<number | Num
     }
 };
 
+const deleteBlockUser = async (userId: number, blockedUserId: string): Promise<void> => {
+    try {
+        const deleteBlockQuery = `DELETE FROM block WHERE user_id=? AND blocked_user_id=?`;
+
+        await pools.queryValue(deleteBlockQuery, [
+            userId,
+            blockedUserId
+        ]);
+
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+};
+
 const getBlockedUserList = async (userId: number): Promise<UserResponseDto[] | number> => {
     try {
         const selectBlockQuery = `
@@ -283,5 +298,6 @@ export default {
     getMyMumentList,
     getLikeMumentList,
     blockUser,
+    deleteBlockUser,
     getBlockedUserList,
 };

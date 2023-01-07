@@ -19,6 +19,7 @@ const message = {
     ALREADY_BLOCK_USER: '이미 차단한 유저입니다',
     SELF_BLOCK: '자기자신은 차단할 수 없습니다',
     READ_BLOCK_LIST: '차단 유저 조회 성공',
+    DELETE_BLOCKED_USER_SUCCESS: '유저 차단 해제 성공',
 
     // mument
     NO_MUMENT_ID: '해당 아이디의 뮤멘트가 존재하지 않습니다',
