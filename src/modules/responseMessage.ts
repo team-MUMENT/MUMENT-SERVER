@@ -34,6 +34,8 @@ const message = {
     DELETE_LIKE_SUCCESS: '좋아요 취소 성공',
     DELETE_LIKE_FAIL: '좋아요 취소 실패',
     READ_ISFIRST_SUCCESS: '뮤멘트 처음/다시 조회 성공',
+    READ_NOTICE_LIST_SUCCESS: '공지사항 리스트 조회 성공',
+    READ_NOTICE_DETAIL_SUCCESS: '공지사항 상세보기 성공',
 
     // home
     GET_RANDOM_MUMENT_SUCCESS: '랜덤 뮤멘트 리스트 조회 성공',
