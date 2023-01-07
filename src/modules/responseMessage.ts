@@ -15,6 +15,11 @@ const message = {
     SIGNUP_SUCCESS: '회원가입 성공',
     READ_MY_MUMENT_LIST_SUCCESS: '나의 뮤멘트 리스트 조회 성공',
     READ_LIKE_MUMENT_LIST_SUCCESS: '좋아요한 뮤멘트 리스트 조회 성공',
+    BLOCK_SUCCESS: '유저 차단하기 성공',
+    ALREADY_BLOCK_USER: '이미 차단한 유저입니다',
+    SELF_BLOCK: '자기자신은 차단할 수 없습니다',
+    READ_BLOCK_LIST: '차단 유저 조회 성공',
+    DELETE_BLOCKED_USER_SUCCESS: '유저 차단 해제 성공',
 
     // mument
     NO_MUMENT_ID: '해당 아이디의 뮤멘트가 존재하지 않습니다',

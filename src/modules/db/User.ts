@@ -1,6 +1,8 @@
 import { UserInfoRDB } from '../../interfaces/user/UserInfoRDB';
 import pools from '../pool';
 import { MyMumentInfoRDB } from '../../interfaces/mument/MyMumentInfoRDB';
+import { NumberBaseResponseDto } from '../../interfaces/common/NumberBaseResponseDto';
+import pool from '../pool';
 
 /**
  * user 관련 재사용 쿼리 - 트랜잭션 쓸 때 사용가능
@@ -62,9 +64,22 @@ const myLikeMumentList = async (userId: string) => {
 };
 
 
+// userId가 차단한 유저 배열 반환
+const blockedUserList = async (userId: string) => {
+    const selectBlockQuery = `
+        SELECT blocked_user_id as exist 
+            FROM block WHERE user_id=?;`;
+
+    const blockedUserList: NumberBaseResponseDto[] = await pools.queryValue(selectBlockQuery, [userId]);
+    
+    return blockedUserList;
+};
+
+
 export default {
     userInfo,
     myMumentList,
-    myLikeMumentList
+    myLikeMumentList,
+    blockedUserList
 }
 
