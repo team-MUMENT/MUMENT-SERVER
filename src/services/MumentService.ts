@@ -749,15 +749,21 @@ const getAgainMument = async (): Promise<AgainMumentResponseDto | number> => {
 
 // 공지사항 상세보기
 const getNoticeDetail = async (noticeId: string): Promise<NoticeInfoRDB | number> => {
-    const todayDate = dayjs().format('YYYY-MM-DD');
     try {
         const selectNoticeQuery = 'SELECT * FROM notice WHERE id=?'
-        const data: NoticeInfoRDB[] = await pools.queryValue(selectNoticeQuery, [noticeId]);
+        const notice: NoticeInfoRDB[] = await pools.queryValue(selectNoticeQuery, [noticeId]);
         
-        if (data.length === 0) return constant.NO_NOTICE;
+        if (notice.length === 0) return constant.NO_NOTICE;
 
-        return data[0];
+        
+        const data: NoticeInfoRDB = {
+            id: notice[0].id,
+            title: notice[0].title,
+            content: notice[0].content,
+            created_at: dayjs(notice[0].created_at).format('YYYY-MM-DD')
+        };
 
+        return data;
     } catch (error) {
         console.log(error);
         throw error;
@@ -770,10 +776,23 @@ const getNoticeList = async (): Promise<NoticeInfoRDB[]> => {
     const todayDate = dayjs().format('YYYY-MM-DD');
     try {
         const selectNoticeQuery = 'SELECT * FROM notice ORDER BY created_at DESC;'
-        const data: NoticeInfoRDB[] = await pools.query(selectNoticeQuery);
+        let noticeList: NoticeInfoRDB[] = await pools.query(selectNoticeQuery);
         
-        return data;
+        const noticeListDateFormat = async (item: NoticeInfoRDB, idx: number) => {
+            noticeList[idx] = {
+                id: item.id,
+                title: item.title,
+                content: item.content,
+                created_at: dayjs(item.created_at).format('YYYY-MM-DD')
+            };
+        };
 
+        await noticeList.reduce(async (acc, curr, index) => {
+            return acc.then(() => noticeListDateFormat(curr, index));
+        }, Promise.resolve());
+
+
+        return noticeList;
     } catch (error) {
         console.log(error);
         throw error;
