@@ -28,6 +28,10 @@ const constant = {
     WRONG_TOKEN: -102, // 올바르지 않은 토큰일 때
     TOKEN_NOT_BEFORE: -103, // 아직 갱신할 수 없는 토큰일 때
     TOKEN_UNKNOWN_ERROR: -199, // 알 수 없는 토큰 에러
+
+    // 유저 차단
+    ALREADY_BLOCK: -200, // 이미 차단한 유저를 다시 차단하려 할 떄
+    SELF_BLOCK: -201,
 };
 
 export default constant;
