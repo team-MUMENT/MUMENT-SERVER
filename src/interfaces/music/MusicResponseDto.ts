@@ -1,7 +1,5 @@
-import mongoose from 'mongoose';
-
 export interface MusicResponseDto {
-    _id: string;
+    _id: number;
     name: string;
     artist: string;
     image: string;
