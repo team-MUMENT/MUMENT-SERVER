@@ -760,7 +760,7 @@ const getNoticeDetail = async (noticeId: string): Promise<NoticeInfoRDB | number
             id: notice[0].id,
             title: notice[0].title,
             content: notice[0].content,
-            created_at: dayjs(notice[0].created_at).format('YYYY-MM-DD')
+            created_at: dayjs(notice[0].created_at).format('YYYY.MM.DD')
         };
 
         return data;
@@ -783,7 +783,7 @@ const getNoticeList = async (): Promise<NoticeInfoRDB[]> => {
                 id: item.id,
                 title: item.title,
                 content: item.content,
-                created_at: dayjs(item.created_at).format('YYYY-MM-DD')
+                created_at: dayjs(item.created_at).format('YYYY.MM.DD')
             };
         };
 
