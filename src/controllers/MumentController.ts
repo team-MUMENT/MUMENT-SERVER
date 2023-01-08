@@ -464,7 +464,10 @@ const getAgainMument = async (req: Request, res: Response) => {
     }
 };
 
-
+/**
+ * @ROUTE GET /mument/notice/:noticeId
+ * @DESC 공지사항 상세보기 조회
+ */
 const getNoticeDetail = async (req: Request, res: Response) => {
     const { noticeId } = req.params;
 
@@ -496,7 +499,10 @@ const getNoticeDetail = async (req: Request, res: Response) => {
     }
 };
 
-
+/**
+ * @ROUTE GET /mument/notice/
+ * @DESC 공지사항 리스트 조회
+ */
 const getNoticeList = async (req: Request, res: Response) => {
     try {
         const data = await MumentService.getNoticeList();
