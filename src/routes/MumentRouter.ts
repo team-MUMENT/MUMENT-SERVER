@@ -62,6 +62,9 @@ router.get('/:mumentId', auth, MumentController.getMument);
 router.delete('/:mumentId', MumentController.deleteMument);
 
 // 신고하기
-router.post('/report/:mumentId', auth, MumentController.createReport);
+router.post('/report/:mumentId', [
+    body('reportCategory').notEmpty(),
+    body('etcContent').notEmpty(),
+], auth, MumentController.createReport);
 
 export default router;
