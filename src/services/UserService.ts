@@ -1,15 +1,22 @@
 import dayjs from 'dayjs';
-import { UserMumentListResponseDto } from '../interfaces/user/UserMumentListResponseDto';
-import { MumentResponseDto } from '../interfaces/mument/MumentResponseDto';
+import pools from '../modules/pool';
+import poolPromise from '../loaders/db';
+import jwtHandler from '../library/jwtHandler';
+import constant from '../modules/serviceReturnConstant';
+
 import mumentDB from '../modules/db/Mument';
 import userDB from '../modules/db/User';
+
+import { UserInfoRDB } from '../interfaces/user/UserInfoRDB';
 import { MyMumentInfoRDB } from '../interfaces/mument/MyMumentInfoRDB';
+
 import cardTagListProvider from '../modules/cardTagList';
-import poolPromise from '../loaders/db';
-import constant from '../modules/serviceReturnConstant';
+
 import { NumberBaseResponseDto } from '../interfaces/common/NumberBaseResponseDto';
 import { UserResponseDto } from '../interfaces/user/UserResponseDto';
-import pools from '../modules/pool';
+import { UserMumentListResponseDto } from '../interfaces/user/UserMumentListResponseDto';
+import { MumentResponseDto } from '../interfaces/mument/MumentResponseDto';
+import { UserProfileSetResponseDto } from '../interfaces/user/UserProfileSetResponseDto';
 
 
 /**
@@ -293,6 +300,61 @@ const getBlockedUserList = async (userId: number): Promise<UserResponseDto[] | n
     }
 };
 
+const putProfile = async (userId: number, profileId: string, image: string | null): Promise<UserProfileSetResponseDto | number> => {
+    const pool: any = await poolPromise;
+    const connection = await pool.getConnection();
+    
+    try {
+        const isExistUser = await userDB.isExistUser(userId);
+        if (isExistUser === 0) return constant.NO_USER;
+
+        connection.beginTransaction();
+
+        const putProfileQuery = `
+        UPDATE user
+        SET profile_id = ?, image = ?
+        WHERE id = ?
+            AND is_deleted = 0;
+        `;
+
+        await connection.query(putProfileQuery, [profileId, image, userId]);
+
+        const getProfileQuery = `
+        SELECT *
+        FROM user
+        WHERE id = ?
+            AND is_deleted = 0;
+        `;
+
+        const getProfileResult = await connection.query(getProfileQuery, [userId]);
+
+        if (getProfileResult[0].profileId != profileId || getProfileResult[0].image != image) {
+            return constant.UPDATE_FAIL;
+        }
+
+        connection.commit();
+
+        const user: UserInfoRDB = getProfileResult[0];
+
+        const accessToken = jwtHandler.accessSign(user);
+
+        const data: UserProfileSetResponseDto = {
+            id: user.id,
+            accessToken,
+            profileId: profileId,
+            image: user.image,
+        };
+
+        return data;
+    } catch (error) {
+        console.log(error);
+        await connection.rollback();
+        throw error;
+    } finally {
+        connection.release();
+    }
+}
+
 
 export default {
     getMyMumentList,
@@ -300,4 +362,5 @@ export default {
     blockUser,
     deleteBlockUser,
     getBlockedUserList,
+    putProfile,
 };

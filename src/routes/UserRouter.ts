@@ -1,10 +1,14 @@
 import { Router } from 'express';
-import { body } from 'express-validator';
 import { UserController } from '../controllers';
+import { body, param, query } from 'express-validator';
 import auth from '../middlewares/auth';
+import upload from '../middlewares/uploadImage';
 
 const router: Router = Router();
 
+router.put('/profile', upload.single('image'), [
+    body('profileId').notEmpty().isString(),
+], auth, UserController.putProfile);
 router.get('/my/list', auth, UserController.getMyMumentList);
 router.get('/like/list', auth, UserController.getLikeMumentList);
 router.post('/block/:mumentId', auth, UserController.blockUser);
