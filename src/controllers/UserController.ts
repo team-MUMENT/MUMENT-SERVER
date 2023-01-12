@@ -5,6 +5,58 @@ import util from '../modules/util';
 import { UserService } from '../services';
 import sendMessage, { SlackMessageFormat } from '../library/slackWebHook';
 import constant from '../modules/serviceReturnConstant';
+import { validationResult } from 'express-validator';
+
+/**
+ * @ROUTE POST /profile
+ * @DESC 소셜로그인 후 회원가입을 진행합니다.
+ */
+const putProfile = async (req: Request, res: Response) => {
+    const userId = req.body.userId;
+    const { profileId } = req.body;
+    const image: Express.MulterS3.File = req.file as Express.MulterS3.File;
+
+    const error = validationResult(req);
+
+    if (!error.isEmpty()) {
+        return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.WRONG_PARAMS));
+    }
+
+    try {
+        let data;
+
+        if (image) {
+            const { location } = image;
+            data = await UserService.putProfile(userId, profileId, location);
+        } else {
+            data = await UserService.putProfile(userId, profileId, null);
+        }
+
+        if (data === constant.UPDATE_FAIL) {
+            return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.UPDATE_PROFILE_FAIL));
+        } else if (data === constant.NO_USER) {
+            return res.status(statusCode.NOT_FOUND).send(util.fail(statusCode.NOT_FOUND, message.NO_USER_ID));
+        }
+
+        res.status(statusCode.OK).send(util.success(statusCode.OK, message.PROFILE_SET_SUCCESS, data));
+    } catch (error) {
+        console.log(error);
+
+        const slackMessage: SlackMessageFormat = {
+            title: 'MUMENT ec2 서버 오류',
+            text: '서버 내부 오류입니다',
+            fields: [
+                {
+                    title: 'Error Stack:',
+                    value: `\`\`\`${error}\`\`\``,
+                },
+            ],
+        };
+        sendMessage(slackMessage);
+
+        res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.SERVICE_UNAVAILABLE, message.INTERNAL_SERVER_ERROR));
+    }
+};
 
 /**
  *  @ROUTE GET /my/list?tag1=&tag2=&tag3=
@@ -181,4 +233,5 @@ export default {
     blockUser,
     deleteBlockUser,
     getBlockedUserList,
+    putProfile,
 };
