@@ -52,7 +52,7 @@ const createMument = async (req: Request, res: Response) => {
 const updateMument = async (req: Request, res: Response) => {
     const error = validationResult(req);
     if (!error.isEmpty()) {
-        res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.BAD_REQUEST));
+        return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.BAD_REQUEST));
     }
 
     const { mumentId } = req.params;
@@ -61,7 +61,7 @@ const updateMument = async (req: Request, res: Response) => {
     try {
         const data = await MumentService.updateMument(mumentId, mumentUpdateDto);
 
-        if (data===constant.NO_MUMENT) {
+        if (data === constant.NO_MUMENT) {
             return res.status(statusCode.NOT_FOUND).send(util.fail(statusCode.NOT_FOUND, message.NO_MUMENT_ID));
         } 
         
@@ -194,7 +194,7 @@ const getMumentHistory = async (req: Request, res: Response) => {
 
     const error = validationResult(req);
     if (!error.isEmpty()) {
-        res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.WRONG_PARAMS));
+        return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.WRONG_PARAMS));
     }
 
     let orderBy: string = 'DESC';
@@ -248,7 +248,7 @@ const createLike = async (req: Request, res: Response) => {
 
     const error = validationResult(req);
     if (!error.isEmpty()) {
-        res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.WRONG_PARAMS));
+        return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.WRONG_PARAMS));
     }
 
     try {
@@ -296,7 +296,7 @@ const deleteLike = async (req: Request, res: Response) => {
 
     const error = validationResult(req);
     if (!error.isEmpty()) {
-        res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.WRONG_PARAMS));
+        return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.WRONG_PARAMS));
     }
 
     try {
@@ -464,6 +464,112 @@ const getAgainMument = async (req: Request, res: Response) => {
     }
 };
 
+/**
+ * @ROUTE GET /mument/notice/:noticeId
+ * @DESC 공지사항 상세보기 조회
+ */
+const getNoticeDetail = async (req: Request, res: Response) => {
+    const { noticeId } = req.params;
+
+    try {
+        const data = await MumentService.getNoticeDetail(noticeId);
+
+        if (data === constant.NO_NOTICE) {
+            return res.status(statusCode.NOT_FOUND).send(util.success(statusCode.NOT_FOUND, message.NOT_FOUND_ID));
+        } 
+
+        res.status(statusCode.OK).send(util.success(statusCode.OK, message.READ_NOTICE_DETAIL_SUCCESS, data));
+
+    } catch (error) {
+        console.log(error);
+
+        const slackMessage: SlackMessageFormat = {
+            title: 'MUMENT ec2 서버 오류',
+            text: '서버 내부 오류입니다',
+            fields: [
+                {
+                    title: 'Error Stack:',
+                    value: `\`\`\`${error}\`\`\``,
+                },
+            ],
+        };
+        sendMessage(slackMessage);
+
+        res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
+    }
+};
+
+/**
+ * @ROUTE GET /mument/notice/
+ * @DESC 공지사항 리스트 조회
+ */
+const getNoticeList = async (req: Request, res: Response) => {
+    try {
+        const data = await MumentService.getNoticeList();
+
+        res.status(statusCode.OK).send(util.success(statusCode.OK, message.READ_NOTICE_LIST_SUCCESS, data));
+
+    } catch (error) {
+        console.log(error);
+
+        const slackMessage: SlackMessageFormat = {
+            title: 'MUMENT ec2 서버 오류',
+            text: '서버 내부 오류입니다',
+            fields: [
+                {
+                    title: 'Error Stack:',
+                    value: `\`\`\`${error}\`\`\``,
+                },
+            ],
+        };
+        sendMessage(slackMessage);
+
+        res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
+    }
+};
+
+/**
+ * @ROUTE POST /mument/report/:mumentId
+ * @DESC 뮤멘트 신고하기
+ */
+const createReport = async (req: Request, res: Response) => {
+    const error = validationResult(req);
+    if (!error.isEmpty()) {
+        return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.BODY_REQUIRED));
+    }
+
+    const { mumentId } = req.params;
+    const { reportCategory, etcContent } = req.body;
+    const userId = req.body.userId
+
+    try {
+        const data = await MumentService.createReport(mumentId, reportCategory, etcContent, userId);
+
+        if (data === constant.NO_MUMENT) {
+            return res.status(statusCode.NOT_FOUND).send(util.fail(statusCode.NOT_FOUND, message.NO_MUMENT_ID));
+        } 
+        
+        return res.status(statusCode.CREATED).send(util.success(statusCode.CREATED, message.CREATE_REPORT_SUCCESS, data));
+    } catch (error) {
+        console.log(error);
+
+        const slackMessage: SlackMessageFormat = {
+            title: 'MUMENT ec2 서버 오류',
+            text: '서버 내부 오류입니다',
+            fields: [
+                {
+                    title: 'Error Stack:',
+                    value: `\`\`\`${error}\`\`\``,
+                },
+            ],
+        };
+        sendMessage(slackMessage);
+
+        res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
+    }
+};
+
+
 export default {
     createMument,
     updateMument,
@@ -477,4 +583,7 @@ export default {
     getTodayMument,
     getBanner,
     getAgainMument,
+    getNoticeDetail,
+    getNoticeList,
+    createReport,
 };

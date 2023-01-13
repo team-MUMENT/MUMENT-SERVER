@@ -36,6 +36,8 @@ const message = {
     DELETE_LIKE_SUCCESS: '좋아요 취소 성공',
     DELETE_LIKE_FAIL: '좋아요 취소 실패',
     READ_ISFIRST_SUCCESS: '뮤멘트 처음/다시 조회 성공',
+    READ_NOTICE_LIST_SUCCESS: '공지사항 리스트 조회 성공',
+    READ_NOTICE_DETAIL_SUCCESS: '공지사항 상세보기 성공',
 
     // home
     GET_RANDOM_MUMENT_SUCCESS: '랜덤 뮤멘트 리스트 조회 성공',
@@ -63,7 +65,11 @@ const message = {
     TOKEN_EXPIRED: '토큰이 만료되었습니다',
     TOKEN_INVALID: '유효하지 않은 토큰입니다',
     WRONG_TOKEN: '잘못된 토큰입니다', //'jwt malformed' || 'jwt signature is required' || 'invalid signature'경우,
-    TOKEN_UNKNOWN_ERROR: '토큰 에러' // 그외의 토큰 에러
+    TOKEN_UNKNOWN_ERROR: '토큰 에러', // 그외의 토큰 에러
+
+    //신고 제재
+    REPORT_RESTRICTION_USER: '신고 제재를 받고있는 유저입니다',
+    CREATE_REPORT_SUCCESS: '뮤멘트 신고하기 성공',
 };
 
 export default message;
