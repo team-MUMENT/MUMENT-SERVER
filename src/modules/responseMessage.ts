@@ -67,6 +67,7 @@ const message = {
 
     //신고 제재
     REPORT_RESTRICTION_USER: '신고 제재를 받고있는 유저입니다',
+    CREATE_REPORT_SUCCESS: '뮤멘트 신고하기 성공',
 };
 
 export default message;

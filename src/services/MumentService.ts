@@ -800,6 +800,52 @@ const getNoticeList = async (): Promise<NoticeInfoRDB[]> => {
 };
 
 
+// 뮤멘트 신고하기
+const createReport = async (mumentId: string, reportCategory: number[], etcContent: string, userId: string): Promise<void | number> => {
+    const pool: any = await poolPromise;
+    const connection = await pool.getConnection();
+    
+    try {
+        // 신고 당하는 유저 id 가져오기
+        const reportedMument = await mumentDB.isExistMumentInfo(mumentId, connection);
+        let reportedUser: number;
+
+        if (!reportedMument.isExist) return constant.NO_MUMENT;
+        reportedUser = reportedMument.mument?.user_id as number;
+
+
+        // 신고 사유 배열에 대해 모두 POST
+        const postReport = async (item: number, idx: number) => {
+            const postReportQuery = `
+                INSERT INTO report(user_id, reported_user_id, report_category_id, reason_etc, mument_id) 
+                    VALUES(?, ?, ?, ?, ?);
+            `;
+
+            await connection.query(postReportQuery, [
+                userId,
+                reportedUser,
+                item,
+                etcContent,
+                mumentId
+            ]);
+        };
+
+        await reportCategory.reduce(async (acc, curr, index) => {
+            return acc.then(() => postReport(curr, index));
+        }, Promise.resolve());
+
+
+        await connection.commit(); // query1, query2 모두 성공시 커밋(데이터 적용)
+    } catch (error) {
+        console.log(error);
+        await connection.rollback(); // query1, query2 중 하나라도 에러시 롤백 (데이터 적용 원상복귀)
+        throw error;
+    } finally {
+        connection.release(); // pool connection 회수
+    }
+};
+
+
 export default {
     createMument,
     updateMument,
@@ -815,4 +861,5 @@ export default {
     getAgainMument,
     getNoticeDetail,
     getNoticeList,
+    createReport,
 };

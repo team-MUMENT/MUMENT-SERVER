@@ -49,7 +49,7 @@ router.get('/banner', MumentController.getBanner);
 // 다시 들은 뮤멘트
 router.get('/again', MumentController.getAgainMument);
 
-// 공시자항 상세보기
+// 공시자항 리스트
 router.get('/notice', MumentController.getNoticeList);
 
 // 공시자항 상세보기
@@ -58,7 +58,13 @@ router.get('/notice/:noticeId', MumentController.getNoticeDetail);
 // 뮤멘트 상세보기
 router.get('/:mumentId', auth, MumentController.getMument);
 
-//뮤멘트 삭제하기
+// 뮤멘트 삭제하기
 router.delete('/:mumentId', MumentController.deleteMument);
+
+// 신고하기
+router.post('/report/:mumentId', [
+    body('reportCategory').notEmpty(),
+    body('etcContent').notEmpty(),
+], auth, MumentController.createReport);
 
 export default router;
