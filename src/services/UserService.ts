@@ -328,7 +328,7 @@ const putProfile = async (userId: number, profileId: string, image: string | nul
 
         const getProfileResult = await connection.query(getProfileQuery, [userId]);
 
-        if (getProfileResult[0].profileId != profileId || getProfileResult[0].image != image) {
+        if (getProfileResult[0].profile_id != profileId || getProfileResult[0].image != image) {
             return constant.UPDATE_FAIL;
         }
 
