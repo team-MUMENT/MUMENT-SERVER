@@ -39,6 +39,7 @@ import { LikeMumentInfo } from '../interfaces/like/LikeInfo';
 import { ExistMumentDto } from '../interfaces/mument/ExistMumentRDBDto';
 import { MumentInfoRDB } from '../interfaces/mument/MumentInfoRDB';
 import cardTagList from '../modules/cardTagList';
+import { NoticeInfoRDB } from '../interfaces/mument/NoticeInfoRDB';
 
 
 /** 
@@ -774,6 +775,105 @@ const getAgainMument = async (): Promise<AgainMumentResponseDto | number> => {
     }
 };
 
+// 공지사항 상세보기
+const getNoticeDetail = async (noticeId: string): Promise<NoticeInfoRDB | number> => {
+    try {
+        const selectNoticeQuery = 'SELECT * FROM notice WHERE id=?'
+        const notice: NoticeInfoRDB[] = await pools.queryValue(selectNoticeQuery, [noticeId]);
+        
+        if (notice.length === 0) return constant.NO_NOTICE;
+
+        
+        const data: NoticeInfoRDB = {
+            id: notice[0].id,
+            title: notice[0].title,
+            content: notice[0].content,
+            created_at: dayjs(notice[0].created_at).format('YYYY.MM.DD')
+        };
+
+        return data;
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+};
+
+
+// 공지사항 리스트 조회
+const getNoticeList = async (): Promise<NoticeInfoRDB[]> => {
+    const todayDate = dayjs().format('YYYY-MM-DD');
+    try {
+        const selectNoticeQuery = 'SELECT * FROM notice ORDER BY created_at DESC;'
+        let noticeList: NoticeInfoRDB[] = await pools.query(selectNoticeQuery);
+        
+        const noticeListDateFormat = async (item: NoticeInfoRDB, idx: number) => {
+            noticeList[idx] = {
+                id: item.id,
+                title: item.title,
+                content: item.content,
+                created_at: dayjs(item.created_at).format('YYYY.MM.DD')
+            };
+        };
+
+        await noticeList.reduce(async (acc, curr, index) => {
+            return acc.then(() => noticeListDateFormat(curr, index));
+        }, Promise.resolve());
+
+
+        return noticeList;
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+};
+
+
+// 뮤멘트 신고하기
+const createReport = async (mumentId: string, reportCategory: number[], etcContent: string, userId: string): Promise<void | number> => {
+    const pool: any = await poolPromise;
+    const connection = await pool.getConnection();
+    
+    try {
+        // 신고 당하는 유저 id 가져오기
+        const reportedMument = await mumentDB.isExistMumentInfo(mumentId, connection);
+        let reportedUser: number;
+
+        if (!reportedMument.isExist) return constant.NO_MUMENT;
+        reportedUser = reportedMument.mument?.user_id as number;
+
+
+        // 신고 사유 배열에 대해 모두 POST
+        const postReport = async (item: number, idx: number) => {
+            const postReportQuery = `
+                INSERT INTO report(user_id, reported_user_id, report_category_id, reason_etc, mument_id) 
+                    VALUES(?, ?, ?, ?, ?);
+            `;
+
+            await connection.query(postReportQuery, [
+                userId,
+                reportedUser,
+                item,
+                etcContent,
+                mumentId
+            ]);
+        };
+
+        await reportCategory.reduce(async (acc, curr, index) => {
+            return acc.then(() => postReport(curr, index));
+        }, Promise.resolve());
+
+
+        await connection.commit(); // query1, query2 모두 성공시 커밋(데이터 적용)
+    } catch (error) {
+        console.log(error);
+        await connection.rollback(); // query1, query2 중 하나라도 에러시 롤백 (데이터 적용 원상복귀)
+        throw error;
+    } finally {
+        connection.release(); // pool connection 회수
+    }
+};
+
+
 export default {
     createMument,
     updateMument,
@@ -787,4 +887,7 @@ export default {
     getTodayMument,
     getBanner,
     getAgainMument,
+    getNoticeDetail,
+    getNoticeList,
+    createReport,
 };

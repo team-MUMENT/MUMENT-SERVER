@@ -2,11 +2,12 @@ import { Router } from 'express';
 import { MumentController } from '../controllers';
 import { body, header, param, query } from 'express-validator';
 import auth from '../middlewares/auth';
+import reportRestriction from '../middlewares/reportRestriction';
 
 const router: Router = Router();
 
 // 뮤멘트 기록하기
-router.post('/:musicId', auth, MumentController.createMument);
+router.post('/:musicId', auth, reportRestriction, MumentController.createMument);
 
 // 처음/다시 조회
 router.get('/:musicId/is-first', auth, MumentController.getIsFirst);
@@ -14,13 +15,8 @@ router.get('/:musicId/is-first', auth, MumentController.getIsFirst);
 // 뮤멘트 수정하기
 router.put('/:mumentId', [
     body('isFirst').notEmpty(),
-], MumentController.updateMument);
+], auth, reportRestriction, MumentController.updateMument);
 
-// 뮤멘트 상세보기
-router.get('/:mumentId', auth, MumentController.getMument);
-
-//뮤멘트 삭제하기
-router.delete('/:mumentId', MumentController.deleteMument);
 
 // 히스토리 조회
 router.get('/:musicId/:userId/history', [
@@ -52,5 +48,23 @@ router.get('/banner', MumentController.getBanner);
 
 // 다시 들은 뮤멘트
 router.get('/again', MumentController.getAgainMument);
+
+// 공시자항 리스트
+router.get('/notice', MumentController.getNoticeList);
+
+// 공시자항 상세보기
+router.get('/notice/:noticeId', MumentController.getNoticeDetail);
+
+// 뮤멘트 상세보기
+router.get('/:mumentId', auth, MumentController.getMument);
+
+// 뮤멘트 삭제하기
+router.delete('/:mumentId', MumentController.deleteMument);
+
+// 신고하기
+router.post('/report/:mumentId', [
+    body('reportCategory').notEmpty(),
+    body('etcContent').notEmpty(),
+], auth, MumentController.createReport);
 
 export default router;
