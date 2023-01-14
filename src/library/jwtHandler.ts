@@ -45,7 +45,7 @@ const refreshSign = (user: UserInfoRDB) => {
 // 토큰 decode 함수
 const verify = (token: string) => {
     try {
-        const decoded: UserInfoRDB = jwt.verify(token, config.jwtSecret);
+        const decoded = jwt.verify(token, config.jwtSecret);
         return decoded;
     } catch (err: any) {
         if (err.name == TokenExpiredError) {
