@@ -71,9 +71,12 @@ const getNewAccessToken = async (req: Request, res: Response) => {
 
         if (data === constant.WRONG_TOKEN) {
             return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.NOT_CORRECT_TOKEN));
-        } else {
+        } else if ((data as AuthTokenResponseDto).type === 'renew access and refresh token'){
             return res.status(statusCode.OK).send(util.success(statusCode.OK, message.RENEW_ACCESS_TOKEN, data));
+        } else {
+            return res.status(statusCode.OK).send(util.success(statusCode.OK, message.RENEW_ACCESS_REFRESH_TOKEN, data));
         }
+        
     } catch (error) {
         console.log(error);
 

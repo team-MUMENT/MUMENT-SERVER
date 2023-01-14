@@ -64,6 +64,7 @@ const message = {
     NO_AUTHENTICATION_CODE: 'authentication code값이 없습니다',
     NOT_CORRECT_TOKEN: 'refresh token이 일치하지 않습니다',
     RENEW_ACCESS_TOKEN: 'access token 갱신 성공',
+    RENEW_ACCESS_REFRESH_TOKEN: 'access token과 refresh token 갱신 성공',
 
     //JWT
     NULL_VALUE_TOKEN: 'request-header에 토큰이 없습니다',
