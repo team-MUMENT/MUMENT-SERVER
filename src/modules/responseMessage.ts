@@ -70,7 +70,7 @@ const message = {
     TOKEN_UNKNOWN_ERROR: '토큰 에러', // 그외의 토큰 에러
 
     //신고 제재
-    REPORT_RESTRICTION_USER: '신고 제재를 받고있는 유저입니다',
+    REPORT_RESTRICTION_USER_SUCCESS: '신고 제재 유무 조회 성공',
     CREATE_REPORT_SUCCESS: '뮤멘트 신고하기 성공',
 };
 
