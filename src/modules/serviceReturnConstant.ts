@@ -1,4 +1,6 @@
 const constant = {
+    NO_RESULT: 0, // 조회 결과가 없을 때
+    
     CREATE_SUCCESS: 1, // 생성 성공
     UPDATE_SUCCESS: 2, // 업데이트 성공
     DELETE_SUCCESS: 3, // 삭제 성공
