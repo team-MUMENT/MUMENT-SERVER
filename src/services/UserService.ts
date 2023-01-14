@@ -17,6 +17,7 @@ import { UserResponseDto } from '../interfaces/user/UserResponseDto';
 import { UserMumentListResponseDto } from '../interfaces/user/UserMumentListResponseDto';
 import { MumentResponseDto } from '../interfaces/mument/MumentResponseDto';
 import { UserProfileSetResponseDto } from '../interfaces/user/UserProfileSetResponseDto';
+import { UserLeaveResponseDto } from '../interfaces/user/UserLeaveResponseDto';
 
 
 /**
@@ -380,6 +381,65 @@ const checkDuplicateName = async (profileId: string): Promise<boolean> => {
     }
 }
 
+const postLeaveCategory = async (userId: number, leaveCategoryId: string, reasonEtc: string | null): Promise<Number | UserLeaveResponseDto> => {
+    const pool: any = await poolPromise;
+    const connection = await pool.getConnection();
+
+    try {
+        const isExistUser = await userDB.isExistUser(userId);
+        if (!isExistUser) return constant.NO_USER;
+
+        connection.beginTransaction();
+
+        const postLeaveQuery = `
+        INSERT INTO mument.leave(user_id, leave_category_id, reason_etc)
+        VALUES(?, ?, ?);
+        `;
+
+        await connection.query(postLeaveQuery, [userId, leaveCategoryId, reasonEtc]);
+
+        const getLeaveQuery = `
+        SELECT mument.leave.*, user.profile_id, leave_category.name
+        FROM mument.leave
+        JOIN user
+            ON mument.leave.user_id = user.id
+        JOIN leave_category
+            ON mument.leave.leave_category_id = leave_category.id
+        WHERE mument.leave.user_id = ?
+        ORDER BY mument.leave.created_at DESC
+        LIMIT 1;
+        `;
+
+        const getLeaveResult = await connection.query(getLeaveQuery, [userId]);
+
+        if (getLeaveResult.length != 1 || getLeaveResult[0].leave_category_id != leaveCategoryId) {
+            return constant.CREATE_FAIL;
+        };
+
+        connection.commit();
+
+        const data: UserLeaveResponseDto = {
+            id: getLeaveResult[0].id,
+            userId: getLeaveResult[0].user_id,
+            profileId: getLeaveResult[0].profile_id,
+            leaveCategoryId: getLeaveResult[0].leave_category_id,
+            leaveCategoryName: getLeaveResult[0].name,
+            reasonEtc: getLeaveResult[0].reason_etc,
+            createdAt: getLeaveResult[0].created_at,
+        };
+
+        return data;
+
+
+    } catch (error) {
+        console.log(error);
+        await connection.rollback();
+        throw error;
+    } finally {
+        connection.release();
+    }
+}
+
 
 export default {
     getMyMumentList,
@@ -389,4 +449,5 @@ export default {
     getBlockedUserList,
     putProfile,
     checkDuplicateName,
+    postLeaveCategory, 
 };

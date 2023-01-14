@@ -264,6 +264,53 @@ const getBlockedUserList =  async (req: Request, res: Response) => {
     }
 };
 
+/**
+ * @ROUTE POST /leave-category
+ * @DESC 탈퇴 사유를 등록합니다.
+ */
+const postLeaveCategory = async (req: Request, res: Response) => {
+    const { leaveCategoryId, reasonEtc } = req.body;
+    const userId = req.body.userId;
+    
+    const error = validationResult(req);
+    if (!error.isEmpty()) {
+        return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.WRONG_PARAMS));
+    }
+
+    try {
+        let data;
+        
+        if (reasonEtc) {
+            data = await UserService.postLeaveCategory(userId, leaveCategoryId, reasonEtc);
+        } else {
+            data = await UserService.postLeaveCategory(userId, leaveCategoryId, null);
+        }
+
+        if (data === constant.NO_USER) {
+            return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.NO_USER_ID));
+        } else if (data === constant.CREATE_FAIL) {
+            return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.CREATE_LEAVE_CATEGORY_FAIL));
+        } else {
+            return res.status(statusCode.CREATED).send(util.success(statusCode.CREATED, message.CREATE_LEAVE_CATEGORY_SUCESS, data));
+        }
+    } catch (error) {
+        console.log(error);
+
+        const slackMessage: SlackMessageFormat = {
+            title: 'MUMENT ec2 서버 오류',
+            text: '서버 내부 오류입니다',
+            fields: [
+                {
+                    title: 'Error Stack:',
+                    value: `\`\`\`${error}\`\`\``,
+                },
+            ],
+        };
+        sendMessage(slackMessage);
+
+        res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
+    }
+};
 
 export default {
     getMyMumentList,
@@ -273,4 +320,5 @@ export default {
     getBlockedUserList,
     putProfile,
     checkDuplicateName,
+    postLeaveCategory,
 };
