@@ -108,7 +108,6 @@ const getMyMumentList = async (userId: string, tagList: number[]): Promise<UserM
  */
 const getLikeMumentList = async (userId: string, tagList: number[]): Promise<UserMumentListResponseDto | null> => {
     try {
-       
         // 좋아요한 뮤멘트 리스트 가져오기
         let likeMumentList: MyMumentInfoRDB[] = await userDB.myLikeMumentList(userId);
 
@@ -207,9 +206,10 @@ const getLikeMumentList = async (userId: string, tagList: number[]): Promise<Use
 const blockUser = async (userId: number, mumentId: string): Promise<number | NumberBaseResponseDto> => {
     const pool: any = await poolPromise;
     const connection = await pool.getConnection();
-    connection.beginTransaction(); //롤백을 위해 필요함
 
     try {
+        await connection.beginTransaction(); //롤백을 위해 필요함
+
         // 뮤멘트 작성자 id 가져오기
         const blockedMument = await mumentDB.isExistMumentInfo(mumentId, connection);
         let blockedUser: number;
