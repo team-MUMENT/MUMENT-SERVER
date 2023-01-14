@@ -62,6 +62,8 @@ const message = {
     APPLE_TOKEN_UNAUTHORIZED: '애플 API 개발자 토큰이 유효하지 않습니다',
     APPLE_SERVER_INTERNAL_ERROR: '애플 API 서버 자체 에러',
     NO_AUTHENTICATION_CODE: 'authentication code값이 없습니다',
+    NOT_CORRECT_TOKEN: 'refresh token이 일치하지 않습니다',
+    RENEW_ACCESS_TOKEN: 'access token 갱신 성공',
 
     //JWT
     NULL_VALUE_TOKEN: 'request-header에 토큰이 없습니다',
