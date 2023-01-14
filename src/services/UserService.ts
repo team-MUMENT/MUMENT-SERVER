@@ -10,6 +10,8 @@ import constant from '../modules/serviceReturnConstant';
 import { NumberBaseResponseDto } from '../interfaces/common/NumberBaseResponseDto';
 import { UserResponseDto } from '../interfaces/user/UserResponseDto';
 import pools from '../modules/pool';
+import { NewsInfoRDB } from '../interfaces/user/NewsInfoRDB';
+import { NewsResponseDto } from '../interfaces/user/NewsResponseDto';
 
 
 /**
@@ -106,7 +108,6 @@ const getMyMumentList = async (userId: string, tagList: number[]): Promise<UserM
  */
 const getLikeMumentList = async (userId: string, tagList: number[]): Promise<UserMumentListResponseDto | null> => {
     try {
-       
         // 좋아요한 뮤멘트 리스트 가져오기
         let likeMumentList: MyMumentInfoRDB[] = await userDB.myLikeMumentList(userId);
 
@@ -207,6 +208,8 @@ const blockUser = async (userId: number, mumentId: string): Promise<number | Num
     const connection = await pool.getConnection();
 
     try {
+        await connection.beginTransaction(); //롤백을 위해 필요함
+
         // 뮤멘트 작성자 id 가져오기
         const blockedMument = await mumentDB.isExistMumentInfo(mumentId, connection);
         let blockedUser: number;
@@ -258,6 +261,9 @@ const blockUser = async (userId: number, mumentId: string): Promise<number | Num
     }
 };
 
+/**
+ *  유저 차단 취소
+ */
 const deleteBlockUser = async (userId: number, blockedUserId: string): Promise<void> => {
     try {
         const deleteBlockQuery = `DELETE FROM block WHERE user_id=? AND blocked_user_id=?`;
@@ -273,6 +279,10 @@ const deleteBlockUser = async (userId: number, blockedUserId: string): Promise<v
     }
 };
 
+
+/**
+ *  차단 유저 리스트 조회
+ */
 const getBlockedUserList = async (userId: number): Promise<UserResponseDto[] | number> => {
     try {
         const selectBlockQuery = `
@@ -294,10 +304,160 @@ const getBlockedUserList = async (userId: number): Promise<UserResponseDto[] | n
 };
 
 
+/**
+ * 소식창에 안읽은 알림이 있는지 조회
+ */
+const getUnreadNewsisExist = async (userId: number): Promise<NumberBaseResponseDto> => {
+    const pool: any = await poolPromise;
+    const connection = await pool.getConnection();
+
+    try {
+        const curr = new Date();
+        const comparedDate = dayjs(curr).subtract(2, 'week').format();
+        
+        const selectNewsQeury = `
+            SELECT * FROM news 
+            WHERE user_id=? AND is_deleted=0 AND is_read=0 AND created_at BETWEEN ? AND ?
+        `;
+
+        const data = await connection.query(selectNewsQeury, [
+            userId,  comparedDate, dayjs(curr).format()
+        ]);
+
+        if (data.length > 0) return { exist: 1 };
+        else return { exist: 0 };
+
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+
+};
+
+
+/**
+ * 소식창 새로운 알림 읽음 처리
+ */
+const updateUnreadNews  = async (userId: number, unreadNews: number[]): Promise<void | number> => {
+    const pool: any = await poolPromise;
+    const connection = await pool.getConnection();
+    connection.beginTransaction(); //롤백을 위해 필요함
+
+    try {
+        const updateUnReadQuery = `
+            UPDATE news SET is_read=1 WHERE user_id=? AND id=?
+        `;
+
+        for await (const id of unreadNews) {
+            const updateResult: any = await connection.query(updateUnReadQuery, [userId, id]);
+
+             // update가 되지 않을 경우
+            if (updateResult.changedRows !== undefined && updateResult.changedRows == 0) {
+                connection.rollback(); // 하나라도 update안되면 데이터 적용 원상복귀
+                return constant.UPDATE_FAIL;
+            }
+        }
+
+        await connection.commit();
+    } catch (error) {
+        console.log(error);
+        await connection.rollback(); // 하나라도 에러시 롤백 (데이터 적용 원상복귀)
+        throw error;
+    } finally {
+        connection.release(); // pool connection 회수
+    }
+};
+
+
+/**
+ * 소식창 알림 제거
+ */
+const deleteNews = async (userId: number, newsId: number): Promise<void | number> => {
+    const pool: any = await poolPromise;
+    const connection = await pool.getConnection();
+    connection.beginTransaction(); //롤백을 위해 필요함
+
+    try {
+        const updateNewsQuery = `
+            UPDATE news SET is_deleted=1 WHERE user_id=? AND id=?;
+        `;
+        
+        const updateResult: any = await connection.query(updateNewsQuery, [userId, newsId]);
+        
+        // update가 되지 않을 경우
+        if (updateResult.changedRows !== undefined && updateResult.changedRows == 0) return constant.UPDATE_FAIL;
+
+
+        await connection.commit();
+    } catch (error) {
+        console.log(error);
+        await connection.rollback(); // 하나라도 에러시 롤백 (데이터 적용 원상복귀)
+        throw error;
+    } finally {
+        connection.release(); // pool connection 회수
+    }
+}
+
+
+
+/**
+ * 소식창 리스트 조회
+ */
+const getNewsList = async (userId: number): Promise<NewsResponseDto[]> => {
+    const pool: any = await poolPromise;
+    const connection = await pool.getConnection();
+    let result: NewsResponseDto[] = [];
+    
+
+    try {
+        const selectNewsQuery = `
+            SELECT * FROM news WHERE user_id=? AND is_deleted=0 ORDER BY created_at DESC;
+        `;
+        const newsList: NewsInfoRDB[]  = await connection.query(selectNewsQuery, [userId]);
+
+        const curr = new Date();
+        const comparedDate = dayjs(curr).subtract(2, 'week').format();
+        
+        const newsListDateFormat = async (item: NewsInfoRDB, idx: number) => {
+            // 최근 2주전 알림만 보여줌
+            if (dayjs(comparedDate).isBefore(item.created_at)) {
+                result.push({
+                    id: item.id,
+                    type: item.type,
+                    userId: item.user_id,
+                    isDeleted: item.is_deleted,
+                    isRead: item.is_read,
+                    createdAt: dayjs(item.created_at).format('MM/DD HH:mm'),
+                    linkId: item.link_id,
+                    noticeTitle: item.notice_title,
+                    likeProfileId: item.like_profile_id,
+                    likeMusicTitle: item.like_music_title
+                });
+            }
+        };
+
+        await newsList.reduce(async (acc, curr, index) => {
+            return acc.then(() => newsListDateFormat(curr, index));
+        }, Promise.resolve());
+
+        return result;
+    } catch (error) {
+        console.log(error);
+        throw error;
+    } finally {
+        connection.release(); // pool connection 회수
+    }
+};
+
+
 export default {
     getMyMumentList,
     getLikeMumentList,
     blockUser,
     deleteBlockUser,
     getBlockedUserList,
+    getUnreadNewsisExist,
+    updateUnreadNews,
+    deleteNews,
+    getNewsList,
 };
