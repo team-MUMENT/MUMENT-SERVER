@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import { body, param } from 'express-validator';
 import { UserController } from '../controllers';
-import { body, param, query } from 'express-validator';
 import auth from '../middlewares/auth';
 import upload from '../middlewares/uploadImage';
 
