@@ -18,6 +18,7 @@ import { UserMumentListResponseDto } from '../interfaces/user/UserMumentListResp
 import { MumentResponseDto } from '../interfaces/mument/MumentResponseDto';
 import { UserProfileSetResponseDto } from '../interfaces/user/UserProfileSetResponseDto';
 import { UserLeaveResponseDto } from '../interfaces/user/UserLeaveResponseDto';
+import { UserDeleteResponseDto } from '../interfaces/user/UserDeleteResponseDto';
 
 
 /**
@@ -451,7 +452,7 @@ const postLeaveCategory = async (userId: number, leaveCategoryId: string, reason
     }
 };
 
-const deleteUser = async (userId: number): Promise<Number> => {
+const deleteUser = async (userId: number): Promise<Number | UserDeleteResponseDto> => {
     const pool: any = await poolPromise;
     const connection = await pool.getConnection();
     
@@ -473,19 +474,26 @@ const deleteUser = async (userId: number): Promise<Number> => {
 
         // 삭제되었는지 확인
         const getUserQuery = `
-        SELECT *
+        SELECT id, profile_id, is_deleted, updated_at
         FROM user
         WHERE id = ?
-            AND is_deleted = 0;
         `;
 
         const getUserResult = await connection.query(getUserQuery, [userId]);
+        const user = getUserResult[0];
 
-        if (getUserResult.length != 0) return constant.DELETE_FAIL;
+        if (!user.is_deleted) return constant.DELETE_FAIL;
 
         await connection.commit();
 
-        return constant.DELETE_SUCCESS;
+        const data: UserDeleteResponseDto = {
+            id: user.id,
+            profileId: user.profile_id,
+            isDeleted: user.is_deleted,
+            updatedAt: user.updated_at,
+        }
+
+        return data;
 
     } catch (error) {
         console.log(error);

@@ -323,9 +323,8 @@ const deleteUser = async (req: Request, res: Response) => {
                 return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.NO_USER_ID));
             case constant.DELETE_FAIL:
                 return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.DELETE_USER_FAIL));
-            case constant.DELETE_SUCCESS:
-                return res.status(statusCode.OK).send(util.success(statusCode.OK, message.DELETE_USER_SUCCESS));
         }
+        return res.status(statusCode.OK).send(util.success(statusCode.OK, message.DELETE_USER_SUCCESS, data));
     } catch (error) {
         console.log(error);
 
