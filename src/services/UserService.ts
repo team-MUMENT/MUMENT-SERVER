@@ -323,7 +323,6 @@ const getUnreadNewsisExist = async (userId: number): Promise<NumberBaseResponseD
         const data = await connection.query(selectNewsQeury, [
             userId,  comparedDate, dayjs(curr).format()
         ]);
-        console.log(data);
 
         if (data.length > 0) return { exist: 1 };
         else return { exist: 0 };
