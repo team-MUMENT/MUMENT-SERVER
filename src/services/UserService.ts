@@ -355,6 +355,31 @@ const putProfile = async (userId: number, profileId: string, image: string | nul
     }
 }
 
+const checkDuplicateName = async (profileId: string): Promise<boolean> => {
+    try {
+        const checkQuery = `
+        SELECT EXISTS(
+            SELECT *
+            FROM user
+            WHERE profile_id = ?
+                AND is_deleted = 0
+        ) as is_duplicate;
+        `;
+
+        const checkResult = await pools.queryValue(checkQuery, [profileId]);
+
+        const isDuplicate: boolean = checkResult[0].is_duplicate;
+
+        const data = isDuplicate;
+
+        return data;
+
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+}
+
 
 export default {
     getMyMumentList,
@@ -363,4 +388,5 @@ export default {
     deleteBlockUser,
     getBlockedUserList,
     putProfile,
+    checkDuplicateName,
 };
