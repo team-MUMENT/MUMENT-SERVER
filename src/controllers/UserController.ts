@@ -312,6 +312,39 @@ const postLeaveCategory = async (req: Request, res: Response) => {
     }
 };
 
+const deleteUser = async (req: Request, res: Response) => {
+    const userId = req.body.userId;
+
+    try {
+        const data = await UserService.deleteUser(userId);
+
+        switch (data) {
+            case constant.NO_USER:
+                return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.NO_USER_ID));
+            case constant.DELETE_FAIL:
+                return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.DELETE_USER_FAIL));
+            case constant.DELETE_SUCCESS:
+                return res.status(statusCode.OK).send(util.success(statusCode.OK, message.DELETE_USER_SUCCESS));
+        }
+    } catch (error) {
+        console.log(error);
+
+        const slackMessage: SlackMessageFormat = {
+            title: 'MUMENT ec2 서버 오류',
+            text: '서버 내부 오류입니다',
+            fields: [
+                {
+                    title: 'Error Stack:',
+                    value: `\`\`\`${error}\`\`\``,
+                },
+            ],
+        };
+        sendMessage(slackMessage);
+
+        res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
+    }
+};
+
 export default {
     getMyMumentList,
     getLikeMumentList,
@@ -321,4 +354,5 @@ export default {
     putProfile,
     checkDuplicateName,
     postLeaveCategory,
+    deleteUser,
 };

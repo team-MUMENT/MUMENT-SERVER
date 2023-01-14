@@ -26,6 +26,8 @@ const message = {
     AVAILABLE_PROFILEID: '사용 가능한 닉네임입니다',
     CREATE_LEAVE_CATEGORY_FAIL: '탈퇴 사유 등록에 실패했습니다',
     CREATE_LEAVE_CATEGORY_SUCESS: '탈퇴 사유 등록 성공',
+    DELETE_USER_FAIL: '유저 탈퇴에 실패했습니다',
+    DELETE_USER_SUCCESS: '유저 탈퇴 성공',
 
     // mument
     NO_MUMENT_ID: '해당 아이디의 뮤멘트가 존재하지 않습니다',
