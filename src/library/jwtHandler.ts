@@ -13,7 +13,6 @@ const accessOption = {
 };
 const refreshOption = {
     expiresIn: '60d',
-    notBefore: '30d',
     issuer: 'Mument',
 };
 
