@@ -317,20 +317,26 @@ const getNewsList = async (userId: number) => {
             SELECT * FROM news WHERE user_id=? AND is_deleted=0 ORDER BY created_at DESC;
         `;
         const newsList: NewsInfoRDB[]  = await connection.query(selectNewsQuery, [userId]);
+
+        const curr = new Date();
+        const comparedDate = dayjs(curr).subtract(2, 'week').format();
         
         const newsListDateFormat = async (item: NewsInfoRDB, idx: number) => {
-            result.push({
-                id: item.id,
-                type: item.type,
-                userId: item.user_id,
-                isDeleted: item.is_deleted,
-                isRead: item.is_read,
-                createdAt: dayjs(item.created_at).format('MM/DD HH:mm'),
-                linkId: item.link_id,
-                noticeTitle: item.notice_title,
-                likeProfileId: item.like_profile_id,
-                likeMusicTitle: item.like_music_title
-            });
+            // 최근 2주전 알림만 보여줌
+            if (dayjs(comparedDate).isBefore(item.created_at)) {
+                result.push({
+                    id: item.id,
+                    type: item.type,
+                    userId: item.user_id,
+                    isDeleted: item.is_deleted,
+                    isRead: item.is_read,
+                    createdAt: dayjs(item.created_at).format('MM/DD HH:mm'),
+                    linkId: item.link_id,
+                    noticeTitle: item.notice_title,
+                    likeProfileId: item.like_profile_id,
+                    likeMusicTitle: item.like_music_title
+                });
+            }
         };
 
         await newsList.reduce(async (acc, curr, index) => {
