@@ -176,6 +176,45 @@ const getBlockedUserList =  async (req: Request, res: Response) => {
 };
 
 
+
+/**
+ *  @ROUTE PATCH /news/read
+ *  @DESC 안읽은 새로운 알림들을 읽음 처리합니다.
+ */
+const updateUnreadNews = async (req: Request, res: Response) => {
+    const userId: number = req.body.userId;
+    const { unreadNews } = req.body;
+
+    try {
+        const data = await UserService.updateUnreadNews(Number(userId), unreadNews);
+
+        if (data === constant.UPDATE_FAIL) {
+            return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.BAD_REQUEST));
+        }
+
+        return res.status(statusCode.NO_CONTENT).send(util.success(statusCode.NO_CONTENT, message.READ_UNREAD_NEWS_SUCCESS));
+    } catch (error) {
+        console.log(error);
+
+        const slackMessage: SlackMessageFormat = {
+            title: 'MUMENT ec2 서버 오류',
+            text: '서버 내부 오류입니다',
+            fields: [
+                {
+                    title: 'Error Stack:',
+                    value: `\`\`\`${error}\`\`\``,
+                },
+            ],
+        };
+        sendMessage(slackMessage);
+
+        res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
+    }
+};
+
+
+
+
 /**
  *  @ROUTE PATCH /news/:newsId
  *  @DESC 소식창 알림을 제거합니다.
@@ -249,6 +288,7 @@ export default {
     blockUser,
     deleteBlockUser,
     getBlockedUserList,
+    updateUnreadNews,
     deleteNews,
     getNewsList,
 };
