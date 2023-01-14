@@ -78,7 +78,42 @@ const login = async (req: Request, res: Response) => {
     }
 };
 
+/**
+ * @ROUTE GET /auth/token
+ * @DESC 액세스 토큰이 만료되었을 때, 리프래쉬 토큰을 조회하여 새 액세스 토큰을 발급
+ */
+const getNewAccessToken = async (req: Request, res: Response) => {
+    const userId = req.body.userId;
+    const refreshToken = req.headers["authorization"]?.split(' ').reverse()[0];
+
+    if (typeof refreshToken != 'string') return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.WRONG_PARAMS));
+    try {
+        const data = await AuthService.getNewAccessToken(userId, refreshToken);
+
+        if (data === constant.WRONG_TOKEN) {
+            return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.NOT_CORRECT_TOKEN));
+        } else {
+            return res.status(statusCode.OK).send(util.success(statusCode.OK, message.RENEW_ACCESS_TOKEN, data));
+        }
+    } catch (error) {
+        console.log(error);
+
+        const slackMessage: SlackMessageFormat = {
+            title: 'MUMENT ec2 서버 오류',
+            text: '서버 내부 오류입니다',
+            fields: [
+                {
+                    title: 'Error Stack:',
+                    value: `\`\`\`${error}\`\`\``,
+                },
+            ],
+        };
+        sendMessage(slackMessage);
+        return res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
+    }
+}
 
 export default {
     login,
+    getNewAccessToken,
 };
