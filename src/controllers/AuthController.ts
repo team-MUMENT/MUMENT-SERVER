@@ -13,30 +13,9 @@ import { AuthTokenResponseDto } from '../interfaces/auth/AuthTokenResponseDto';
  * @DESC match user profileId and password
  */
 const login = async (req: Request, res: Response) => {
-    // **리팩토링 전 코드**
-    // const { profileId, password } = req.body;
     const { provider, authentication_code } = req.body;
 
-
-    // **리팩토링 전 코드**
-    // const error = validationResult(req);
-    // if (!error.isEmpty()) {
-    //     res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.WRONG_BODY));
-    // }
-
     try {
-        // **리팩토링 전 코드**
-        //const data = await AuthService.login(profileId, password);
-        // // 실패했을 때
-        // switch (data) {
-        //     case constant.NO_USER: {
-        //         res.status(statusCode.NOT_FOUND).send(util.fail(statusCode.NOT_FOUND, message.NO_USER_PROFILEID));
-        //     }
-        //     case constant.WRONG_PASSWORD: {
-        //         res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.LOGIN_FAIL));
-        //     }
-        // }
-
         const data = await AuthService.login(provider, authentication_code);
 
         switch (data) {

@@ -28,8 +28,6 @@ const login = async (provider: string, authenticationCode: string): Promise<Auth
     if (!authenticationCode) return constant.NO_AUTHENTICATION_CODE;
 
     try {
-        // **리팩토링 전 코드**
-        //let user: UserInfoRDB;
         let user: UserInfoRDB | undefined = undefined;
         let type: string = 'login'; // 회원가입이면 -> 'signUp' 재할당, 로그인이면 -> 'login'
             
