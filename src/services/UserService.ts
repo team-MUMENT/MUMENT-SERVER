@@ -10,6 +10,8 @@ import constant from '../modules/serviceReturnConstant';
 import { NumberBaseResponseDto } from '../interfaces/common/NumberBaseResponseDto';
 import { UserResponseDto } from '../interfaces/user/UserResponseDto';
 import pools from '../modules/pool';
+import { NewsInfoRDB } from '../interfaces/user/NewsInfoRDB';
+import { NewsResponseDto } from '../interfaces/user/NewsResponseDto';
 
 
 /**
@@ -301,10 +303,53 @@ const getBlockedUserList = async (userId: number): Promise<UserResponseDto[] | n
 };
 
 
+/**
+ * 소식창 리스트 조회
+ */
+const getNewsList = async (userId: number) => {
+    const pool: any = await poolPromise;
+    const connection = await pool.getConnection();
+    let result: NewsResponseDto[] = [];
+    
+
+    try {
+        const selectNewsQuery = `
+            SELECT * FROM news WHERE user_id=? AND is_deleted=0 ORDER BY created_at DESC;
+        `;
+        const newsList: NewsInfoRDB[]  = await connection.query(selectNewsQuery, [userId]);
+        
+        const newsListDateFormat = async (item: NewsInfoRDB, idx: number) => {
+            result.push({
+                id: item.id,
+                type: item.type,
+                userId: item.user_id,
+                isDeleted: item.is_deleted,
+                isRead: item.is_read,
+                createdAt: dayjs(item.created_at).format('MM/DD HH:mm'),
+                linkId: item.link_id,
+                noticeTitle: item.notice_title,
+                likeProfileId: item.like_profile_id,
+                likeMusicTitle: item.like_music_title
+            });
+        };
+
+        await newsList.reduce(async (acc, curr, index) => {
+            return acc.then(() => newsListDateFormat(curr, index));
+        }, Promise.resolve());
+
+        return result;
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+};
+
+
 export default {
     getMyMumentList,
     getLikeMumentList,
     blockUser,
     deleteBlockUser,
     getBlockedUserList,
+    getNewsList,
 };
