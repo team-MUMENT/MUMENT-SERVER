@@ -207,6 +207,7 @@ const getLikeMumentList = async (userId: string, tagList: number[]): Promise<Use
 const blockUser = async (userId: number, mumentId: string): Promise<number | NumberBaseResponseDto> => {
     const pool: any = await poolPromise;
     const connection = await pool.getConnection();
+    connection.beginTransaction(); //롤백을 위해 필요함
 
     try {
         // 뮤멘트 작성자 id 가져오기
@@ -343,6 +344,7 @@ const updateUnreadNews  = async (userId: number, unreadNews: number[]): Promise<
 const deleteNews = async (userId: number, newsId: number): Promise<void | number> => {
     const pool: any = await poolPromise;
     const connection = await pool.getConnection();
+    connection.beginTransaction(); //롤백을 위해 필요함
 
     try {
         const updateNewsQuery = `
