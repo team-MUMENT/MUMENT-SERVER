@@ -12,6 +12,7 @@ router.post('/block/:mumentId', auth, UserController.blockUser);
 router.delete('/block/:blockedUserId', auth, UserController.deleteBlockUser);
 router.get('/block', auth, auth, UserController.getBlockedUserList);
 
+router.get('/news/exist', auth, UserController.getUnreadNewsisExist);
 router.patch('/news/read', auth, UserController.updateUnreadNews);
 router.patch('/news/:newsId', auth, UserController.deleteNews);
 router.get('/news', auth, UserController.getNewsList);
