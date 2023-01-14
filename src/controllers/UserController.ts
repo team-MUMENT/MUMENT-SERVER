@@ -59,6 +59,44 @@ const putProfile = async (req: Request, res: Response) => {
 };
 
 /**
+ * @ROUTE GET /profile/check/:profileId
+ * @DESC 설정하려는 프로필아이디 (이름)이 중복되었는지 확인합니다.
+ */
+const checkDuplicateName = async (req: Request, res: Response) => {
+    const { profileId } = req.params;
+    const userId = req.body.userId;
+    const error = validationResult(req);
+
+    if (!error.isEmpty()) {
+        return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.WRONG_PARAMS));
+    }
+
+    try {
+        const data = await UserService.checkDuplicateName(profileId);
+
+        if (data) res.status(statusCode.OK).send(util.success(statusCode.OK, message.DUPLICATE_PROFILEID));
+        else res.status(statusCode.NO_CONTENT).send(util.success(statusCode.NO_CONTENT, message.AVAILABLE_PROFILEID));
+    } catch (error) {
+        console.log(error);
+
+        const slackMessage: SlackMessageFormat = {
+            title: 'MUMENT ec2 서버 오류',
+            text: '서버 내부 오류입니다',
+            fields: [
+                {
+                    title: 'Error Stack:',
+                    value: `\`\`\`${error}\`\`\``,
+                },
+            ],
+        };
+        sendMessage(slackMessage);
+
+        res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
+
+    }
+};
+
+/**
  *  @ROUTE GET /my/list?tag1=&tag2=&tag3=
  *  @DESC 보관함에서 나의 뮤멘트 리스트를 조회합니다. 필터링이 필요한 경우 필터링합니다.
  */
@@ -234,4 +272,5 @@ export default {
     deleteBlockUser,
     getBlockedUserList,
     putProfile,
+    checkDuplicateName,
 };

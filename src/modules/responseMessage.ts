@@ -22,6 +22,8 @@ const message = {
     DELETE_BLOCKED_USER_SUCCESS: '유저 차단 해제 성공',
     UPDATE_PROFILE_FAIL: '프로필 설정에 실패했습니다',
     PROFILE_SET_SUCCESS: '프로필 설정 성공',
+    DUPLICATE_PROFILEID: '중복된 닉네임이 존재합니다',
+    AVAILABLE_PROFILEID: '사용 가능한 닉네임입니다',
 
     // mument
     NO_MUMENT_ID: '해당 아이디의 뮤멘트가 존재하지 않습니다',
