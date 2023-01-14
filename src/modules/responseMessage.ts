@@ -28,6 +28,10 @@ const message = {
     CREATE_LEAVE_CATEGORY_SUCESS: '탈퇴 사유 등록 성공',
     DELETE_USER_FAIL: '유저 탈퇴에 실패했습니다',
     DELETE_USER_SUCCESS: '유저 탈퇴 성공',
+    READ_NEWS_LIST_SUCCESS: '소식창 리스트 조회 성공',
+    DELETE_NEWS_SUCCESS: '소식창 알림 제거 성공',
+    READ_UNREAD_NEWS_SUCCESS: '소식창 새로운 알림 읽음 처리 성공',
+    READ_UNREAD_NEWS_IS_EXIST_SUCCESS: '새로 추가된 알림이 있는지 조회 성공',
 
     // mument
     NO_MUMENT_ID: '해당 아이디의 뮤멘트가 존재하지 않습니다',
@@ -79,7 +83,7 @@ const message = {
     TOKEN_UNKNOWN_ERROR: '토큰 에러', // 그외의 토큰 에러
 
     //신고 제재
-    REPORT_RESTRICTION_USER: '신고 제재를 받고있는 유저입니다',
+    REPORT_RESTRICTION_USER_SUCCESS: '신고 제재 유무 조회 성공',
     CREATE_REPORT_SUCCESS: '뮤멘트 신고하기 성공',
 };
 

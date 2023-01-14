@@ -20,7 +20,7 @@ const SearchAndCreateMusic = async (mumentCreateDto: MumentCreateDto, connection
             mumentCreateDto.musicImage, mumentCreateDto.musicName
         ]);
     }
-};
+}
 
 // 음악 검색하기
 const searchMusic = (musicId: string) => {

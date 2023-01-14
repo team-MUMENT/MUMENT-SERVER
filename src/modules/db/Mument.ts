@@ -104,6 +104,10 @@ const mumentTagListGet = async (mumentId: string) => {
     };
 };
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 8d1ec5f6ed7afbfae362c75c460f8a5502af6534
 export default {
     mumentTagCreate,
     isExistMument,
@@ -111,5 +115,9 @@ export default {
     isLiked,
     likeCount,
     mumentHistoryCount,
+<<<<<<< HEAD
     mumentTagListGet
+=======
+    mumentTagListGet,
+>>>>>>> 8d1ec5f6ed7afbfae362c75c460f8a5502af6534
 }
