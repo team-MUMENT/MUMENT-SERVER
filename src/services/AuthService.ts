@@ -197,7 +197,7 @@ const getNewAccessToken = async (userId: number, refreshToken: string): Promise<
         // 남은 기간이 한달 이하면 새로운 refresh token 발급
         if (beforeExp < 60 * 60 * 24 * 30) {
             newRefreshToken = jwtHandler.refreshSign(user);
-            type = 'renew acccess and refresh token';
+            type = 'renew access and refresh token';
 
             const updateNewTokenQuery = `
             UPDATE user
