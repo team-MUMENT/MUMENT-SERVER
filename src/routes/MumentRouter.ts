@@ -2,7 +2,6 @@ import { Router } from 'express';
 import { MumentController } from '../controllers';
 import { body, header, param, query } from 'express-validator';
 import auth from '../middlewares/auth';
-import reportRestriction from '../middlewares/reportRestriction';
 
 const router: Router = Router();
 
