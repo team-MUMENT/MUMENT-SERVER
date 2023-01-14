@@ -140,7 +140,7 @@ const getMument = async (mumentId: string, userId: string): Promise<MumentRespon
     const connection = await pool.getConnection();
     
     try {
-        // 존재하지 않는 id의 뮤멘트를 수정하려고 할 때
+        // 존재하지 않는 id의 뮤멘트를 조회하려고 할 때
         const isExistMumentInfo: ExistMumentDto = await mumentDB.isExistMumentInfo(mumentId, connection);
         
         if (isExistMumentInfo.isExist === false) return constant.NO_MUMENT;
@@ -192,13 +192,13 @@ const getMument = async (mumentId: string, userId: string): Promise<MumentRespon
             count: historyCount,
         };
 
-        await connection.commit(); // query1, query2 모두 성공시 커밋(데이터 적용)
+        await connection.commit(); // 모두 성공시 커밋(데이터 적용)
 
         
         return data;
     } catch (error) {
         console.log(error);
-        await connection.rollback(); // query1, query2 중 하나라도 에러시 롤백 (데이터 적용 원상복귀)
+        await connection.rollback(); // 하나라도 에러시 롤백 (데이터 적용 원상복귀)
         throw error;
     } finally {
         connection.release(); // pool connection 회수
@@ -227,10 +227,10 @@ const deleteMument = async (mumentId: string): Promise<void | null> => {
         const query3 = 'DELETE FROM mument.like where mument_id = ?;';
         await connection.query(query3, [mumentId]);
 
-        await connection.commit(); // query1, query2 모두 성공시 커밋(데이터 적용)
+        await connection.commit(); // 모두 성공시 커밋(데이터 적용)
     } catch (error) {
         console.log(error);
-        await connection.rollback(); // query1, query2 중 하나라도 에러시 롤백 (데이터 적용 원상복귀)
+        await connection.rollback(); // 하나라도 에러시 롤백 (데이터 적용 원상복귀)
         throw error;
     } finally {
         connection.release(); // pool connection 회수
@@ -606,6 +606,8 @@ const deleteLike = async (mumentId: string, userId: string): Promise<LikeCountRe
         console.log(error);
         await connection.rollback();
         throw error;
+    } finally {
+        connection.release();
     }
 };
 
@@ -802,7 +804,6 @@ const getNoticeDetail = async (noticeId: string): Promise<NoticeInfoRDB | number
 
 // 공지사항 리스트 조회
 const getNoticeList = async (): Promise<NoticeInfoRDB[]> => {
-    const todayDate = dayjs().format('YYYY-MM-DD');
     try {
         const selectNoticeQuery = 'SELECT * FROM notice ORDER BY created_at DESC;'
         let noticeList: NoticeInfoRDB[] = await pools.query(selectNoticeQuery);
@@ -835,6 +836,8 @@ const createReport = async (mumentId: string, reportCategory: number[], etcConte
     const connection = await pool.getConnection();
     
     try {
+        await connection.beginTransaction(); //롤백을 위해 필요함
+
         // 신고 당하는 유저 id 가져오기
         const reportedMument = await mumentDB.isExistMumentInfo(mumentId, connection);
         let reportedUser: number;
@@ -864,10 +867,10 @@ const createReport = async (mumentId: string, reportCategory: number[], etcConte
         }, Promise.resolve());
 
 
-        await connection.commit(); // query1, query2 모두 성공시 커밋(데이터 적용)
+        await connection.commit(); // 모두 성공시 커밋(데이터 적용)
     } catch (error) {
         console.log(error);
-        await connection.rollback(); // query1, query2 중 하나라도 에러시 롤백 (데이터 적용 원상복귀)
+        await connection.rollback(); // 하나라도 에러시 롤백 (데이터 적용 원상복귀)
         throw error;
     } finally {
         connection.release(); // pool connection 회수

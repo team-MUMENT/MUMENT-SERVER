@@ -71,7 +71,7 @@ const myLikeMumentList = async (userId: string) => {
             JOIN music ON mument.music_id = music.id
             LEFT JOIN mument_tag ON mument.id = mument_tag.mument_id
             JOIN user ON mument.user_id = user.id
-            WHERE mument.like.user_id=${userId} AND mument.is_deleted=0
+            WHERE mument.like.user_id=${userId} AND mument.is_deleted=0 AND mument.is_private=0
             ORDER BY mument.created_at DESC;`;
     
     const myMumentList: MyMumentInfoRDB[] = await pools.query(mumentListQuery);
