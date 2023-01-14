@@ -14,19 +14,16 @@ import cardTagListProvider from '../modules/cardTagList';
 
 import { NumberBaseResponseDto } from '../interfaces/common/NumberBaseResponseDto';
 import { UserResponseDto } from '../interfaces/user/UserResponseDto';
-<<<<<<< HEAD
 import { UserMumentListResponseDto } from '../interfaces/user/UserMumentListResponseDto';
 import { MumentResponseDto } from '../interfaces/mument/MumentResponseDto';
 import { UserProfileSetResponseDto } from '../interfaces/user/UserProfileSetResponseDto';
 import { UserLeaveResponseDto } from '../interfaces/user/UserLeaveResponseDto';
 import { UserDeleteResponseDto } from '../interfaces/user/UserDeleteResponseDto';
-=======
-import pools from '../modules/pool';
+
 import { NewsInfoRDB } from '../interfaces/user/NewsInfoRDB';
 import { NewsResponseDto } from '../interfaces/user/NewsResponseDto';
 import { ReportRestrictionInfoRDB } from '../interfaces/user/ReportRestrictionInfoRDB';
 import { ReportRestrictResponseDto } from '../interfaces/user/ReportRestrictResponseDto';
->>>>>>> 8d1ec5f6ed7afbfae362c75c460f8a5502af6534
 
 
 /**
@@ -709,16 +706,13 @@ export default {
     blockUser,
     deleteBlockUser,
     getBlockedUserList,
-<<<<<<< HEAD
     putProfile,
     checkDuplicateName,
     postLeaveCategory, 
     deleteUser,
-=======
     getIsReportRestrictedUser,
     getUnreadNewsisExist,
     updateUnreadNews,
     deleteNews,
     getNewsList,
->>>>>>> 8d1ec5f6ed7afbfae362c75c460f8a5502af6534
 };
