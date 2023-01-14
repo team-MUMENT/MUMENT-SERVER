@@ -20,6 +20,10 @@ const message = {
     SELF_BLOCK: '자기자신은 차단할 수 없습니다',
     READ_BLOCK_LIST: '차단 유저 조회 성공',
     DELETE_BLOCKED_USER_SUCCESS: '유저 차단 해제 성공',
+    READ_NEWS_LIST_SUCCESS: '소식창 리스트 조회 성공',
+    DELETE_NEWS_SUCCESS: '소식창 알림 제거 성공',
+    READ_UNREAD_NEWS_SUCCESS: '소식창 새로운 알림 읽음 처리 성공',
+    READ_UNREAD_NEWS_IS_EXIST_SUCCESS: '새로 추가된 알림이 있는지 조회 성공',
 
     // mument
     NO_MUMENT_ID: '해당 아이디의 뮤멘트가 존재하지 않습니다',

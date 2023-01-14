@@ -20,7 +20,7 @@ const SearchAndCreateMusic = async (mumentCreateDto: MumentCreateDto, connection
             mumentCreateDto.musicImage, mumentCreateDto.musicName
         ]);
     }
-};
+}
 
 export default {
     SearchAndCreateMusic
