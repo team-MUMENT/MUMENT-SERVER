@@ -21,6 +21,7 @@ const message = {
     READ_BLOCK_LIST: '차단 유저 조회 성공',
     DELETE_BLOCKED_USER_SUCCESS: '유저 차단 해제 성공',
     READ_NEWS_LIST_SUCCESS: '소식창 리스트 조회 성공',
+    DELETE_NEWS_SUCCESS: '소식창 알림 제거 성공',
 
 
     // mument
