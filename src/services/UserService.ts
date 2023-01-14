@@ -305,6 +305,38 @@ const getBlockedUserList = async (userId: number): Promise<UserResponseDto[] | n
 
 
 /**
+ * 소식창에 안읽은 알림이 있는지 조회
+ */
+const getUnreadNewsisExist = async (userId: number): Promise<NumberBaseResponseDto> => {
+    const pool: any = await poolPromise;
+    const connection = await pool.getConnection();
+
+    try {
+        const curr = new Date();
+        const comparedDate = dayjs(curr).subtract(2, 'week').format();
+        
+        const selectNewsQeury = `
+            SELECT * FROM news 
+            WHERE user_id=? AND is_deleted=0 AND is_read=0 AND created_at BETWEEN ? AND ?
+        `;
+
+        const data = await connection.query(selectNewsQeury, [
+            userId,  comparedDate, dayjs(curr).format()
+        ]);
+        console.log(data);
+
+        if (data.length > 0) return { exist: 1 };
+        else return { exist: 0 };
+
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+
+};
+
+
+/**
  * 소식창 새로운 알림 읽음 처리
  */
 const updateUnreadNews  = async (userId: number, unreadNews: number[]): Promise<void | number> => {
@@ -425,6 +457,7 @@ export default {
     blockUser,
     deleteBlockUser,
     getBlockedUserList,
+    getUnreadNewsisExist,
     updateUnreadNews,
     deleteNews,
     getNewsList,

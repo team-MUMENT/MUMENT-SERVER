@@ -176,6 +176,38 @@ const getBlockedUserList =  async (req: Request, res: Response) => {
 };
 
 
+/**
+ *  @ROUTE GET /news/exist
+ *  @DESC 소식창에 안읽은 알림이 있는지 조회합니다. 
+ */
+const getUnreadNewsisExist = async (req: Request, res: Response) => {
+    const userId: number = req.body.userId;
+
+    try {
+        const data = await UserService.getUnreadNewsisExist(Number(userId));
+
+        return res.status(statusCode.OK).send(util.success(statusCode.OK, message.READ_UNREAD_NEWS_IS_EXIST_SUCCESS, data));
+
+    } catch (error) {
+        console.log(error);
+
+        const slackMessage: SlackMessageFormat = {
+            title: 'MUMENT ec2 서버 오류',
+            text: '서버 내부 오류입니다',
+            fields: [
+                {
+                    title: 'Error Stack:',
+                    value: `\`\`\`${error}\`\`\``,
+                },
+            ],
+        };
+        sendMessage(slackMessage);
+
+        res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
+    }
+
+};
+
 
 /**
  *  @ROUTE PATCH /news/read
@@ -211,7 +243,6 @@ const updateUnreadNews = async (req: Request, res: Response) => {
         res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
     }
 };
-
 
 
 
@@ -288,6 +319,7 @@ export default {
     blockUser,
     deleteBlockUser,
     getBlockedUserList,
+    getUnreadNewsisExist,
     updateUnreadNews,
     deleteNews,
     getNewsList,
