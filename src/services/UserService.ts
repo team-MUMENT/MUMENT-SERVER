@@ -333,15 +333,26 @@ const putProfile = async (userId: number, profileId: string, image: string | nul
             return constant.UPDATE_FAIL;
         }
 
-        await connection.commit();
-
         const user: UserInfoRDB = getProfileResult[0];
 
         const accessToken = jwtHandler.accessSign(user);
+        const refreshToken = jwtHandler.refreshSign(user);
+
+        const updateRefreshTokenQuery = `
+        UPDATE user
+        SET refresh_token = ?
+        WHERE id = ?
+            AND is_deleted = 0;
+        `;
+
+        await connection.query(updateRefreshTokenQuery, [refreshToken, userId]);
+
+        await connection.commit();
 
         const data: UserProfileSetResponseDto = {
             id: user.id,
             accessToken,
+            refreshToken,
             profileId: profileId,
             image: user.image,
         };
