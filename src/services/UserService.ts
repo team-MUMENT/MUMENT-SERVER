@@ -303,10 +303,40 @@ const getBlockedUserList = async (userId: number): Promise<UserResponseDto[] | n
 };
 
 
+
+/**
+ * 소식창 알림 제거
+ */
+const deleteNews = async (userId: number, newsId: number): Promise<void | number> => {
+    const pool: any = await poolPromise;
+    const connection = await pool.getConnection();
+
+    try {
+        const updateNewsQuery = `
+            UPDATE news SET is_deleted=1 WHERE user_id=? AND id=?;
+        `;
+        
+        const updateResult: any = await connection.query(updateNewsQuery, [userId, newsId]);
+        
+        // update가 되지 않을 경우
+        if (updateResult.changedRows !== undefined && updateResult.changedRows == 0) return constant.UPDATE_FAIL;
+
+        await connection.commit(); // query1, query2 모두 성공시 커밋(데이터 적용)
+    } catch (error) {
+        console.log(error);
+        await connection.rollback(); // query1, query2 중 하나라도 에러시 롤백 (데이터 적용 원상복귀)
+        throw error;
+    } finally {
+        connection.release(); // pool connection 회수
+    }
+}
+
+
+
 /**
  * 소식창 리스트 조회
  */
-const getNewsList = async (userId: number) => {
+const getNewsList = async (userId: number): Promise<NewsResponseDto[]> => {
     const pool: any = await poolPromise;
     const connection = await pool.getConnection();
     let result: NewsResponseDto[] = [];
@@ -347,6 +377,8 @@ const getNewsList = async (userId: number) => {
     } catch (error) {
         console.log(error);
         throw error;
+    } finally {
+        connection.release(); // pool connection 회수
     }
 };
 
@@ -357,5 +389,6 @@ export default {
     blockUser,
     deleteBlockUser,
     getBlockedUserList,
+    deleteNews,
     getNewsList,
 };

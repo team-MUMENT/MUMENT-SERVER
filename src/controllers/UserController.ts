@@ -5,6 +5,7 @@ import util from '../modules/util';
 import { UserService } from '../services';
 import sendMessage, { SlackMessageFormat } from '../library/slackWebHook';
 import constant from '../modules/serviceReturnConstant';
+import { validationResult } from 'express-validator';
 
 /**
  *  @ROUTE GET /my/list?tag1=&tag2=&tag3=
@@ -174,6 +175,43 @@ const getBlockedUserList =  async (req: Request, res: Response) => {
     }
 };
 
+
+/**
+ *  @ROUTE PATCH /news/:newsId
+ *  @DESC 소식창 알림을 제거합니다.
+ */
+const deleteNews = async (req: Request, res: Response) => {
+    const userId: number = req.body.userId;
+    const { newsId } = req.params;
+
+    try {
+        const data = await UserService.deleteNews(Number(userId), Number(newsId));
+
+        if (data === constant.UPDATE_FAIL) {
+            return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.BAD_REQUEST));
+        }
+
+        return res.status(statusCode.NO_CONTENT).send(util.success(statusCode.NO_CONTENT, message.DELETE_NEWS_SUCCESS));
+    } catch (error) {
+        console.log(error);
+
+        const slackMessage: SlackMessageFormat = {
+            title: 'MUMENT ec2 서버 오류',
+            text: '서버 내부 오류입니다',
+            fields: [
+                {
+                    title: 'Error Stack:',
+                    value: `\`\`\`${error}\`\`\``,
+                },
+            ],
+        };
+        sendMessage(slackMessage);
+
+        res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
+    }
+};
+
+
 /**
  *  @ROUTE GET /news
  *  @DESC 소식창 리스트를 조회합니다.
@@ -211,5 +249,6 @@ export default {
     blockUser,
     deleteBlockUser,
     getBlockedUserList,
+    deleteNews,
     getNewsList,
 };
