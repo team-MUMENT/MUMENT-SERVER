@@ -333,7 +333,7 @@ const putProfile = async (userId: number, profileId: string, image: string | nul
             return constant.UPDATE_FAIL;
         }
 
-        connection.commit();
+        await connection.commit();
 
         const user: UserInfoRDB = getProfileResult[0];
 
@@ -416,7 +416,7 @@ const postLeaveCategory = async (userId: number, leaveCategoryId: string, reason
             return constant.CREATE_FAIL;
         };
 
-        connection.commit();
+        await connection.commit();
 
         const data: UserLeaveResponseDto = {
             id: getLeaveResult[0].id,
@@ -438,6 +438,51 @@ const postLeaveCategory = async (userId: number, leaveCategoryId: string, reason
     } finally {
         connection.release();
     }
+};
+
+const deleteUser = async (userId: number): Promise<Number> => {
+    const pool: any = await poolPromise;
+    const connection = await pool.getConnection();
+    
+    try {
+        // 존재하는 유저인지 확인
+        const isExistUser = await userDB.isExistUser(userId);
+        if (!isExistUser) return constant.NO_USER;
+
+        connection.beginTransaction();
+
+        // 유저 탈퇴
+        const deleteUserQuery = `
+        UPDATE user
+        SET is_deleted = 1
+        WHERE id = ?
+            AND is_deleted = 0;
+        `;
+        await connection.query(deleteUserQuery, [userId]);
+
+        // 삭제되었는지 확인
+        const getUserQuery = `
+        SELECT *
+        FROM user
+        WHERE id = ?
+            AND is_deleted = 0;
+        `;
+
+        const getUserResult = await connection.query(getUserQuery, [userId]);
+
+        if (getUserResult.length != 0) return constant.DELETE_FAIL;
+
+        await connection.commit();
+
+        return constant.DELETE_SUCCESS;
+
+    } catch (error) {
+        console.log(error);
+        await connection.rollback();
+        throw error;
+    } finally {
+        connection.release();
+    }
 }
 
 
@@ -450,4 +495,5 @@ export default {
     putProfile,
     checkDuplicateName,
     postLeaveCategory, 
+    deleteUser,
 };

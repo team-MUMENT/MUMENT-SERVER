@@ -36,4 +36,7 @@ router.post('/leave-category', [
     body('leaveCategoryId').toInt().isInt(),
 ], auth, UserController.postLeaveCategory);
 
+// 유저 탈퇴
+router.delete('/', auth, UserController.deleteUser);
+
 export default router;
