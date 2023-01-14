@@ -40,6 +40,7 @@ const message = {
     READ_ISFIRST_SUCCESS: '뮤멘트 처음/다시 조회 성공',
     READ_NOTICE_LIST_SUCCESS: '공지사항 리스트 조회 성공',
     READ_NOTICE_DETAIL_SUCCESS: '공지사항 상세보기 성공',
+    READ_LIKE_USER_SUCCESS: '좋아요한 사용자 조회 성공',
 
     // home
     GET_RANDOM_MUMENT_SUCCESS: '랜덤 뮤멘트 리스트 조회 성공',
