@@ -12,6 +12,8 @@ import { UserResponseDto } from '../interfaces/user/UserResponseDto';
 import pools from '../modules/pool';
 import { NewsInfoRDB } from '../interfaces/user/NewsInfoRDB';
 import { NewsResponseDto } from '../interfaces/user/NewsResponseDto';
+import { ReportRestrictionInfoRDB } from '../interfaces/user/ReportRestrictionInfoRDB';
+import { ReportRestrictResponseDto } from '../interfaces/user/ReportRestrictResponseDto';
 
 
 /**
@@ -305,6 +307,43 @@ const getBlockedUserList = async (userId: number): Promise<UserResponseDto[] | n
 
 
 /**
+ * 신고 제재 기간인 유저인지 확인
+ */
+const getIsReportRestrictedUser = async (userId: number): Promise<ReportRestrictResponseDto> => {
+    const pool: any = await poolPromise;
+    const connection = await pool.getConnection();
+
+    try {
+        const selectReportRestrictionQuery = 'SELECT * FROM report_restriction WHERE user_id=?';
+        const restriction: ReportRestrictionInfoRDB[] = await connection.query(selectReportRestrictionQuery, [userId]);
+
+        if (restriction.length === 0 ) return { restricted: false };
+
+        /**
+         * 현재 날짜 < 제재 마감일 이라면
+         *  */ 
+        const curr = new Date();
+
+        if (dayjs(curr).isBefore(restriction[0].restrict_end_date)) {
+            return { 
+                restricted: true,
+                reason: restriction[0].reason,
+                musicArtist: restriction[0].music_artist,
+                musicTitle: restriction[0].music_title,
+                endDate: dayjs(restriction[0].restrict_end_date).format('YYYY-MM-DD'),
+                period: restriction[0].restrict_period
+            };
+        }
+
+        return { restricted: false };
+    }  catch (error) {
+        console.log(error);
+        throw error;
+    }
+};
+
+
+/**
  * 소식창에 안읽은 알림이 있는지 조회
  */
 const getUnreadNewsisExist = async (userId: number): Promise<NumberBaseResponseDto> => {
@@ -331,7 +370,6 @@ const getUnreadNewsisExist = async (userId: number): Promise<NumberBaseResponseD
         console.log(error);
         throw error;
     }
-
 };
 
 
@@ -456,6 +494,7 @@ export default {
     blockUser,
     deleteBlockUser,
     getBlockedUserList,
+    getIsReportRestrictedUser,
     getUnreadNewsisExist,
     updateUnreadNews,
     deleteNews,

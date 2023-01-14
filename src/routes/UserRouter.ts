@@ -10,7 +10,9 @@ router.get('/like/list', auth, UserController.getLikeMumentList);
 
 router.post('/block/:mumentId', auth, UserController.blockUser);
 router.delete('/block/:blockedUserId', auth, UserController.deleteBlockUser);
-router.get('/block', auth, auth, UserController.getBlockedUserList);
+router.get('/block', auth, UserController.getBlockedUserList);
+
+router.get('/report/restrict', auth, UserController.getIsReportRestrictedUser);
 
 router.get('/news/exist', auth, UserController.getUnreadNewsisExist);
 router.patch('/news/read', auth, UserController.updateUnreadNews);
