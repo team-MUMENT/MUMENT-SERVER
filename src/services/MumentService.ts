@@ -139,7 +139,7 @@ const getMument = async (mumentId: string, userId: string): Promise<MumentRespon
     const connection = await pool.getConnection();
     
     try {
-        // 존재하지 않는 id의 뮤멘트를 수정하려고 할 때
+        // 존재하지 않는 id의 뮤멘트를 조회하려고 할 때
         const isExistMumentInfo: ExistMumentDto = await mumentDB.isExistMumentInfo(mumentId, connection);
         
         if (isExistMumentInfo.isExist === false) return constant.NO_MUMENT;
@@ -773,7 +773,6 @@ const getNoticeDetail = async (noticeId: string): Promise<NoticeInfoRDB | number
 
 // 공지사항 리스트 조회
 const getNoticeList = async (): Promise<NoticeInfoRDB[]> => {
-    const todayDate = dayjs().format('YYYY-MM-DD');
     try {
         const selectNoticeQuery = 'SELECT * FROM notice ORDER BY created_at DESC;'
         let noticeList: NoticeInfoRDB[] = await pools.query(selectNoticeQuery);
