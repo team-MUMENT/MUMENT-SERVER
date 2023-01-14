@@ -48,6 +48,7 @@ import { NoticeInfoRDB } from '../interfaces/mument/NoticeInfoRDB';
 const createMument = async (userId: string, musicId: string, mumentCreateDto: MumentCreateDto): Promise<PostBaseResponseDto | null> => {
     const pool: any = await poolPromise;
     const connection = await pool.getConnection();
+    connection.beginTransaction(); //롤백을 위해 필요함
 
     try {    
         await connection.beginTransaction(); // 트랜잭션 적용 시작
@@ -90,6 +91,7 @@ const createMument = async (userId: string, musicId: string, mumentCreateDto: Mu
 const updateMument = async (mumentId: string, mumentUpdateDto: MumentCreateDto): Promise<StringBaseResponseDto | null | number> => {
     const pool: any = await poolPromise;
     const connection = await pool.getConnection();
+    connection.beginTransaction(); //롤백을 위해 필요함
 
     try {
         await connection.beginTransaction(); // 트랜잭션 적용 시작
@@ -137,6 +139,7 @@ const updateMument = async (mumentId: string, mumentUpdateDto: MumentCreateDto):
 const getMument = async (mumentId: string, userId: string): Promise<MumentResponseDto | null | number> => {
     const pool: any = await poolPromise;
     const connection = await pool.getConnection();
+    connection.beginTransaction(); //롤백을 위해 필요함
     
     try {
         // 존재하지 않는 id의 뮤멘트를 조회하려고 할 때
@@ -191,13 +194,13 @@ const getMument = async (mumentId: string, userId: string): Promise<MumentRespon
             count: historyCount,
         };
 
-        await connection.commit(); // query1, query2 모두 성공시 커밋(데이터 적용)
+        await connection.commit(); // 모두 성공시 커밋(데이터 적용)
 
         
         return data;
     } catch (error) {
         console.log(error);
-        await connection.rollback(); // query1, query2 중 하나라도 에러시 롤백 (데이터 적용 원상복귀)
+        await connection.rollback(); // 하나라도 에러시 롤백 (데이터 적용 원상복귀)
         throw error;
     } finally {
         connection.release(); // pool connection 회수
@@ -210,6 +213,7 @@ const getMument = async (mumentId: string, userId: string): Promise<MumentRespon
 const deleteMument = async (mumentId: string): Promise<void | null> => {
     const pool: any = await poolPromise;
     const connection = await pool.getConnection();
+    connection.beginTransaction(); //롤백을 위해 필요함
 
     try {
         await connection.beginTransaction(); // 트랜잭션 적용 시작
@@ -226,10 +230,10 @@ const deleteMument = async (mumentId: string): Promise<void | null> => {
         const query3 = 'DELETE FROM mument.like where mument_id = ?;';
         await connection.query(query3, [mumentId]);
 
-        await connection.commit(); // query1, query2 모두 성공시 커밋(데이터 적용)
+        await connection.commit(); // 모두 성공시 커밋(데이터 적용)
     } catch (error) {
         console.log(error);
-        await connection.rollback(); // query1, query2 중 하나라도 에러시 롤백 (데이터 적용 원상복귀)
+        await connection.rollback(); // 하나라도 에러시 롤백 (데이터 적용 원상복귀)
         throw error;
     } finally {
         connection.release(); // pool connection 회수
@@ -455,6 +459,7 @@ const getMumentHistory = async (userId: string, musicId: string, writerId: strin
 const createLike = async (mumentId: string, userId: string): Promise<LikeCountResponeDto | null | number> => {
     const pool: any = await poolPromise;
     const connection = await pool.getConnection();
+    connection.beginTransaction(); //롤백을 위해 필요함
 
     try {
         await connection.beginTransaction();
@@ -518,6 +523,7 @@ const createLike = async (mumentId: string, userId: string): Promise<LikeCountRe
 const deleteLike = async (mumentId: string, userId: string): Promise<LikeCountResponeDto | null | number> => {
     const pool: any = await poolPromise;
     const connection = await pool.getConnection();
+    connection.beginTransaction(); //롤백을 위해 필요함
     
     try {
         await connection.beginTransaction();
@@ -577,6 +583,8 @@ const deleteLike = async (mumentId: string, userId: string): Promise<LikeCountRe
         console.log(error);
         await connection.rollback();
         throw error;
+    } finally {
+        connection.release();
     }
 };
 
@@ -803,6 +811,7 @@ const getNoticeList = async (): Promise<NoticeInfoRDB[]> => {
 const createReport = async (mumentId: string, reportCategory: number[], etcContent: string, userId: string): Promise<void | number> => {
     const pool: any = await poolPromise;
     const connection = await pool.getConnection();
+    connection.beginTransaction(); //롤백을 위해 필요함
     
     try {
         // 신고 당하는 유저 id 가져오기
@@ -834,10 +843,10 @@ const createReport = async (mumentId: string, reportCategory: number[], etcConte
         }, Promise.resolve());
 
 
-        await connection.commit(); // query1, query2 모두 성공시 커밋(데이터 적용)
+        await connection.commit(); // 모두 성공시 커밋(데이터 적용)
     } catch (error) {
         console.log(error);
-        await connection.rollback(); // query1, query2 중 하나라도 에러시 롤백 (데이터 적용 원상복귀)
+        await connection.rollback(); // 하나라도 에러시 롤백 (데이터 적용 원상복귀)
         throw error;
     } finally {
         connection.release(); // pool connection 회수
