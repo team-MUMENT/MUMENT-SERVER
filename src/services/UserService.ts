@@ -258,6 +258,9 @@ const blockUser = async (userId: number, mumentId: string): Promise<number | Num
     }
 };
 
+/**
+ *  유저 차단 취소
+ */
 const deleteBlockUser = async (userId: number, blockedUserId: string): Promise<void> => {
     try {
         const deleteBlockQuery = `DELETE FROM block WHERE user_id=? AND blocked_user_id=?`;
@@ -273,6 +276,10 @@ const deleteBlockUser = async (userId: number, blockedUserId: string): Promise<v
     }
 };
 
+
+/**
+ *  차단 유저 리스트 조회
+ */
 const getBlockedUserList = async (userId: number): Promise<UserResponseDto[] | number> => {
     try {
         const selectBlockQuery = `
