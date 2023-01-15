@@ -1,4 +1,6 @@
 const constant = {
+    NO_RESULT: 0, // 조회 결과가 없을 때
+    
     CREATE_SUCCESS: 1, // 생성 성공
     UPDATE_SUCCESS: 2, // 업데이트 성공
     DELETE_SUCCESS: 3, // 삭제 성공
@@ -28,6 +30,7 @@ const constant = {
     TOKEN_INVALID: -101, // 유효하지 않은 토큰일 때
     WRONG_TOKEN: -102, // 올바르지 않은 토큰일 때
     TOKEN_NOT_BEFORE: -103, // 아직 갱신할 수 없는 토큰일 때
+    NOT_PROFILE_SET_TOKEN: -110, // 프로필 설정이 안된 토큰일 때
     TOKEN_UNKNOWN_ERROR: -199, // 알 수 없는 토큰 에러
 
     // 유저 차단

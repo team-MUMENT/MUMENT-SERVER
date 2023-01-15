@@ -14,6 +14,22 @@ import pool from '../pool';
  * user 관련 재사용 쿼리 - 트랜잭션 없이 사용가능
  */
 
+// 존재하는 user인지 확인하기
+const isExistUser = async (userId: number) => {
+    const query = `
+    SELECT EXISTS (
+        SELECT *
+        FROM user
+        WHERE id = ?
+            AND is_deleted = 0
+    ) as is_exist_user;
+    `;
+
+    const isExist = await pools.queryValue(query, [userId]);
+
+    return isExist[0].is_exist_user;
+}
+
 // userId로 유저 레코드 가져오기
 const userInfo = async (userId: string) => {
     const query = 'SELECT * FROM user WHERE id=? AND is_deleted=0'; //탈퇴하지 않은 유저
@@ -80,6 +96,7 @@ export default {
     userInfo,
     myMumentList,
     myLikeMumentList,
-    blockedUserList
+    blockedUserList,
+    isExistUser,
 }
 

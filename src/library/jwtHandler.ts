@@ -13,7 +13,6 @@ const accessOption = {
 };
 const refreshOption = {
     expiresIn: '60d',
-    notBefore: '30d',
     issuer: 'Mument',
 };
 
@@ -46,7 +45,11 @@ const refreshSign = (user: UserInfoRDB) => {
 // 토큰 decode 함수
 const verify = (token: string) => {
     try {
-        const decoded: UserInfoRDB = jwt.verify(token, config.jwtSecret);
+        const decoded = jwt.verify(token, config.jwtSecret);
+
+        // 프로필 설정이 완료되지 않은 토큰일 때
+        if (decoded.profileId === null) return constant.NOT_PROFILE_SET_TOKEN;
+
         return decoded;
     } catch (err: any) {
         if (err.name == TokenExpiredError) {

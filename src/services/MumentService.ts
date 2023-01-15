@@ -20,6 +20,7 @@ import { MumentResponseDto } from '../interfaces/mument/MumentResponseDto';
 import { IsFirstResponseDto } from '../interfaces/mument/IsFirstResponseDto';
 import { MumentHistoryResponseDto } from '../interfaces/mument/MumentHistoryResponseDto';
 import { LikeCountResponeDto } from '../interfaces/like/LikeCountResponseDto';
+import { UserResponseDto } from '../interfaces/user/UserResponseDto';
 
 import { RandomMumentResponseDto } from '../interfaces/mument/RandomMumentResponeDto';
 import { TodayMumentResponseDto } from '../interfaces/mument/TodayMumentResponseDto';
@@ -383,19 +384,47 @@ const getMumentHistory = async (userId: string, musicId: string, writerId: strin
 
         // impression tag, feeling tag 분류하기
         getAllTagList.reduce((ac: any[], cur: any) =>  {
-            ac = tagList;
             const mumentIdx = tagList.findIndex(o => o.id === cur.mument_id);
             if (cur.tag_id < 200) {
                 tagList[mumentIdx].impressionTag.push(cur.tag_id);
             } else if (cur.tag_id < 300) {
-                tagList[mumentIdx].impressionTag.push(cur.tag_id);
+                tagList[mumentIdx].feelingTag.push(cur.tag_id);
             };
-        });
+        }, getAllTagList);
 
         for (const object of tagList) {
             const allTagList = object.impressionTag.concat(object.feelingTag);
             object.cardTag = await cardTagList.cardTag(allTagList);
         };
+
+
+        // id와 좋아요 여부 담은 리스트 생성
+        const isLikedList: {id: number, isLiked: boolean}[] = [];
+
+        mumentIdList.forEach((element: number) => {
+            isLikedList.push({id: element, isLiked: false});
+        });
+        
+
+        // 좋아요 여부 확인
+        const getIsLikedQuery = `
+        SELECT mument_id, EXISTS (
+            SELECT *
+            FROM mument.like
+            WHERE mument_id IN ${strMumentIdList}
+                AND user_id = ?
+        ) as is_liked
+        FROM mument.like
+        WHERE mument_id IN ${strMumentIdList};
+        `;
+
+        const isLikedResult = await connection.query(getIsLikedQuery, [userId]);
+
+        // 쿼리 결과에 있을 시에만 isLiked를 true로 바꿈
+        isLikedResult.reduce((ac: any[], cur: any) => {
+            const mumentIdx = isLikedList.findIndex(o => o.id === cur.mument_id);
+            isLikedList[mumentIdx].isLiked = true;
+        }, isLikedResult);
 
         // string으로 날짜 생성해주는 함수
         const createDate = (createdAt: Date): string => {
@@ -426,7 +455,7 @@ const getMumentHistory = async (userId: string, musicId: string, writerId: strin
                 createdAt: mument.created_at,
                 updatedAt: mument.updated_at,
                 date: createDate(mument.created_at),
-                isLiked: mument.is_liked
+                isLiked: isLikedList[isLikedList.findIndex(o => o.id === mument.id)].isLiked,
             });
         }
 
@@ -848,6 +877,50 @@ const createReport = async (mumentId: string, reportCategory: number[], etcConte
     }
 };
 
+const getLikeUserList = async (mumentId: string, userId: number, limit: any, offset: any): Promise<Number | UserResponseDto[]> => {
+    const pool: any = await poolPromise;
+    const connection = await pool.getConnection();
+    try {
+        // 존재하는 뮤멘트인지 확인
+        const isExistMument = await mumentDB.isExistMument(mumentId, connection);
+        if (!isExistMument) return constant.NO_MUMENT;
+
+        // 좋아요를 누른 유저 전부 가져오기
+        const getLikeUserQuery = `
+        SELECT user.id, user.profile_id, user.image
+        FROM mument.like
+        JOIN user
+            ON mument.like.user_id = user.id
+        WHERE mument.like.mument_id = ?
+            AND user.is_deleted = 0
+        ORDER BY mument.like.created_at DESC
+        LIMIT ? OFFSET ?;
+        `;
+
+        const getLikeUser = await connection.query (getLikeUserQuery, [mumentId, limit, offset]);
+
+        // 결과가 없는 경우
+        if (getLikeUser.length === 0) return constant.NO_RESULT;
+
+        const data: UserResponseDto[] = [];
+
+        getLikeUser.reduce((ac: any[], cur: any) => {
+            data.push({
+                id: cur.id,
+                profileId: cur.profile_id,
+                image: cur.image,
+            });
+        }, getLikeUser);
+
+        return data;
+    } catch (error) {
+        console.log(error);
+        await connection.rollback();
+        throw error;
+    } finally {
+        connection.release();
+    }
+}
 
 export default {
     createMument,
@@ -865,4 +938,5 @@ export default {
     getNoticeDetail,
     getNoticeList,
     createReport,
+    getLikeUserList,
 };

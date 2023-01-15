@@ -8,11 +8,12 @@ import sendMessage, { SlackMessageFormat } from '../library/slackWebHook';
 import constant from '../modules/serviceReturnConstant';
 
 /**
- * @ROUTE GET /:musicId/:userId
+ * @ROUTE GET /:musicId/
  * @DESC 곡 상세보기 뷰에서 music 정보와 나의 뮤멘트 정보 가져오기
  */
 const getMusicAndMyMument = async (req: Request, res: Response) => {
-    const { musicId, userId } = req.params;
+    const { musicId } = req.params;
+    const { userId } = req.body;
     const error = validationResult(req);
 
     if (!error.isEmpty()) {
@@ -22,8 +23,8 @@ const getMusicAndMyMument = async (req: Request, res: Response) => {
     try {
         const data = await MusicService.getMusicAndMyMument(musicId, userId);
 
-        if (!data) {
-            res.status(statusCode.NOT_FOUND).send(util.fail(statusCode.NOT_FOUND, message.NOT_FOUND));
+        if (data === constant.NO_MUSIC) {
+            res.status(statusCode.NOT_FOUND).send(util.fail(statusCode.NOT_FOUND, message.NO_MUSIC_ID));
         } else {
             res.status(statusCode.OK).send(util.success(statusCode.OK, message.FIND_MUSIC_MYMUMENT_SUCCESS, data));
         }
@@ -47,12 +48,13 @@ const getMusicAndMyMument = async (req: Request, res: Response) => {
 };
 
 /**
- * @ROUTE /music/:musicId/:userId/order?default=
+ * @ROUTE /music/:musicId/order?default=&limit=&offset=
  * @DESC 곡 상세보기 뷰에서 모든 뮤멘트 조회
  */
 const getMumentList = async (req: Request, res: Response) => {
-    const { userId, musicId } = req.params;
-    const { default: orderOption } = req.query;
+    const { musicId } = req.params;
+    const { userId } = req.body;
+    const { default: orderOption, limit, offset } = req.query;
 
     const error = validationResult(req);
     if (!error.isEmpty()) {
@@ -72,11 +74,13 @@ const getMumentList = async (req: Request, res: Response) => {
     }
 
     try {
-        const data = await MusicService.getMumentList(musicId, userId, isLikeOrder);
+        const data = await MusicService.getMumentList(musicId, userId, isLikeOrder, limit, offset);
 
-        // 조회 성공했으나, 결과값 없을 때 204 리턴
-        if (!data) {
+        
+        if (!data) {// 조회 성공했으나, 결과값 없을 때 204 리턴
             res.status(statusCode.NO_CONTENT).send(util.success(statusCode.NO_CONTENT, message.READ_MUSIC_MUMENTLIST_SUCCESS));
+        } else if (data === constant.NO_MUSIC) { // 존재하지 않는 음악 아이디일 때 400 리턴
+            res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.NO_MUSIC_ID));
         }
 
         res.status(statusCode.OK).send(util.success(statusCode.OK, message.READ_MUSIC_MUMENTLIST_SUCCESS, data));

@@ -28,8 +28,6 @@ const login = async (provider: string, authenticationCode: string): Promise<Auth
     if (!authenticationCode) return constant.NO_AUTHENTICATION_CODE;
 
     try {
-        // **리팩토링 전 코드**
-        //let user: UserInfoRDB;
         let user: UserInfoRDB | undefined = undefined;
         let type: string = 'login'; // 회원가입이면 -> 'signUp' 재할당, 로그인이면 -> 'login'
             
@@ -169,6 +167,69 @@ const login = async (provider: string, authenticationCode: string): Promise<Auth
     }
 };
 
+const getNewAccessToken = async (userId: number, refreshToken: string): Promise<Number | AuthTokenResponseDto> => {
+    const pool: any = await poolPromise;
+    const connection = await pool.getConnection();
+
+    try {
+        const getRefreshTokenQuery = `
+        SELECT *
+        FROM user
+        WHERE id = ?
+            AND is_deleted = 0;
+        `;
+
+        const getRefreshTokenResult = await connection.query(getRefreshTokenQuery, [userId]);
+
+        // db에 저장된 refresh token이 리퀘스트의 토큰과 일치하지 않을 때
+        if (getRefreshTokenResult[0].refresh_token != refreshToken) return constant.WRONG_TOKEN;
+
+        const user: UserInfoRDB = getRefreshTokenResult[0];
+
+        // 새로운 access token 발급
+        const accessToken = jwtHandler.accessSign(user);
+
+        const decoded = jwtHandler.verify(refreshToken);
+        const beforeExp = decoded.exp - Date.now() / 1000;
+
+        let newRefreshToken = null;
+        let type: string = 'renew access token';
+        // 남은 기간이 한달 이하면 새로운 refresh token 발급
+        if (beforeExp < 60 * 60 * 24 * 30) {
+            newRefreshToken = jwtHandler.refreshSign(user);
+            type = 'renew access and refresh token';
+
+            const updateNewTokenQuery = `
+            UPDATE user
+            SET refresh_token = ?
+            WHERE id = ?
+                AND is_deleted = 0;
+            `;
+
+            await connection.query(updateNewTokenQuery, [newRefreshToken, userId]);
+        }
+
+        // 리턴할 refresh token
+        const returnRefreshToken: string = newRefreshToken ? newRefreshToken : refreshToken;
+
+        const data: AuthTokenResponseDto = {
+            _id: user.id.toString(),
+            type,
+            accessToken,
+            refreshToken: returnRefreshToken
+        };
+
+        return data;
+    } catch (error) {
+        console.log(error);
+        await connection.rollback();
+        throw error;
+    } finally {
+        connection.release();
+    }
+}
+
 export default {
     login,
+    getNewAccessToken,
 };

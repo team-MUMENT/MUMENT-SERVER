@@ -13,30 +13,9 @@ import { AuthTokenResponseDto } from '../interfaces/auth/AuthTokenResponseDto';
  * @DESC match user profileId and password
  */
 const login = async (req: Request, res: Response) => {
-    // **리팩토링 전 코드**
-    // const { profileId, password } = req.body;
     const { provider, authentication_code } = req.body;
 
-
-    // **리팩토링 전 코드**
-    // const error = validationResult(req);
-    // if (!error.isEmpty()) {
-    //     res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.WRONG_BODY));
-    // }
-
     try {
-        // **리팩토링 전 코드**
-        //const data = await AuthService.login(profileId, password);
-        // // 실패했을 때
-        // switch (data) {
-        //     case constant.NO_USER: {
-        //         res.status(statusCode.NOT_FOUND).send(util.fail(statusCode.NOT_FOUND, message.NO_USER_PROFILEID));
-        //     }
-        //     case constant.WRONG_PASSWORD: {
-        //         res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.LOGIN_FAIL));
-        //     }
-        // }
-
         const data = await AuthService.login(provider, authentication_code);
 
         switch (data) {
@@ -78,7 +57,45 @@ const login = async (req: Request, res: Response) => {
     }
 };
 
+/**
+ * @ROUTE GET /auth/token
+ * @DESC 액세스 토큰이 만료되었을 때, 리프래쉬 토큰을 조회하여 새 액세스 토큰을 발급
+ */
+const getNewAccessToken = async (req: Request, res: Response) => {
+    const userId = req.body.userId;
+    const refreshToken = req.headers["authorization"]?.split(' ').reverse()[0];
+
+    if (typeof refreshToken != 'string') return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.WRONG_PARAMS));
+    try {
+        const data = await AuthService.getNewAccessToken(userId, refreshToken);
+
+        if (data === constant.WRONG_TOKEN) {
+            return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.NOT_CORRECT_TOKEN));
+        } else if ((data as AuthTokenResponseDto).type === 'renew access and refresh token'){
+            return res.status(statusCode.OK).send(util.success(statusCode.OK, message.RENEW_ACCESS_REFRESH_TOKEN, data));
+        } else {
+            return res.status(statusCode.OK).send(util.success(statusCode.OK, message.RENEW_ACCESS_TOKEN, data));
+        }
+        
+    } catch (error) {
+        console.log(error);
+
+        const slackMessage: SlackMessageFormat = {
+            title: 'MUMENT ec2 서버 오류',
+            text: '서버 내부 오류입니다',
+            fields: [
+                {
+                    title: 'Error Stack:',
+                    value: `\`\`\`${error}\`\`\``,
+                },
+            ],
+        };
+        sendMessage(slackMessage);
+        return res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
+    }
+}
 
 export default {
     login,
+    getNewAccessToken,
 };
