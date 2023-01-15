@@ -20,6 +20,14 @@ const message = {
     SELF_BLOCK: '자기자신은 차단할 수 없습니다',
     READ_BLOCK_LIST: '차단 유저 조회 성공',
     DELETE_BLOCKED_USER_SUCCESS: '유저 차단 해제 성공',
+    UPDATE_PROFILE_FAIL: '프로필 설정에 실패했습니다',
+    PROFILE_SET_SUCCESS: '프로필 설정 성공',
+    DUPLICATE_PROFILEID: '중복된 닉네임이 존재합니다',
+    AVAILABLE_PROFILEID: '사용 가능한 닉네임입니다',
+    CREATE_LEAVE_CATEGORY_FAIL: '탈퇴 사유 등록에 실패했습니다',
+    CREATE_LEAVE_CATEGORY_SUCESS: '탈퇴 사유 등록 성공',
+    DELETE_USER_FAIL: '유저 탈퇴에 실패했습니다',
+    DELETE_USER_SUCCESS: '유저 탈퇴 성공',
     READ_NEWS_LIST_SUCCESS: '소식창 리스트 조회 성공',
     DELETE_NEWS_SUCCESS: '소식창 알림 제거 성공',
     READ_UNREAD_NEWS_SUCCESS: '소식창 새로운 알림 읽음 처리 성공',
@@ -40,6 +48,7 @@ const message = {
     READ_ISFIRST_SUCCESS: '뮤멘트 처음/다시 조회 성공',
     READ_NOTICE_LIST_SUCCESS: '공지사항 리스트 조회 성공',
     READ_NOTICE_DETAIL_SUCCESS: '공지사항 상세보기 성공',
+    READ_LIKE_USER_SUCCESS: '좋아요한 사용자 조회 성공',
 
     // home
     GET_RANDOM_MUMENT_SUCCESS: '랜덤 뮤멘트 리스트 조회 성공',
@@ -61,12 +70,16 @@ const message = {
     APPLE_TOKEN_UNAUTHORIZED: '애플 API 개발자 토큰이 유효하지 않습니다',
     APPLE_SERVER_INTERNAL_ERROR: '애플 API 서버 자체 에러',
     NO_AUTHENTICATION_CODE: 'authentication code값이 없습니다',
+    NOT_CORRECT_TOKEN: 'refresh token이 일치하지 않습니다',
+    RENEW_ACCESS_TOKEN: 'access token 갱신 성공',
+    RENEW_ACCESS_REFRESH_TOKEN: 'access token과 refresh token 갱신 성공',
 
     //JWT
     NULL_VALUE_TOKEN: 'request-header에 토큰이 없습니다',
     TOKEN_EXPIRED: '토큰이 만료되었습니다',
     TOKEN_INVALID: '유효하지 않은 토큰입니다',
     WRONG_TOKEN: '잘못된 토큰입니다', //'jwt malformed' || 'jwt signature is required' || 'invalid signature'경우,
+    PROFILE_SET_REQUIRED: '프로필 설정이 완료되지 않은 유저입니다',
     TOKEN_UNKNOWN_ERROR: '토큰 에러', // 그외의 토큰 에러
 
     //신고 제재

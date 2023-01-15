@@ -569,6 +569,48 @@ const createReport = async (req: Request, res: Response) => {
     }
 };
 
+/**
+ * @ROUTE GET /mument/:mumentId/like?limit=&offset=
+ * @DESC 해당 뮤멘트에 좋아요를 누른 사용자를 조회
+ */
+const getLikeUserList = async (req: Request, res: Response) => {
+    const { mumentId } = req.params;
+    const { limit, offset } = req.query;
+    const userId = req.body.userId;
+
+    const error = validationResult(req);
+    if (!error.isEmpty()) {
+        return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.BODY_REQUIRED));
+    }
+
+    try {
+        const data = await MumentService.getLikeUserList(mumentId, userId, limit, offset);
+
+        if (data === constant.NO_MUMENT) {
+            return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.NO_MUMENT_ID));
+        } else if (data === constant.NO_RESULT) {
+            return res.status(statusCode.NO_CONTENT).send(util.success(statusCode.NO_CONTENT, message.READ_LIKE_USER_SUCCESS));
+        }
+
+        return res.status(statusCode.OK).send(util.success(statusCode.OK, message.READ_LIKE_USER_SUCCESS, data));
+    } catch (error) {
+        console.log(error);
+
+        const slackMessage: SlackMessageFormat = {
+            title: 'MUMENT ec2 서버 오류',
+            text: '서버 내부 오류입니다',
+            fields: [
+                {
+                    title: 'Error Stack:',
+                    value: `\`\`\`${error}\`\`\``,
+                },
+            ],
+        };
+        sendMessage(slackMessage);
+
+        res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
+    }
+}
 
 export default {
     createMument,
@@ -586,4 +628,5 @@ export default {
     getNoticeDetail,
     getNoticeList,
     createReport,
+    getLikeUserList,
 };

@@ -22,6 +22,18 @@ const SearchAndCreateMusic = async (mumentCreateDto: MumentCreateDto, connection
     }
 }
 
+// 음악 검색하기
+const searchMusic = (musicId: string) => {
+    const searchQuery = `
+    SELECT *
+    FROM music
+    WHERE id = ${musicId};
+    `;
+
+    return searchQuery;
+}
+
 export default {
-    SearchAndCreateMusic
+    SearchAndCreateMusic,
+    SearchMusic: searchMusic
 }

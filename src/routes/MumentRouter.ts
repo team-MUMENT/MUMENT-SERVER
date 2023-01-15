@@ -66,4 +66,11 @@ router.post('/report/:mumentId', [
     body('etcContent').notEmpty(),
 ], auth, MumentController.createReport);
 
+// 좋아요를 누른 사용자 조회
+router.get('/:mumentId/like', [
+    param('mumentId').toInt().isInt(),
+    query('limit').toInt().isInt(),
+    query('offset').toInt().isInt(),
+], auth, MumentController.getLikeUserList);
+
 export default router;

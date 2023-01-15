@@ -104,7 +104,6 @@ const mumentTagListGet = async (mumentId: string) => {
     };
 };
 
-
 export default {
     mumentTagCreate,
     isExistMument,
