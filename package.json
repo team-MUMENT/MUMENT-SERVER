@@ -17,7 +17,6 @@
         "@types/express": "^4.17.13",
         "@types/jsonwebtoken": "^8.5.9",
         "@types/mocha": "^9.1.1",
-        "@types/mongoose": "^5.11.97",
         "@types/multer": "^1.4.7",
         "@types/multer-s3": "^2.7.12",
         "@types/node": "^17.0.25",
@@ -44,10 +43,10 @@
         "express": "^4.17.3",
         "express-validator": "^6.14.2",
         "jsonwebtoken": "^8.5.1",
-        "mongoose": "^6.3.1",
         "multer": "^1.4.5-lts.1",
         "multer-s3": "2.10.0",
         "mysql": "^2.18.1",
+        "package.json": "^2.0.1",
         "promise-mysql": "^5.2.0"
     }
 }
