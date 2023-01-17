@@ -2,16 +2,13 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import constant from '../modules/serviceReturnConstant';
-import dummyData from '../modules/dummyData'; // 임시 더미 데이터
 import pools from '../modules/pool';
 import poolPromise from '../loaders/db';
-import jwtHandler from '../library/jwtHandler';
 
 import mumentDB from '../modules/db/Mument';
 import userDB from '../modules/db/User';
 import musicDB from '../modules/db/Music';
 
-import { tagBannerTitle } from '../modules/tagTitle';
 import { tagRandomTitle } from '../modules/tagTitle';
 import { PostBaseResponseDto } from '../interfaces/common/PostBaseResponseDto';
 import { MumentCardViewInterface } from '../interfaces/mument/MumentCardViewInterface';
@@ -27,15 +24,6 @@ import { TodayMumentResponseDto } from '../interfaces/mument/TodayMumentResponse
 import { TodayBannerResponseDto } from '../interfaces/mument/TodayBannerResponseDto';
 import { AgainMumentResponseDto } from '../interfaces/mument/AgainMumentResponseDto';
 import { StringBaseResponseDto } from '../interfaces/common/StringBaseResponseDto';
-
-import HomeCandidate from '../models/HomeCandidate';
-import TodaySelection from '../models/TodaySelection';
-import BannerSelection from '../models/BannerSelection';
-import AgainSelection from '../models/AgainSelection';
-
-import { BannerSelectionInfo } from '../interfaces/home/BannerSelectionInfo';
-import { AgainSelectionInfo } from '../interfaces/home/AgainSelectionInfo';
-import { LikeMumentInfo } from '../interfaces/like/LikeInfo';
 
 import { ExistMumentDto } from '../interfaces/mument/ExistMumentRDBDto';
 import { MumentInfoRDB } from '../interfaces/mument/MumentInfoRDB';
