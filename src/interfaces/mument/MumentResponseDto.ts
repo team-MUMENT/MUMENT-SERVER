@@ -1,6 +1,4 @@
 import mongoose from 'mongoose';
-import { MusicInfo } from '../music/MusicInfo';
-import { UserIdInfo } from '../user/UserInfo';
 
 export interface MumentResponseDto {
     _id?: mongoose.Types.ObjectId | number;
