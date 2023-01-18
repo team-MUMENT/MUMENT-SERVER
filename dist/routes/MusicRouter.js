@@ -8,6 +8,7 @@ const controllers_1 = require("../controllers");
 const express_validator_1 = require("express-validator");
 const auth_1 = __importDefault(require("../middlewares/auth"));
 const router = (0, express_1.Router)();
+router.get('/search', controllers_1.MusicController.getMusicListBySearch);
 router.get('/:musicId', [
     (0, express_validator_1.param)('musicId').toInt().isInt(),
 ], auth_1.default, controllers_1.MusicController.getMusicAndMyMument);
@@ -17,6 +18,5 @@ router.get('/:musicId/order', [
     (0, express_validator_1.query)('limit').toInt().isInt(),
     (0, express_validator_1.query)('offset').toInt().isInt(),
 ], auth_1.default, controllers_1.MusicController.getMumentList);
-router.get('/search', controllers_1.MusicController.getMusicListBySearch);
 exports.default = router;
 //# sourceMappingURL=MusicRouter.js.map
