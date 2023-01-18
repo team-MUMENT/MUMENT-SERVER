@@ -5,6 +5,8 @@ import auth from '../middlewares/auth';
 
 const router: Router = Router();
 
+router.get('/search', MusicController.getMusicListBySearch);
+
 router.get('/:musicId', [
     param('musicId').toInt().isInt(), 
 ], auth, MusicController.getMusicAndMyMument);
@@ -15,7 +17,5 @@ router.get('/:musicId/order', [
     query('limit').toInt().isInt(),
     query('offset').toInt().isInt(),
 ], auth, MusicController.getMumentList);
-
-router.get('/search', MusicController.getMusicListBySearch);
 
 export default router;
