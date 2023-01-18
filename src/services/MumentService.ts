@@ -684,7 +684,7 @@ const getTodayMument = async (): Promise<TodayMumentResponseDto | number> => {
         // };
         const data: TodayMumentResponseDto = {
             todayDate: todayDate,
-            todayMument: dummyData.todaySelectionDummy
+            todayMument: null
         };
 
         return data;
