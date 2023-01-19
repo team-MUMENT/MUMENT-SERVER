@@ -474,10 +474,27 @@ const createLike = async (mumentId: string, userId: string): Promise<LikeCountRe
     const connection = await pool.getConnection();
 
     try {
-        await connection.beginTransaction();
         const findMumentResult = await mumentDB.isExistMument(mumentId, connection);
 
         if (findMumentResult === false) return constant.NO_MUMENT;
+
+        const getIsBlockedQuery = `
+        SELECT EXISTS(
+            SELECT *
+            FROM block
+            JOIN mument
+                ON mument.user_id = block.user_id
+            WHERE block.blocked_user_id = ?
+                AND mument.id = ?
+                AND mument.is_deleted = 0
+        ) as is_blocked;
+        `;
+
+        const isBlocked = await connection.query(getIsBlockedQuery, [userId, mumentId]);
+
+        if (isBlocked[0].is_blocked) return constant.BLOCKED_USER;
+
+        await connection.beginTransaction();
 
         // 좋아요 등록
         const postLikeQuery = `
@@ -496,8 +513,6 @@ const createLike = async (mumentId: string, userId: string): Promise<LikeCountRe
         `;
 
         await connection.query(updateLikeCountQuery, [mumentId]);
-        
-        await connection.commit();
 
         // 결과 조회
         const getLikeResultQuery = `
@@ -513,6 +528,8 @@ const createLike = async (mumentId: string, userId: string): Promise<LikeCountRe
         const likeResult = await connection.query(getLikeResultQuery, [mumentId, userId]);
 
         if (likeResult.length === 0) return constant.CREATE_FAIL;
+
+        await connection.commit();
 
         const data: LikeCountResponeDto = {
             mumentId: likeResult[0].mument_id,
