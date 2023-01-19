@@ -4,6 +4,8 @@ import constant from '../modules/serviceReturnConstant';
 import pools from '../modules/pool';
 import poolPromise from '../loaders/db';
 
+import userDB from '../modules/db/User';
+
 import { MumentCardViewInterface } from '../interfaces/mument/MumentCardViewInterface';
 import { MusicMumentListResponseDto } from '../interfaces/music/MusicMumentListResponseDto';
 import { MusicMyMumentResponseDto } from '../interfaces/music/MusicMyMumentResponseDto';
@@ -160,6 +162,15 @@ const getMumentList = async (musicId: string, userId: string, isLikeOrder: boole
 
         let originalMumentList = [];
 
+        const blockedUserResult = await userDB.blockedUserList(userId);
+
+        const blockedUserList: number[] = [];
+        blockedUserResult.forEach(element => {
+            blockedUserList.push(element.exist);
+        });
+
+        const strBlockedUserList = '(' + blockedUserList.toString() + ')';
+
         switch (isLikeOrder) {
             case true: { // 좋아요순 정렬
                 const getMumentListQuery = `
@@ -168,6 +179,7 @@ const getMumentList = async (musicId: string, userId: string, isLikeOrder: boole
                 JOIN user
                     ON mument.user_id = user.id
                 WHERE mument.music_id = ?
+                    AND mument.user_id NOT IN ${strBlockedUserList}
                     AND mument.is_deleted = 0  
                     AND user.is_deleted = 0
                 ORDER BY mument.like_count DESC
@@ -182,6 +194,7 @@ const getMumentList = async (musicId: string, userId: string, isLikeOrder: boole
                 JOIN user
                     ON mument.user_id = user.id
                 WHERE mument.music_id = ?
+                    AND mument.user_id NOT IN ${strBlockedUserList}
                     AND mument.is_deleted = 0  
                     AND user.is_deleted = 0
                 ORDER BY mument.created_at DESC
