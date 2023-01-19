@@ -310,6 +310,20 @@ const getMumentHistory = async (userId: string, musicId: string, writerId: strin
             getMumentListResult = await connection.query(getMumentListQuery, [userId, musicId, userId, limit, offset]);
 
         } else {
+            // 차단된 유저인지 확인
+            const getIsBlockedQuery = `
+            SELECT EXISTS (
+                SELECT *
+                FROM block
+                WHERE blocked_user_id = ?
+                    AND user_id = ?
+            ) as is_blocked;
+            `;
+
+            const isBlocked = await connection.query(getIsBlockedQuery, [userId, writerId]);
+
+            if (isBlocked[0].is_blocked) return constant.BLOCKED_USER;
+
             // 비밀글 볼 수 없게 함
             const getMumentListQuery = `
             SELECT mument.*, user.profile_id as user_name, user.image as user_image,

@@ -18,7 +18,7 @@ router.put('/:mumentId', [
 
 
 // 히스토리 조회
-router.get('/:musicId/:userId/history', [
+router.get('/:userId/:musicId/history', [
     param('musicId').toInt().isInt(),
     param('userId').toInt().isInt(),
     query('default').isString().isIn(['Y', 'N']),
