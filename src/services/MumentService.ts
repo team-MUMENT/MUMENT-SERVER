@@ -475,24 +475,10 @@ const createLike = async (mumentId: string, userId: string): Promise<LikeCountRe
 
     try {
         const findMumentResult = await mumentDB.isExistMument(mumentId, connection);
-
         if (findMumentResult === false) return constant.NO_MUMENT;
 
-        const getIsBlockedQuery = `
-        SELECT EXISTS(
-            SELECT *
-            FROM block
-            JOIN mument
-                ON mument.user_id = block.user_id
-            WHERE block.blocked_user_id = ?
-                AND mument.id = ?
-                AND mument.is_deleted = 0
-        ) as is_blocked;
-        `;
-
-        const isBlocked = await connection.query(getIsBlockedQuery, [userId, mumentId]);
-
-        if (isBlocked[0].is_blocked) return constant.BLOCKED_USER;
+        const isBlocked = await userDB.isBlockedUser(userId, mumentId);
+        if (isBlocked) return constant.BLOCKED_USER;
 
         await connection.beginTransaction();
 
