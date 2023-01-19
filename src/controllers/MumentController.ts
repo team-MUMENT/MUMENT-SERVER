@@ -264,6 +264,10 @@ const createLike = async (req: Request, res: Response) => {
                 // 존재하지 않는 뮤멘트일 때
                 res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.NO_MUMENT_ID));
             }
+            case constant.BLOCKED_USER: {
+                // 차단된 유저일 때
+                res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.BLOCKED_USER));
+            }
         }
 
         res.status(statusCode.CREATED).send(util.success(statusCode.CREATED, message.CREATE_LIKE_SUCCESS, data));
