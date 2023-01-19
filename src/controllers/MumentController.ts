@@ -258,15 +258,15 @@ const createLike = async (req: Request, res: Response) => {
         switch (data) {
             case constant.CREATE_FAIL: {
                 // 업데이트가 실패했을 때
-                res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.CREATE_LIKE_FAIL));
+                return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.CREATE_LIKE_FAIL));
             }
             case constant.NO_MUMENT: {
                 // 존재하지 않는 뮤멘트일 때
-                res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.NO_MUMENT_ID));
+                return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.NO_MUMENT_ID));
             }
             case constant.BLOCKED_USER: {
                 // 차단된 유저일 때
-                res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.BLOCKED_USER));
+                return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.BLOCKED_USER));
             }
         }
 
