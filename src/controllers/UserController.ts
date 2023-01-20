@@ -511,6 +511,34 @@ const getNewsList = async (req: Request, res: Response) => {
     }
 };
 
+/**
+ * @ROUTE GET profile/check
+ * @DESC 프로필 설정이 완료되었는지 확인하는 API입니다.
+ */
+const checkProfileSet = async (req: Request, res: Response) => {
+    try {
+        // auth에서 401이 리턴되지 않았다면 204 리턴
+        res.status(statusCode.NO_CONTENT).send(util.success(statusCode.NO_CONTENT, message.COMPLETE_PROFILE_SET));
+    } catch (error) {
+        console.log(error);
+
+        const slackMessage: SlackMessageFormat = {
+            title: 'MUMENT ec2 서버 오류',
+            text: '서버 내부 오류입니다',
+            fields: [
+                {
+                    title: 'Error Stack:',
+                    value: `\`\`\`${error}\`\`\``,
+                },
+            ],
+        };
+        sendMessage(slackMessage);
+
+        res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
+
+    }
+}
+
 
 export default {
     getMyMumentList,
@@ -527,4 +555,5 @@ export default {
     updateUnreadNews,
     deleteNews,
     getNewsList,
+    checkProfileSet,
 };

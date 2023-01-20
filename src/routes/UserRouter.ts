@@ -55,4 +55,7 @@ router.post('/leave-category', [
 // 유저 탈퇴
 router.delete('/', auth, UserController.deleteUser);
 
+// 프로필 설정 완료 조회
+router.get('/profile/check', auth, UserController.checkProfileSet);
+
 export default router;

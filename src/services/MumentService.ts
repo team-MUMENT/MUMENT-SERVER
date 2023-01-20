@@ -310,6 +310,20 @@ const getMumentHistory = async (userId: string, musicId: string, writerId: strin
             getMumentListResult = await connection.query(getMumentListQuery, [userId, musicId, userId, limit, offset]);
 
         } else {
+            // 차단된 유저인지 확인
+            const getIsBlockedQuery = `
+            SELECT EXISTS (
+                SELECT *
+                FROM block
+                WHERE blocked_user_id = ?
+                    AND user_id = ?
+            ) as is_blocked;
+            `;
+
+            const isBlocked = await connection.query(getIsBlockedQuery, [userId, writerId]);
+
+            if (isBlocked[0].is_blocked) return constant.BLOCKED_USER;
+
             // 비밀글 볼 수 없게 함
             const getMumentListQuery = `
             SELECT mument.*, user.profile_id as user_name, user.image as user_image,
@@ -474,10 +488,13 @@ const createLike = async (mumentId: string, userId: string): Promise<LikeCountRe
     const connection = await pool.getConnection();
 
     try {
-        await connection.beginTransaction();
         const findMumentResult = await mumentDB.isExistMument(mumentId, connection);
-
         if (findMumentResult === false) return constant.NO_MUMENT;
+
+        const isBlocked = await userDB.isBlockedUser(userId, mumentId);
+        if (isBlocked) return constant.BLOCKED_USER;
+
+        await connection.beginTransaction();
 
         // 좋아요 등록
         const postLikeQuery = `
@@ -496,8 +513,6 @@ const createLike = async (mumentId: string, userId: string): Promise<LikeCountRe
         `;
 
         await connection.query(updateLikeCountQuery, [mumentId]);
-        
-        await connection.commit();
 
         // 결과 조회
         const getLikeResultQuery = `
@@ -513,6 +528,8 @@ const createLike = async (mumentId: string, userId: string): Promise<LikeCountRe
         const likeResult = await connection.query(getLikeResultQuery, [mumentId, userId]);
 
         if (likeResult.length === 0) return constant.CREATE_FAIL;
+
+        await connection.commit();
 
         const data: LikeCountResponeDto = {
             mumentId: likeResult[0].mument_id,
@@ -865,13 +882,22 @@ const createReport = async (mumentId: string, reportCategory: number[], etcConte
     }
 };
 
-const getLikeUserList = async (mumentId: string, userId: number, limit: any, offset: any): Promise<Number | UserResponseDto[]> => {
+// 좋아요 누른 사용자 조회
+const getLikeUserList = async (mumentId: string, userId: string, limit: any, offset: any): Promise<Number | UserResponseDto[]> => {
     const pool: any = await poolPromise;
     const connection = await pool.getConnection();
     try {
         // 존재하는 뮤멘트인지 확인
         const isExistMument = await mumentDB.isExistMument(mumentId, connection);
         if (!isExistMument) return constant.NO_MUMENT;
+
+        // 차단한 유저 리스트 조회
+        const blockUser = await userDB.blockedUserList(userId);
+        const blockedUserList: number[] = [];
+        blockUser.forEach(element => {
+            blockedUserList.push(element.exist);
+        });
+        const strBlockedUserList = '(' + blockedUserList.toString() + ')';
 
         // 좋아요를 누른 유저 전부 가져오기
         const getLikeUserQuery = `
@@ -880,6 +906,7 @@ const getLikeUserList = async (mumentId: string, userId: number, limit: any, off
         JOIN user
             ON mument.like.user_id = user.id
         WHERE mument.like.mument_id = ?
+            AND mument.like.user_id NOT IN ${strBlockedUserList}
             AND user.is_deleted = 0
         ORDER BY mument.like.created_at DESC
         LIMIT ? OFFSET ?;

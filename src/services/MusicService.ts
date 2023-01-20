@@ -4,6 +4,8 @@ import constant from '../modules/serviceReturnConstant';
 import pools from '../modules/pool';
 import poolPromise from '../loaders/db';
 
+import userDB from '../modules/db/User';
+
 import { MumentCardViewInterface } from '../interfaces/mument/MumentCardViewInterface';
 import { MusicMumentListResponseDto } from '../interfaces/music/MusicMumentListResponseDto';
 import { MusicMyMumentResponseDto } from '../interfaces/music/MusicMyMumentResponseDto';
@@ -158,6 +160,29 @@ const getMumentList = async (musicId: string, userId: string, isLikeOrder: boole
 
         if (music.length === 0) return constant.NO_MUSIC;
 
+        // 자신이 차단한, 자신을 차단한 유저 리스트
+        const blockUserList: number[] = [];
+
+        // 자신이 차단한 유저 반환
+        const blockUserResult = await userDB.blockedUserList(userId);
+        blockUserResult.forEach(element => {
+            blockUserList.push(element.exist);
+        });
+
+        // 자신을 차단한 유저 반환
+        const getBlockMeUserQuery = `
+        SELECT user_id
+        FROM block
+        WHERE blocked_user_id = ?
+        `;
+
+        const blockMeUser: {user_id: number}[] = await connection.query(getBlockMeUserQuery, [userId]);
+        blockMeUser.forEach(element => {
+            blockUserList.push(element.user_id);
+        })
+
+        const strBlockUserList = '(' + blockUserList.toString() + ')';
+
         let originalMumentList = [];
 
         switch (isLikeOrder) {
@@ -168,6 +193,7 @@ const getMumentList = async (musicId: string, userId: string, isLikeOrder: boole
                 JOIN user
                     ON mument.user_id = user.id
                 WHERE mument.music_id = ?
+                    AND mument.user_id NOT IN ${strBlockUserList}
                     AND mument.is_deleted = 0  
                     AND user.is_deleted = 0
                 ORDER BY mument.like_count DESC
@@ -182,6 +208,7 @@ const getMumentList = async (musicId: string, userId: string, isLikeOrder: boole
                 JOIN user
                     ON mument.user_id = user.id
                 WHERE mument.music_id = ?
+                    AND mument.user_id NOT IN ${strBlockUserList}
                     AND mument.is_deleted = 0  
                     AND user.is_deleted = 0
                 ORDER BY mument.created_at DESC

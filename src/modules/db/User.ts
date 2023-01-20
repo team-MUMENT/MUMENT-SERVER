@@ -91,6 +91,26 @@ const blockedUserList = async (userId: string) => {
     return blockedUserList;
 };
 
+// 뮤멘트 작성자에게 차단된 유저인지 확인
+const isBlockedUser = async (userId: string, mumentId: string): Promise<boolean> => {
+    const query = `
+    SELECT EXISTS(
+        SELECT *
+        FROM block
+        JOIN mument
+            ON mument.user_id = block.user_id
+        WHERE block.blocked_user_id = ?
+            AND mument.id = ?
+            AND mument.is_deleted = 0
+    ) as is_blocked;    
+    `;
+
+    const result = await pools.queryValue(query, [userId, mumentId]);
+    const isBlocked: boolean = result[0].is_blocked;
+
+    return isBlocked;
+}
+
 
 export default {
     userInfo,
@@ -98,5 +118,6 @@ export default {
     myLikeMumentList,
     blockedUserList,
     isExistUser,
+    isBlockedUser,
 }
 

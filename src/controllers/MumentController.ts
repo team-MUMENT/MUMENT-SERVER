@@ -188,7 +188,7 @@ const getIsFirst = async (req: Request, res: Response) => {
  * @DESC get mument history
  */
 const getMumentHistory = async (req: Request, res: Response) => {
-    const { musicId, userId: writerId } = req.params;
+    const { userId: writerId, musicId } = req.params;
     const userId = req.body.userId;
     const { default: orderOption, limit, offset } = req.query;
 
@@ -213,9 +213,12 @@ const getMumentHistory = async (req: Request, res: Response) => {
     try {
         const data = await MumentService.getMumentHistory(userId, musicId, writerId, orderBy, limit, offset);
 
-        // 곡 검색 결과가 없을 경우
         if (data === constant.NO_MUSIC) {
-            res.status(statusCode.NOT_FOUND).send(util.fail(statusCode.NOT_FOUND, message.NOT_FOUND));
+            // 곡 검색 결과가 없을 경우
+            return res.status(statusCode.NOT_FOUND).send(util.fail(statusCode.NOT_FOUND, message.NOT_FOUND));
+        } else if (data === constant.BLOCKED_USER) {
+            // 차단된 유저는 히스토리 조회 불가
+            return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.BLOCKED_USER));
         }
 
         res.status(statusCode.OK).send(util.success(statusCode.OK, message.READ_MUMENT_HISTORY_SUCCESS, data));
@@ -258,11 +261,15 @@ const createLike = async (req: Request, res: Response) => {
         switch (data) {
             case constant.CREATE_FAIL: {
                 // 업데이트가 실패했을 때
-                res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.CREATE_LIKE_FAIL));
+                return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.CREATE_LIKE_FAIL));
             }
             case constant.NO_MUMENT: {
                 // 존재하지 않는 뮤멘트일 때
-                res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.NO_MUMENT_ID));
+                return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.NO_MUMENT_ID));
+            }
+            case constant.BLOCKED_USER: {
+                // 차단된 유저일 때
+                return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.BLOCKED_USER));
             }
         }
 

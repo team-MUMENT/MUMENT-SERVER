@@ -32,6 +32,8 @@ const message = {
     DELETE_NEWS_SUCCESS: '소식창 알림 제거 성공',
     READ_UNREAD_NEWS_SUCCESS: '소식창 새로운 알림 읽음 처리 성공',
     READ_UNREAD_NEWS_IS_EXIST_SUCCESS: '새로 추가된 알림이 있는지 조회 성공',
+    COMPLETE_PROFILE_SET: '프로필 설정 완료된 유저입니다',
+    BLOCKED_USER: '차단된 유저입니다',
 
     // mument
     NO_MUMENT_ID: '해당 아이디의 뮤멘트가 존재하지 않습니다',

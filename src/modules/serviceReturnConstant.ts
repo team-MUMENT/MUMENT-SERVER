@@ -36,6 +36,7 @@ const constant = {
     // 유저 차단
     ALREADY_BLOCK: -200, // 이미 차단한 유저를 다시 차단하려 할 떄
     SELF_BLOCK: -201,
+    BLOCKED_USER: -202, // 차단된 유저일 때
 };
 
 export default constant;
