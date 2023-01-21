@@ -700,6 +700,34 @@ const getNewsList = async (userId: number): Promise<NewsResponseDto[]> => {
 };
 
 
+/**
+ * 공지사항 등록
+ */
+const postNotice = async (title: string, content:string): Promise<NumberBaseResponseDto | null> => {
+    const pool: any = await poolPromise;
+    const connection = await pool.getConnection();
+
+    try {
+        // 공지사항 추가
+        const insertNoticeQuery = 'INSERT INTO notice(title, content) VALUES(?, ?)';
+
+        const createdNotice = await connection.query(insertNoticeQuery, [title, content]);
+        
+        
+        await connection.commit(); // query1, query2 모두 성공시 커밋(데이터 적용)
+
+        return {
+            exist: createdNotice.insertId
+        };
+    } catch (error) {
+        console.log(error);
+        throw error;
+    } finally {
+        connection.release(); // pool connection 회수
+    }
+};
+
+
 export default {
     getMyMumentList,
     getLikeMumentList,
@@ -715,4 +743,5 @@ export default {
     updateUnreadNews,
     deleteNews,
     getNewsList,
+    postNotice,
 };
