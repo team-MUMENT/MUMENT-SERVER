@@ -25,6 +25,8 @@ import { NewsResponseDto } from '../interfaces/user/NewsResponseDto';
 import { ReportRestrictionInfoRDB } from '../interfaces/user/ReportRestrictionInfoRDB';
 import { ReportRestrictResponseDto } from '../interfaces/user/ReportRestrictResponseDto';
 import { NoticeInfoRDB } from '../interfaces/mument/NoticeInfoRDB';
+import pushHandler from '../library/pushHandler';
+import { NoticePushResponseDto } from '../interfaces/user/NoticePushResponseDto';
 
 
 /**
@@ -704,7 +706,7 @@ const getNewsList = async (userId: number): Promise<NewsResponseDto[]> => {
 /**
  * 공지사항 등록 - 기획, 서버에서만 사용
  */
-const postNotice = async (title: string, content:string): Promise<NumberBaseResponseDto | number> => {
+const postNotice = async (title: string, content:string): Promise<NoticePushResponseDto | number> => {
     const pool: any = await poolPromise;
     const connection = await pool.getConnection();
     //co.sollslsl; // 이거 어디로 가나확인
@@ -723,15 +725,20 @@ const postNotice = async (title: string, content:string): Promise<NumberBaseResp
         );
         const noticeTitle = createdNoticeRow[0].title;
         const noticeId = createdNoticeRow[0].id;
+        let fcmTokenList: string[] = [];
 
 
         // 모든 활성 유저의 소식창에 공지사항 알림 추가        
-        const allActiveUser: NumberBaseResponseDto[] = await connection.query('SELECT id AS exist FROM user WHERE is_deleted=0');
+        const allActiveUser: UserInfoRDB[] = await connection.query('SELECT * FROM user WHERE is_deleted=0');
 
-        const insertNewsToAllActiveUser = async (item: NumberBaseResponseDto, idx: number) => {
+        const insertNewsToAllActiveUser = async (item: UserInfoRDB, idx: number) => {
             await connection.query(
-                `INSERT INTO news(type, user_id, notice_title, link_id) VALUES('notice', ?, ?, ?)`, [item.exist, noticeTitle, noticeId]
+                `INSERT INTO news(type, user_id, notice_title, link_id) VALUES('notice', ?, ?, ?)`, [item.id, noticeTitle, noticeId]
             );
+
+            if (item.fcm_token && item.fcm_token.length > 0) {
+                fcmTokenList.push(item.fcm_token);
+            }
         };
 
         await allActiveUser.reduce(async (acc, curr, index) => {
@@ -741,9 +748,24 @@ const postNotice = async (title: string, content:string): Promise<NumberBaseResp
 
         await connection.commit();
 
+
+        // 새로운 공지사항 활성 유저에게 푸시알림
+        const pushAlarmResult = await pushHandler.noticePushAlarmHandler('공지', noticeTitle, fcmTokenList);
+        if (pushAlarmResult === constant.NOTICE_PUSH_SUCCESS) {
+            console.log('푸시알림 성공');
+            return {
+                pushSuccess: true,
+                noticeId: createdNoticeRow[0].id
+            };
+        } 
+        
+        console.log('푸시알림 실패');
+
         return {
-            exist: Number(createdNoticeRow[0].id) // 공지사항 id
+            pushSuccess: false,
+            noticeId: createdNoticeRow[0].id
         };
+
     } catch (error) {
         console.log(error);
         await connection.rollback(); // 하나라도 에러시 롤백 (데이터 적용 원상복귀)
