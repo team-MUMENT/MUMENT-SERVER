@@ -540,6 +540,37 @@ const checkProfileSet = async (req: Request, res: Response) => {
 }
 
 
+/**
+ *  @ROUTE POST /notice
+ *  @DESC 공지사항을 등록합니다 - 서버, 기획에서만 사용
+ */
+const postNotice = async (req: Request, res: Response) => {
+    const { title, content } = req.body;
+
+    try {
+        const data = await UserService.postNotice(title, content);
+
+        return res.status(statusCode.OK).send(util.success(statusCode.OK, message.READ_NEWS_LIST_SUCCESS, data));
+    } catch (error) {
+        console.log(error);
+
+        const slackMessage: SlackMessageFormat = {
+            title: 'MUMENT ec2 서버 오류',
+            text: '서버 내부 오류입니다',
+            fields: [
+                {
+                    title: 'Error Stack:',
+                    value: `\`\`\`${error}\`\`\``,
+                },
+            ],
+        };
+        sendMessage(slackMessage);
+
+        res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
+    }
+};
+
+
 export default {
     getMyMumentList,
     getLikeMumentList,
@@ -556,4 +587,5 @@ export default {
     deleteNews,
     getNewsList,
     checkProfileSet,
+    postNotice,
 };
