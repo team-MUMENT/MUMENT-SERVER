@@ -1,8 +1,22 @@
 import express, { Request, Response, NextFunction } from 'express';
 const app = express();
 import routes from './routes';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+import * as admin from 'firebase-admin';
+import { ServiceAccount } from 'firebase-admin';
+import serviceAccount from '../src/config/serviceAccountKey.json';
+
 require('dotenv').config();
+
+
+// firebase setting
+let firebase;
+if (admin.apps.length === 0) {
+  firebase = admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount as ServiceAccount),
+  });
+} else {
+  firebase = admin.app();
+}
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
