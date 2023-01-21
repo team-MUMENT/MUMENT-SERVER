@@ -6,6 +6,7 @@ import { UserService } from '../services';
 import sendMessage, { SlackMessageFormat } from '../library/slackWebHook';
 import constant from '../modules/serviceReturnConstant';
 import { validationResult } from 'express-validator';
+import { NoticePushResponseDto } from '../interfaces/user/NoticePushResponseDto';
 
 /**
  * @ROUTE POST /profile
@@ -542,7 +543,7 @@ const checkProfileSet = async (req: Request, res: Response) => {
 
 /**
  *  @ROUTE POST /notice
- *  @DESC 공지사항을 등록합니다 - 서버, 기획에서만 사용
+ *  @DESC 공지사항을 등록 후 푸시알림을 날립니다 - 서버, 기획에서만 사용
  */
 const postNotice = async (req: Request, res: Response) => {
     const { title, content } = req.body;
@@ -550,11 +551,17 @@ const postNotice = async (req: Request, res: Response) => {
     try {
         const data = await UserService.postNotice(title, content);
 
-        if (data === constant.CREATE_NOTICE_FAIL) {
+        if (typeof data === "number" && data === constant.CREATE_NOTICE_FAIL) {
             return res.status(statusCode.BAD_REQUEST).send(util.success(statusCode.BAD_REQUEST, message.CREATE_NOTICE_FAIL));
-        } 
 
-        return res.status(statusCode.CREATED).send(util.success(statusCode.CREATED, message.CREATE_ALL_USER_NOTICE_NEWS_SUCCESS, data));
+        } else if(!(data as NoticePushResponseDto).pushSuccess) {
+            console.log("푸시알림 실패");
+            return res.status(statusCode.CREATED).send(util.success(statusCode.CREATED, message.PUSH_ALARM_ERROR, data));
+
+        } else if ((data as NoticePushResponseDto).pushSuccess) {
+            console.log("푸시알림 성공");
+            return res.status(statusCode.CREATED).send(util.success(statusCode.CREATED, message.PUSH_ALARM_SUCCESS, data));
+        }
     } catch (error) {
         console.log(error);
 

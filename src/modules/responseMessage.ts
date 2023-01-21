@@ -91,8 +91,8 @@ const message = {
     CREATE_REPORT_SUCCESS: '뮤멘트 신고하기 성공',
 
     //push alarm
-    PUSH_ALARM_SUCCESS: '푸시알림 전송 성공',
-    PUSH_ALARM_ERROR: '푸시알림 에러',
+    PUSH_ALARM_SUCCESS: '공지사항 등록, 소식창 등록 성공 / 푸시알림 성공',
+    PUSH_ALARM_ERROR: '공지사항 등록, 소식창 등록 성공 / 푸시알림 실패',
 };
 
 export default message;
