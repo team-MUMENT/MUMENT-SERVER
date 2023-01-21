@@ -4,12 +4,13 @@ import sendMessage, { SlackMessageFormat } from '../library/slackWebHook';
 import config from '../config';
 import * as admin from 'firebase-admin';
 import { MulticastMessage } from 'firebase-admin/lib/messaging/messaging-api';
+import { response } from 'express';
 
 /**
  * 푸시알림 - 공지사항용
  * FCM TOKEN - 여러 개 배열로 받음
  */
-const noticePushAlarmHandler = async (pushTitle: string, pushBody: string, fcmTokenList: string[]): Promise<void | number> => {
+const noticePushAlarmHandler = async (pushTitle: string, pushBody: string, fcmTokenList: string[]): Promise<void | number | string[]> => {
     if (fcmTokenList.length === 0) return constant.NOTICE_PUSH_FAIL;
 
     let message: MulticastMessage = {
@@ -38,16 +39,28 @@ const noticePushAlarmHandler = async (pushTitle: string, pushBody: string, fcmTo
     };
 
     try {
+        let pushFailFcmTokenList: string[] = [];
+
         admin
             .messaging()
             .sendMulticast(message)
             .then(function (res) {
-                console.log(responseMessage.PUSH_ALARM_SUCCESS, res);
+                // 푸시알림 실패한 유저 있을 경우 찾아서 보냄
+                if (res.failureCount > 0) {
+                    res.responses.forEach((response, idx) => {
+                        if (response.success) pushFailFcmTokenList.push(fcmTokenList[idx]) 
+                        else return; 
+                    })
+                }
+                
+                console.log(responseMessage.PUSH_ALARM_SUCCESS, res, pushFailFcmTokenList);
             })
             .catch(function (err) {
                 console.log(responseMessage.PUSH_ALARM_ERROR, err);
+                return constant.NOTICE_PUSH_FAIL;
             });
-        return constant.NOTICE_PUSH_SUCCESS;
+        
+        return pushFailFcmTokenList;
     } catch (error) {
         console.log(error);
         throw error;
