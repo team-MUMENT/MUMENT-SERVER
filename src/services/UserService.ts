@@ -24,6 +24,7 @@ import { NewsInfoRDB } from '../interfaces/user/NewsInfoRDB';
 import { NewsResponseDto } from '../interfaces/user/NewsResponseDto';
 import { ReportRestrictionInfoRDB } from '../interfaces/user/ReportRestrictionInfoRDB';
 import { ReportRestrictResponseDto } from '../interfaces/user/ReportRestrictResponseDto';
+import { NoticeInfoRDB } from '../interfaces/mument/NoticeInfoRDB';
 
 
 /**
@@ -701,26 +702,51 @@ const getNewsList = async (userId: number): Promise<NewsResponseDto[]> => {
 
 
 /**
- * 공지사항 등록
+ * 공지사항 등록 - 기획, 서버에서만 사용
  */
-const postNotice = async (title: string, content:string): Promise<NumberBaseResponseDto | null> => {
+const postNotice = async (title: string, content:string): Promise<NumberBaseResponseDto | number> => {
     const pool: any = await poolPromise;
     const connection = await pool.getConnection();
+    //co.sollslsl; // 이거 어디로 가나확인
 
     try {
-        // 공지사항 추가
-        const insertNoticeQuery = 'INSERT INTO notice(title, content) VALUES(?, ?)';
+        connection.beginTransaction(); //롤백을 위해 필요함
 
-        const createdNotice = await connection.query(insertNoticeQuery, [title, content]);
+        // 공지사항 추가
+        const createdNotice = await connection.query('INSERT INTO notice(title, content) VALUES(?, ?)', [title, content]);
+        if (createdNotice?.affectedRows === 0) return constant.CREATE_NOTICE_FAIL;
+
+
+        // 공지사항 row 조회
+        const createdNoticeRow: NoticeInfoRDB[] = await connection.query(
+            'SELECT * FROM notice WHERE id=?', [createdNotice.insertId]
+        );
+        const noticeTitle = createdNoticeRow[0].title;
+        const noticeId = createdNoticeRow[0].id;
+
+
+        // 모든 활성 유저의 소식창에 공지사항 알림 추가        
+        const allActiveUser: NumberBaseResponseDto[] = await connection.query('SELECT id AS exist FROM user WHERE is_deleted=0');
+
+        const insertNewsToAllActiveUser = async (item: NumberBaseResponseDto, idx: number) => {
+            await connection.query(
+                `INSERT INTO news(type, user_id, notice_title, link_id) VALUES('notice', ?, ?, ?)`, [item.exist, noticeTitle, noticeId]
+            );
+        };
+
+        await allActiveUser.reduce(async (acc, curr, index) => {
+            return acc.then(() => insertNewsToAllActiveUser(curr, index));
+        }, Promise.resolve());
         
-        
-        await connection.commit(); // query1, query2 모두 성공시 커밋(데이터 적용)
+
+        await connection.commit();
 
         return {
-            exist: createdNotice.insertId
+            exist: Number(createdNoticeRow[0].id) // 공지사항 id
         };
     } catch (error) {
         console.log(error);
+        await connection.rollback(); // 하나라도 에러시 롤백 (데이터 적용 원상복귀)
         throw error;
     } finally {
         connection.release(); // pool connection 회수

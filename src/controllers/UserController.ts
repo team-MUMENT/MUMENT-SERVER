@@ -550,7 +550,11 @@ const postNotice = async (req: Request, res: Response) => {
     try {
         const data = await UserService.postNotice(title, content);
 
-        return res.status(statusCode.OK).send(util.success(statusCode.OK, message.READ_NEWS_LIST_SUCCESS, data));
+        if (data === constant.CREATE_NOTICE_FAIL) {
+            return res.status(statusCode.BAD_REQUEST).send(util.success(statusCode.BAD_REQUEST, message.CREATE_NOTICE_FAIL));
+        } 
+
+        return res.status(statusCode.CREATED).send(util.success(statusCode.CREATED, message.CREATE_ALL_USER_NOTICE_NEWS_SUCCESS, data));
     } catch (error) {
         console.log(error);
 

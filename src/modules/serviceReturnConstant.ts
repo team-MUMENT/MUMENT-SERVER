@@ -16,6 +16,8 @@ const constant = {
     NO_HOME_CONTENT: -15, // 홈에 들어갈 뮤멘트가 존재하지 않을 때
     PRIVATE_MUMENT: -16, // 비밀글에 다른 유저가 접속하려 할 때
     NO_NOTICE: -17, // 아이디로 조회한 공지사항의 값이 없을 때
+    CREATE_NOTICE_FAIL: -18, // 공지사항 등록 실패햇을 때
+    CREATE_ALL_USER_NOTICE_NEWS_FAIL: -19, //공지사항 등록 후 소식창에 알림 삽입 중 실패했을 때
 
     // apple
     NO_IDENTITY_TOKEN_SUB: -50, // 클라이언트에서 받은 identity token에 sub(id)값이 없을 때
