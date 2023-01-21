@@ -39,6 +39,10 @@ const constant = {
     ALREADY_BLOCK: -200, // 이미 차단한 유저를 다시 차단하려 할 떄
     SELF_BLOCK: -201,
     BLOCKED_USER: -202, // 차단된 유저일 때
+
+    // push alarm
+    NOTICE_PUSH_FAIL: -300, // 공지사항 푸시 알림 실패
+    NOTICE_PUSH_SUCCESS: -301, // 공지사항 푸시 알림 성공
 };
 
 export default constant;

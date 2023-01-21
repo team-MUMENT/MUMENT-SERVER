@@ -18,6 +18,7 @@
       "./node_modules/@types" // 설정 안할시 기본적으로 ./node_modules/@types
     ],
     "forceConsistentCasingInFileNames": false,
+    "resolveJsonModule": true, // json파일 import 가능
   },
   "include": [
     "./src/**/*" // build 시 포함

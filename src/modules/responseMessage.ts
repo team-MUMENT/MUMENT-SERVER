@@ -89,6 +89,10 @@ const message = {
     //신고 제재
     REPORT_RESTRICTION_USER_SUCCESS: '신고 제재 유무 조회 성공',
     CREATE_REPORT_SUCCESS: '뮤멘트 신고하기 성공',
+
+    //push alarm
+    PUSH_ALARM_SUCCESS: '푸시알림 전송 성공',
+    PUSH_ALARM_ERROR: '푸시알림 에러',
 };
 
 export default message;
