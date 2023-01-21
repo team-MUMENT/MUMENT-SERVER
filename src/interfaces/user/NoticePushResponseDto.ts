@@ -1,4 +1,5 @@
 export interface NoticePushResponseDto {
     pushSuccess: boolean,
-    noticeId: string
+    noticeId: string,
+    pushFailFcmToken?: string[] | null
 }
