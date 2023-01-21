@@ -50,6 +50,8 @@ const message = {
     READ_ISFIRST_SUCCESS: '뮤멘트 처음/다시 조회 성공',
     READ_NOTICE_LIST_SUCCESS: '공지사항 리스트 조회 성공',
     READ_NOTICE_DETAIL_SUCCESS: '공지사항 상세보기 성공',
+    CREATE_NOTICE_FAIL: '공지사항 등록 실패',
+    CREATE_ALL_USER_NOTICE_NEWS_SUCCESS: '공지사항 등록 후 활성 유저의 소식창에 알림 추가 성공',
     READ_LIKE_USER_SUCCESS: '좋아요한 사용자 조회 성공',
 
     // home
