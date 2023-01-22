@@ -1,10 +1,7 @@
 import responseMessage from '../modules/responseMessage';
 import constant from '../modules/serviceReturnConstant'
-import sendMessage, { SlackMessageFormat } from '../library/slackWebHook';
-import config from '../config';
 import * as admin from 'firebase-admin';
-import { MulticastMessage } from 'firebase-admin/lib/messaging/messaging-api';
-import { response } from 'express';
+import { Message, MulticastMessage } from 'firebase-admin/lib/messaging/messaging-api';
 
 /**
  * 푸시알림 - 공지사항용
@@ -58,10 +55,55 @@ const noticePushAlarmHandler = async (pushTitle: string, pushBody: string, fcmTo
         console.log(error);
         throw error;
     }
-
-    
 }
+
+/**
+ * 푸시알림 - 좋아요 알림용
+ * FCM TOKEN - 1개 받음
+ */
+const likePushAlarmHandler = async (pushTitle: string, pushBody: string, fcmToken: string): Promise<void | number | string[]> => {
+    if (!fcmToken || fcmToken === undefined) return constant.LIKE_PUSH_FAIL;
+
+    let message: Message = {
+        notification: {
+            title: pushTitle,
+            body: pushBody,
+        },
+        token: fcmToken,
+        android: {
+            priority: 'high',
+        },
+        apns: {
+            payload: {
+                aps: {
+                    contentAvailable: true,
+                },
+            },
+        },
+    };
+
+    try {
+        admin
+            .messaging()
+            .send(message)
+            .then(function (res) {        
+                console.log(responseMessage.PUSH_ALARM_SUCCESS, res);
+            })
+            .catch(function (err) {
+                console.log(responseMessage.PUSH_ALARM_ERROR, err);
+                return constant.LIKE_PUSH_FAIL;
+            });
+        
+        return constant.LIKE_PUSH_SUCCESS;
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+} 
+
+
 
 export default {
     noticePushAlarmHandler,
+    likePushAlarmHandler,
 }
