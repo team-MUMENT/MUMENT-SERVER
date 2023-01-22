@@ -556,7 +556,6 @@ const updateUnreadNews = (userId, unreadNews) => { var unreadNews_1, unreadNews_
 const deleteNews = (userId, newsId) => __awaiter(void 0, void 0, void 0, function* () {
     const pool = yield db_1.default;
     const connection = yield pool.getConnection();
-    connection.beginTransaction(); //롤백을 위해 필요함
     try {
         const updateNewsQuery = `
             UPDATE news SET is_deleted=1 WHERE user_id=? AND id=?;
@@ -565,11 +564,9 @@ const deleteNews = (userId, newsId) => __awaiter(void 0, void 0, void 0, functio
         // update가 되지 않을 경우
         if (updateResult.changedRows !== undefined && updateResult.changedRows == 0)
             return serviceReturnConstant_1.default.UPDATE_FAIL;
-        yield connection.commit();
     }
     catch (error) {
         console.log(error);
-        yield connection.rollback(); // 하나라도 에러시 롤백 (데이터 적용 원상복귀)
         throw error;
     }
     finally {
@@ -626,7 +623,6 @@ const getNewsList = (userId) => __awaiter(void 0, void 0, void 0, function* () {
 const postNotice = (title, content) => __awaiter(void 0, void 0, void 0, function* () {
     const pool = yield db_1.default;
     const connection = yield pool.getConnection();
-    //co.sollslsl; // 이거 어디로 가나확인
     try {
         connection.beginTransaction(); //롤백을 위해 필요함
         // 공지사항 추가
