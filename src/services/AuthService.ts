@@ -1,4 +1,3 @@
-import pools from '../modules/pool';
 import poolPromise from '../loaders/db'
 
 import { AuthTokenResponseDto } from '../interfaces/auth/AuthTokenResponseDto';
@@ -6,10 +5,8 @@ import constant from '../modules/serviceReturnConstant';
 import { UserInfoRDB } from '../interfaces/user/UserInfoRDB';
 
 import kakaoAuth from '../library/kakaoAuth';
-import { AppleResponseDto } from '../interfaces/auth/AppleResponseDto';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import jwtHandler from '../library/jwtHandler';
-import appleSignIn from '../library/appleSignIn';
 
 const fs = require('fs');
 const AppleAuth = require('apple-auth');
