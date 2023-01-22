@@ -41,7 +41,7 @@ export default async (req: Request, res: Response, next: NextFunction) => {
                     return res.status(statusCode.UNAUTHORIZED).send(util.fail(statusCode.UNAUTHORIZED, message.TOKEN_UNKNOWN_ERROR));
                 }
                 case constant.NOT_PROFILE_SET_TOKEN: {
-                    return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.UNAUTHORIZED, message.PROFILE_SET_REQUIRED));
+                    return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.PROFILE_SET_REQUIRED));
                 }
             }
 
