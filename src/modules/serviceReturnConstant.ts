@@ -25,6 +25,7 @@ const constant = {
 
     // kakao
     NO_AUTHENTICATION_CODE: -60, // authenticationCode가 클라이언트로부터 넘어오지 않았을 때
+    INVALID_AUTHENTICATION_CODE: -61, // authenticationCode로 토큰 발근 or 프로필 조회가 불가할 때
 
     // jwt token
     TOKEN_EXPIRED: -100, // 토큰이 만료되었을 때
