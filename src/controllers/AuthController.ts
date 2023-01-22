@@ -13,10 +13,10 @@ import { AuthTokenResponseDto } from '../interfaces/auth/AuthTokenResponseDto';
  * @DESC match user profileId and password
  */
 const login = async (req: Request, res: Response) => {
-    const { provider, authentication_code } = req.body;
+    const { provider, authentication_code, fcm_token } = req.body;
 
     try {
-        const data = await AuthService.login(provider, authentication_code);
+        const data = await AuthService.login(provider, authentication_code, fcm_token);
 
         switch (data) {
             case constant.NO_AUTHENTICATION_CODE: {

@@ -20,7 +20,7 @@ const path = require('path');
 /**
 * 로그인/회원가입
 */
-const login = async (provider: string, authenticationCode: string): Promise<AuthTokenResponseDto | number> => {
+const login = async (provider: string, authenticationCode: string, fcm_token: string): Promise<AuthTokenResponseDto | number> => {
     const pool: any = await poolPromise;
     const connection = await pool.getConnection();
     
@@ -146,14 +146,15 @@ const login = async (provider: string, authenticationCode: string): Promise<Auth
         // 발급된 refresh token db에 update
         const updateTokenQuery = `
             UPDATE user
-            SET refresh_token = ?
+            SET refresh_token = ?, fcm_token = ?
             WHERE id = ? AND is_deleted = 0;
         `;
 
         await connection.query(updateTokenQuery, [
             refreshToken,
+            fcm_token === undefined ? null : fcm_token,
             user.id,
-        ])
+        ]);
 
         await connection.commit();
 
