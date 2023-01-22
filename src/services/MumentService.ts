@@ -29,6 +29,7 @@ import { ExistMumentDto } from '../interfaces/mument/ExistMumentRDBDto';
 import { MumentInfoRDB } from '../interfaces/mument/MumentInfoRDB';
 import cardTagList from '../modules/cardTagList';
 import { NoticeInfoRDB } from '../interfaces/mument/NoticeInfoRDB';
+import { NumberBaseResponseDto } from '../interfaces/common/NumberBaseResponseDto';
 
 
 /** 
@@ -57,10 +58,15 @@ const createMument = async (userId: string, musicId: string, mumentCreateDto: Mu
         // 뮤멘트 태그 생성
         await mumentDB.mumentTagCreate(mumentCreateDto.impressionTag, mumentCreateDto.feelingTag, connection, query1Result.insertId);
         
-        await connection.commit(); // query1, query2 모두 성공시 커밋(데이터 적용)
+        await connection.commit();
+
+
+        // 몇 번째 뮤멘트 기록인지 count
+        const mumentCount = await connection.query('SELECT COUNT(*) as count FROM mument WHERE user_id = ?', [userId]);
         
         const data = {
             _id: query1Result.insertId,
+            count: mumentCount[0].count,
         };
 
         return data;
