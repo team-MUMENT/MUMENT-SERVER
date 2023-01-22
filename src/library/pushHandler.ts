@@ -17,22 +17,15 @@ const noticePushAlarmHandler = async (pushTitle: string, pushBody: string, fcmTo
         notification: {
             title: pushTitle,
             body: pushBody,
-            imageUrl: config.noticePushAlarmImage, //일단 따라함 안되면 지우기- 이미지
         },
         tokens: fcmTokenList,
         android: {
             priority: 'high',
-            notification: { //일단 따라함 안되면 지우기- 이미지
-                imageUrl: config.noticePushAlarmImage,
-            },
         },
         apns: {
             payload: {
                 aps: {
                     contentAvailable: true,
-                },
-                fcm_options: { //일단 따라함 안되면 지우기 - 이미지
-                    imageUrl: config.noticePushAlarmImage,
                 },
             },
         },
