@@ -555,11 +555,9 @@ const postNotice = async (req: Request, res: Response) => {
             return res.status(statusCode.BAD_REQUEST).send(util.success(statusCode.BAD_REQUEST, message.CREATE_NOTICE_FAIL));
 
         } else if(!(data as NoticePushResponseDto).pushSuccess) {
-            console.log("푸시알림 실패");
             return res.status(statusCode.CREATED).send(util.success(statusCode.CREATED, message.PUSH_ALARM_ERROR, data));
 
         } else if ((data as NoticePushResponseDto).pushSuccess) {
-            console.log("푸시알림 성공");
             return res.status(statusCode.CREATED).send(util.success(statusCode.CREATED, message.PUSH_ALARM_SUCCESS, data));
         }
     } catch (error) {

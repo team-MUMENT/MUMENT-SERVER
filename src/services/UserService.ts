@@ -752,7 +752,6 @@ const postNotice = async (title: string, content:string): Promise<NoticePushResp
         // 새로운 공지사항 활성 유저에게 푸시알림
         const pushAlarmResult = await pushHandler.noticePushAlarmHandler('공지', noticeTitle, fcmTokenList);
         if (Array.isArray(pushAlarmResult)) {
-            console.log('푸시알림 성공');
             return {
                 pushSuccess: true,
                 noticeId: createdNoticeRow[0].id,
@@ -760,7 +759,6 @@ const postNotice = async (title: string, content:string): Promise<NoticePushResp
             };
         } 
         
-        console.log('푸시알림 실패');
         return {
             pushSuccess: false,
             noticeId: createdNoticeRow[0].id
