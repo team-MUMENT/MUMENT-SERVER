@@ -578,8 +578,8 @@ const getUnreadNewsisExist = async (userId: number): Promise<NumberBaseResponseD
             userId,  comparedDate, dayjs(curr).format()
         ]);
 
-        if (data.length > 0) return { exist: 1 };
-        else return { exist: 0 };
+        if (data.length > 0) return { exist: true };
+        else return { exist: false };
 
     } catch (error) {
         console.log(error);
@@ -678,8 +678,8 @@ const getNewsList = async (userId: number): Promise<NewsResponseDto[]> => {
                     id: item.id,
                     type: item.type,
                     userId: item.user_id,
-                    isDeleted: item.is_deleted,
-                    isRead: item.is_read,
+                    isDeleted: Boolean(item.is_deleted),
+                    isRead: Boolean(item.is_read),
                     createdAt: dayjs(item.created_at).format('MM/DD HH:mm'),
                     linkId: item.link_id,
                     noticeTitle: item.notice_title,
