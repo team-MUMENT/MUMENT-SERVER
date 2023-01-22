@@ -27,6 +27,7 @@ import { ReportRestrictResponseDto } from '../interfaces/user/ReportRestrictResp
 import { NoticeInfoRDB } from '../interfaces/mument/NoticeInfoRDB';
 import pushHandler from '../library/pushHandler';
 import { NoticePushResponseDto } from '../interfaces/user/NoticePushResponseDto';
+import { BooleanBaseResponseDto } from '../interfaces/common/BooleanBaseResponseDto';
 
 
 /**
@@ -561,7 +562,7 @@ const getIsReportRestrictedUser = async (userId: number): Promise<ReportRestrict
 /**
  * 소식창에 안읽은 알림이 있는지 조회
  */
-const getUnreadNewsisExist = async (userId: number): Promise<NumberBaseResponseDto> => {
+const getUnreadNewsisExist = async (userId: number): Promise<BooleanBaseResponseDto> => {
     const pool: any = await poolPromise;
     const connection = await pool.getConnection();
 

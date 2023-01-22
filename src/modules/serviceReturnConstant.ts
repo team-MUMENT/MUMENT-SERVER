@@ -43,6 +43,8 @@ const constant = {
     // push alarm
     NOTICE_PUSH_FAIL: -300, // 공지사항 푸시 알림 실패
     NOTICE_PUSH_SUCCESS: -301, // 공지사항 푸시 알림 성공
+    LIKE_PUSH_FAIL: -302, // 좋아요 푸시 알림 실패
+    LIKE_PUSH_SUCCESS: -303, // 좋아요 푸시 알림 성공
 };
 
 export default constant;

@@ -1,14 +1,12 @@
-import mongoose from 'mongoose';
-
 export interface MumentResponseDto {
-    _id?: mongoose.Types.ObjectId | number;
+    _id?: string | number;
     user: {
-        _id: mongoose.Types.ObjectId | number;
+        _id: string | number;
         name: string;
         image: string;
     };
     music?: {
-        _id: mongoose.Types.ObjectId | null | number; // 보관함때문에 잠시 null
+        _id: string | null | number; // 보관함때문에 잠시 null
         name: string;
         artist: string;
         image: string;
