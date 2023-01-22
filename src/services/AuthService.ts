@@ -38,10 +38,15 @@ const login = async (provider: string, authenticationCode: string): Promise<Auth
              */
 
             // authentication code로 카카오 토큰 발급 받아오기
-            const kakaoToken: Promise<string> = kakaoAuth.getKakaoToken(authenticationCode);
-            
+            const kakaoToken = await kakaoAuth.getKakaoToken(authenticationCode);
+            if (typeof kakaoToken === 'number') return constant.INVALID_AUTHENTICATION_CODE; // 카카오 토큰 조회 실패시 반환
+
             // 카카오 토큰으로 프로필 조회
-            const kakaoProfile = kakaoAuth.getKakaoProfile(await kakaoToken);
+            const kakaoProfile: any = kakaoAuth.getKakaoProfile(kakaoToken);
+            if (typeof kakaoToken === 'number') return constant.INVALID_AUTHENTICATION_CODE; // 카카오 프로필 조회 실패시 반환
+
+            console.log("카카오 토큰으로 프로필 조회 성공: ", kakaoProfile);
+
 
             // 해당 유저가 이미 가입한 유저인지 확인 - authentication_code 사용
             const findUserQuery = `
@@ -51,6 +56,7 @@ const login = async (provider: string, authenticationCode: string): Promise<Auth
             `;
             const findUserResult = await connection.query(findUserQuery, ['kakao', authenticationCode]);
             user = findUserResult;
+            
 
             // 회원가입이 필요한 유저인 경우
             if (findUserResult.length === 0) {
