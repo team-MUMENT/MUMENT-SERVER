@@ -1,15 +1,13 @@
-import mongoose from 'mongoose';
-
 export interface AgainSelectionInfo {
-    mumentId: mongoose.Types.ObjectId;
+    mumentId: string;
     music: {
-        _id: mongoose.Types.ObjectId;
+        _id: string;
         name: string;
         artist: string;
         image: string;
     };
     user: {
-        _id: mongoose.Types.ObjectId;
+        _id: string;
         name: string;
         image?: string;
     };

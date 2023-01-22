@@ -1,14 +1,12 @@
-import mongoose from 'mongoose';
-
 export interface HomeCandidateInfo {
     music: {
-        _id: mongoose.Types.ObjectId;
+        _id: string;
         name: string;
         artist: string;
         image: string;
     };
     user: {
-        _id: mongoose.Types.ObjectId;
+        _id: string;
         name: string;
         image?: string;
     };

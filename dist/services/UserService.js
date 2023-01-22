@@ -27,6 +27,7 @@ const serviceReturnConstant_1 = __importDefault(require("../modules/serviceRetur
 const Mument_1 = __importDefault(require("../modules/db/Mument"));
 const User_1 = __importDefault(require("../modules/db/User"));
 const cardTagList_1 = __importDefault(require("../modules/cardTagList"));
+const pushHandler_1 = __importDefault(require("../library/pushHandler"));
 /**
  * 내가 작성한 뮤멘트 리스트
  */
@@ -499,9 +500,9 @@ const getUnreadNewsisExist = (userId) => __awaiter(void 0, void 0, void 0, funct
             userId, comparedDate, (0, dayjs_1.default)(curr).format()
         ]);
         if (data.length > 0)
-            return { exist: 1 };
+            return { exist: true };
         else
-            return { exist: 0 };
+            return { exist: false };
     }
     catch (error) {
         console.log(error);
@@ -596,8 +597,8 @@ const getNewsList = (userId) => __awaiter(void 0, void 0, void 0, function* () {
                     id: item.id,
                     type: item.type,
                     userId: item.user_id,
-                    isDeleted: item.is_deleted,
-                    isRead: item.is_read,
+                    isDeleted: Boolean(item.is_deleted),
+                    isRead: Boolean(item.is_read),
                     createdAt: (0, dayjs_1.default)(item.created_at).format('MM/DD HH:mm'),
                     linkId: item.link_id,
                     noticeTitle: item.notice_title,
@@ -619,6 +620,59 @@ const getNewsList = (userId) => __awaiter(void 0, void 0, void 0, function* () {
         connection.release(); // pool connection 회수
     }
 });
+/**
+ * 공지사항 등록 - 기획, 서버에서만 사용
+ */
+const postNotice = (title, content) => __awaiter(void 0, void 0, void 0, function* () {
+    const pool = yield db_1.default;
+    const connection = yield pool.getConnection();
+    //co.sollslsl; // 이거 어디로 가나확인
+    try {
+        connection.beginTransaction(); //롤백을 위해 필요함
+        // 공지사항 추가
+        const createdNotice = yield connection.query('INSERT INTO notice(title, content) VALUES(?, ?)', [title, content]);
+        if ((createdNotice === null || createdNotice === void 0 ? void 0 : createdNotice.affectedRows) === 0)
+            return serviceReturnConstant_1.default.CREATE_NOTICE_FAIL;
+        // 공지사항 row 조회
+        const createdNoticeRow = yield connection.query('SELECT * FROM notice WHERE id=?', [createdNotice.insertId]);
+        const noticeTitle = createdNoticeRow[0].title;
+        const noticeId = createdNoticeRow[0].id;
+        let fcmTokenList = [];
+        // 모든 활성 유저의 소식창에 공지사항 알림 추가        
+        const allActiveUser = yield connection.query('SELECT * FROM user WHERE is_deleted=0');
+        const insertNewsToAllActiveUser = (item, idx) => __awaiter(void 0, void 0, void 0, function* () {
+            yield connection.query(`INSERT INTO news(type, user_id, notice_title, link_id) VALUES('notice', ?, ?, ?)`, [item.id, noticeTitle, noticeId]);
+            if (item.fcm_token && item.fcm_token.length > 0) {
+                fcmTokenList.push(item.fcm_token);
+            }
+        });
+        yield allActiveUser.reduce((acc, curr, index) => __awaiter(void 0, void 0, void 0, function* () {
+            return acc.then(() => insertNewsToAllActiveUser(curr, index));
+        }), Promise.resolve());
+        yield connection.commit();
+        // 새로운 공지사항 활성 유저에게 푸시알림
+        const pushAlarmResult = yield pushHandler_1.default.noticePushAlarmHandler('공지', noticeTitle, fcmTokenList);
+        if (Array.isArray(pushAlarmResult)) {
+            return {
+                pushSuccess: true,
+                noticeId: createdNoticeRow[0].id,
+                pushFailFcmToken: pushAlarmResult
+            };
+        }
+        return {
+            pushSuccess: false,
+            noticeId: createdNoticeRow[0].id
+        };
+    }
+    catch (error) {
+        console.log(error);
+        yield connection.rollback(); // 하나라도 에러시 롤백 (데이터 적용 원상복귀)
+        throw error;
+    }
+    finally {
+        connection.release(); // pool connection 회수
+    }
+});
 exports.default = {
     getMyMumentList,
     getLikeMumentList,
@@ -634,5 +688,6 @@ exports.default = {
     updateUnreadNews,
     deleteNews,
     getNewsList,
+    postNotice,
 };
 //# sourceMappingURL=UserService.js.map

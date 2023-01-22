@@ -1,8 +1,6 @@
-import mongoose from 'mongoose';
-
 export interface BannerSelectionInfo {
     music: {
-        _id: mongoose.Types.ObjectId;
+        _id: string;
         name: string;
         artist: string;
         image: string;

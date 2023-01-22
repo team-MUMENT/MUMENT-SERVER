@@ -456,6 +456,65 @@ const getNewsList = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         res.status(statusCode_1.default.INTERNAL_SERVER_ERROR).send(util_1.default.fail(statusCode_1.default.INTERNAL_SERVER_ERROR, responseMessage_1.default.INTERNAL_SERVER_ERROR));
     }
 });
+/**
+ * @ROUTE GET profile/check
+ * @DESC 프로필 설정이 완료되었는지 확인하는 API입니다.
+ */
+const checkProfileSet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        // auth에서 401이 리턴되지 않았다면 204 리턴
+        res.status(statusCode_1.default.NO_CONTENT).send(util_1.default.success(statusCode_1.default.NO_CONTENT, responseMessage_1.default.COMPLETE_PROFILE_SET));
+    }
+    catch (error) {
+        console.log(error);
+        const slackMessage = {
+            title: 'MUMENT ec2 서버 오류',
+            text: '서버 내부 오류입니다',
+            fields: [
+                {
+                    title: 'Error Stack:',
+                    value: `\`\`\`${error}\`\`\``,
+                },
+            ],
+        };
+        (0, slackWebHook_1.default)(slackMessage);
+        res.status(statusCode_1.default.INTERNAL_SERVER_ERROR).send(util_1.default.fail(statusCode_1.default.INTERNAL_SERVER_ERROR, responseMessage_1.default.INTERNAL_SERVER_ERROR));
+    }
+});
+/**
+ *  @ROUTE POST /notice
+ *  @DESC 공지사항을 등록 후 푸시알림을 날립니다 - 서버, 기획에서만 사용
+ */
+const postNotice = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { title, content } = req.body;
+    try {
+        const data = yield services_1.UserService.postNotice(title, content);
+        if (typeof data === "number" && data === serviceReturnConstant_1.default.CREATE_NOTICE_FAIL) {
+            return res.status(statusCode_1.default.BAD_REQUEST).send(util_1.default.success(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.CREATE_NOTICE_FAIL));
+        }
+        else if (!data.pushSuccess) {
+            return res.status(statusCode_1.default.CREATED).send(util_1.default.success(statusCode_1.default.CREATED, responseMessage_1.default.PUSH_ALARM_ERROR, data));
+        }
+        else if (data.pushSuccess) {
+            return res.status(statusCode_1.default.CREATED).send(util_1.default.success(statusCode_1.default.CREATED, responseMessage_1.default.PUSH_ALARM_SUCCESS, data));
+        }
+    }
+    catch (error) {
+        console.log(error);
+        const slackMessage = {
+            title: 'MUMENT ec2 서버 오류',
+            text: '서버 내부 오류입니다',
+            fields: [
+                {
+                    title: 'Error Stack:',
+                    value: `\`\`\`${error}\`\`\``,
+                },
+            ],
+        };
+        (0, slackWebHook_1.default)(slackMessage);
+        res.status(statusCode_1.default.INTERNAL_SERVER_ERROR).send(util_1.default.fail(statusCode_1.default.INTERNAL_SERVER_ERROR, responseMessage_1.default.INTERNAL_SERVER_ERROR));
+    }
+});
 exports.default = {
     getMyMumentList,
     getLikeMumentList,
@@ -471,5 +530,7 @@ exports.default = {
     updateUnreadNews,
     deleteNews,
     getNewsList,
+    checkProfileSet,
+    postNotice,
 };
 //# sourceMappingURL=UserController.js.map

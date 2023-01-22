@@ -1,7 +1,5 @@
-import mongoose from 'mongoose';
-
 export interface TodaySelectionInfo {
-    mumentId: mongoose.Types.ObjectId;
+    mumentId: string;
     music: {
         _id: string;
         name: string;

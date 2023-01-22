@@ -23,6 +23,7 @@ const User_1 = __importDefault(require("../modules/db/User"));
 const Music_1 = __importDefault(require("../modules/db/Music"));
 const tagTitle_1 = require("../modules/tagTitle");
 const cardTagList_1 = __importDefault(require("../modules/cardTagList"));
+const pushHandler_1 = __importDefault(require("../library/pushHandler"));
 /**
  * 뮤멘트 기록하기
 */
@@ -43,9 +44,12 @@ const createMument = (userId, musicId, mumentCreateDto) => __awaiter(void 0, voi
         ]);
         // 뮤멘트 태그 생성
         yield Mument_1.default.mumentTagCreate(mumentCreateDto.impressionTag, mumentCreateDto.feelingTag, connection, query1Result.insertId);
-        yield connection.commit(); // query1, query2 모두 성공시 커밋(데이터 적용)
+        yield connection.commit();
+        // 몇 번째 뮤멘트 기록인지 count
+        const mumentCount = yield connection.query('SELECT COUNT(*) as count FROM mument WHERE user_id = ?', [userId]);
         const data = {
             _id: query1Result.insertId,
+            count: mumentCount[0].count,
         };
         return data;
     }
@@ -261,6 +265,18 @@ const getMumentHistory = (userId, musicId, writerId, orderBy, limit, offset) => 
             getMumentListResult = yield connection.query(getMumentListQuery, [userId, musicId, userId, limit, offset]);
         }
         else {
+            // 차단된 유저인지 확인
+            const getIsBlockedQuery = `
+            SELECT EXISTS (
+                SELECT *
+                FROM block
+                WHERE blocked_user_id = ?
+                    AND user_id = ?
+            ) as is_blocked;
+            `;
+            const isBlocked = yield connection.query(getIsBlockedQuery, [userId, writerId]);
+            if (isBlocked[0].is_blocked)
+                return serviceReturnConstant_1.default.BLOCKED_USER;
             // 비밀글 볼 수 없게 함
             const getMumentListQuery = `
             SELECT mument.*, user.profile_id as user_name, user.image as user_image,
@@ -403,10 +419,13 @@ const createLike = (mumentId, userId) => __awaiter(void 0, void 0, void 0, funct
     const pool = yield db_1.default;
     const connection = yield pool.getConnection();
     try {
-        yield connection.beginTransaction();
         const findMumentResult = yield Mument_1.default.isExistMument(mumentId, connection);
         if (findMumentResult === false)
             return serviceReturnConstant_1.default.NO_MUMENT;
+        const isBlocked = yield User_1.default.isBlockedUser(userId, mumentId);
+        if (isBlocked)
+            return serviceReturnConstant_1.default.BLOCKED_USER;
+        yield connection.beginTransaction();
         // 좋아요 등록
         const postLikeQuery = `
         INSERT INTO mument.like (user_id, mument_id)
@@ -421,13 +440,16 @@ const createLike = (mumentId, userId) => __awaiter(void 0, void 0, void 0, funct
             AND is_deleted = 0;
         `;
         yield connection.query(updateLikeCountQuery, [mumentId]);
-        yield connection.commit();
         // 결과 조회
         const getLikeResultQuery = `
-        SELECT mument.like.mument_id, mument.like.user_id, mument.mument.like_count
+        SELECT mument.like.mument_id, mument.like.user_id, mument.mument.like_count,
+        mument.mument.user_id AS writer_id, mument.mument.music_id AS music_id,
+        mument.music.name AS music_title
         FROM mument.like
         JOIN mument.mument
             ON mument.mument.id = mument.like.mument_id
+        JOIN mument.music
+            ON mument.music.id = mument.music_id
         WHERE mument.mument.id = ?
             AND mument.mument.is_deleted = 0
             AND mument.like.user_id = ?;
@@ -435,10 +457,23 @@ const createLike = (mumentId, userId) => __awaiter(void 0, void 0, void 0, funct
         const likeResult = yield connection.query(getLikeResultQuery, [mumentId, userId]);
         if (likeResult.length === 0)
             return serviceReturnConstant_1.default.CREATE_FAIL;
+        //좋아요 눌린 뮤멘트 작성자의 소식창에 좋아요 알림 삽입
+        const userData = yield connection.query('SELECT profile_id FROM user WHERE id=?', [userId]);
+        yield connection.query(`INSERT INTO news(type, user_id, like_profile_id, link_id, like_music_title) VALUES('like', ?, ?, ?, ?)`, [likeResult[0].writer_id, userData[0].profile_id, mumentId, likeResult[0].music_title]);
+        yield connection.commit();
+        // 좋아요 눌린 뮤멘트 작성자에게 푸시알림
+        const writerData = yield connection.query('SELECT fcm_token FROM user WHERE id=?', [likeResult[0].writer_id]);
+        const pushAlarmResult = yield pushHandler_1.default.likePushAlarmHandler('좋아요', `${userData[0].profile_id}님이 ${likeResult[0].music_title}에 쓴 뮤멘트를 좋아합니다.`, writerData[0].fcm_token);
         const data = {
             mumentId: likeResult[0].mument_id,
             likeCount: likeResult[0].like_count
         };
+        if (pushAlarmResult === serviceReturnConstant_1.default.LIKE_PUSH_SUCCESS) {
+            Object.assign(data, { pushSuccess: true });
+        }
+        else if (pushAlarmResult === serviceReturnConstant_1.default.LIKE_PUSH_FAIL) {
+            Object.assign(data, { pushSuccess: false });
+        }
         return data;
     }
     catch (error) {
@@ -738,6 +773,7 @@ const createReport = (mumentId, reportCategory, etcContent, userId) => __awaiter
         connection.release(); // pool connection 회수
     }
 });
+// 좋아요 누른 사용자 조회
 const getLikeUserList = (mumentId, userId, limit, offset) => __awaiter(void 0, void 0, void 0, function* () {
     const pool = yield db_1.default;
     const connection = yield pool.getConnection();
@@ -746,6 +782,13 @@ const getLikeUserList = (mumentId, userId, limit, offset) => __awaiter(void 0, v
         const isExistMument = yield Mument_1.default.isExistMument(mumentId, connection);
         if (!isExistMument)
             return serviceReturnConstant_1.default.NO_MUMENT;
+        // 차단한 유저 리스트 조회
+        const blockUser = yield User_1.default.blockedUserList(userId);
+        const blockedUserList = [];
+        blockUser.forEach(element => {
+            blockedUserList.push(element.exist);
+        });
+        const strBlockedUserList = '(' + blockedUserList.toString() + ')';
         // 좋아요를 누른 유저 전부 가져오기
         const getLikeUserQuery = `
         SELECT user.id, user.profile_id, user.image
@@ -753,6 +796,7 @@ const getLikeUserList = (mumentId, userId, limit, offset) => __awaiter(void 0, v
         JOIN user
             ON mument.like.user_id = user.id
         WHERE mument.like.mument_id = ?
+            AND mument.like.user_id NOT IN ${strBlockedUserList}
             AND user.is_deleted = 0
         ORDER BY mument.like.created_at DESC
         LIMIT ? OFFSET ?;
