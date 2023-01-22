@@ -7,6 +7,7 @@ const dbConfig = {
     user: config.user,
     password: config.password,
     database: config.database,
+    connectionLimit: 150,
     charset: 'utf8mb4',
 };
 console.log("create Pool");

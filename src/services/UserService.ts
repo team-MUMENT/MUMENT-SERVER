@@ -629,7 +629,6 @@ const updateUnreadNews  = async (userId: number, unreadNews: number[]): Promise<
 const deleteNews = async (userId: number, newsId: number): Promise<void | number> => {
     const pool: any = await poolPromise;
     const connection = await pool.getConnection();
-    connection.beginTransaction(); //롤백을 위해 필요함
 
     try {
         const updateNewsQuery = `
@@ -641,11 +640,8 @@ const deleteNews = async (userId: number, newsId: number): Promise<void | number
         // update가 되지 않을 경우
         if (updateResult.changedRows !== undefined && updateResult.changedRows == 0) return constant.UPDATE_FAIL;
 
-
-        await connection.commit();
     } catch (error) {
         console.log(error);
-        await connection.rollback(); // 하나라도 에러시 롤백 (데이터 적용 원상복귀)
         throw error;
     } finally {
         connection.release(); // pool connection 회수
@@ -710,7 +706,6 @@ const getNewsList = async (userId: number): Promise<NewsResponseDto[]> => {
 const postNotice = async (title: string, content:string): Promise<NoticePushResponseDto | number> => {
     const pool: any = await poolPromise;
     const connection = await pool.getConnection();
-    //co.sollslsl; // 이거 어디로 가나확인
 
     try {
         connection.beginTransaction(); //롤백을 위해 필요함
