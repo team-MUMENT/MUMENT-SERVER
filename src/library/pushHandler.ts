@@ -18,11 +18,15 @@ const noticePushAlarmHandler = async (pushTitle: string, pushBody: string, fcmTo
         tokens: fcmTokenList,
         android: {
             priority: 'high',
+            notification: {
+                sound: 'default',
+            },
         },
         apns: {
             payload: {
                 aps: {
                     contentAvailable: true,
+                    sound: 'default',
                 },
             },
         },
@@ -72,11 +76,15 @@ const likePushAlarmHandler = async (pushTitle: string, pushBody: string, fcmToke
         token: fcmToken,
         android: {
             priority: 'high',
+            notification: {
+                sound: 'default',
+            },
         },
         apns: {
             payload: {
                 aps: {
                     contentAvailable: true,
+                    sound: 'default',
                 },
             },
         },
