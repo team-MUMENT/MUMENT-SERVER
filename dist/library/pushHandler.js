@@ -53,11 +53,15 @@ const noticePushAlarmHandler = (pushTitle, pushBody, fcmTokenList) => __awaiter(
         tokens: fcmTokenList,
         android: {
             priority: 'high',
+            notification: {
+                sound: 'default',
+            },
         },
         apns: {
             payload: {
                 aps: {
                     contentAvailable: true,
+                    sound: 'default',
                 },
             },
         },
@@ -105,11 +109,15 @@ const likePushAlarmHandler = (pushTitle, pushBody, fcmToken) => __awaiter(void 0
         token: fcmToken,
         android: {
             priority: 'high',
+            notification: {
+                sound: 'default',
+            },
         },
         apns: {
             payload: {
                 aps: {
                     contentAvailable: true,
+                    sound: 'default',
                 },
             },
         },
