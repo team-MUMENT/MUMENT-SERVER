@@ -29,6 +29,8 @@ import { ExistMumentDto } from '../interfaces/mument/ExistMumentRDBDto';
 import { MumentInfoRDB } from '../interfaces/mument/MumentInfoRDB';
 import cardTagList from '../modules/cardTagList';
 import { NoticeInfoRDB } from '../interfaces/mument/NoticeInfoRDB';
+import { NumberBaseResponseDto } from '../interfaces/common/NumberBaseResponseDto';
+import pushHandler from '../library/pushHandler';
 
 
 /** 
@@ -57,10 +59,15 @@ const createMument = async (userId: string, musicId: string, mumentCreateDto: Mu
         // 뮤멘트 태그 생성
         await mumentDB.mumentTagCreate(mumentCreateDto.impressionTag, mumentCreateDto.feelingTag, connection, query1Result.insertId);
         
-        await connection.commit(); // query1, query2 모두 성공시 커밋(데이터 적용)
+        await connection.commit();
+
+
+        // 몇 번째 뮤멘트 기록인지 count
+        const mumentCount = await connection.query('SELECT COUNT(*) as count FROM mument WHERE user_id = ?', [userId]);
         
         const data = {
             _id: query1Result.insertId,
+            count: mumentCount[0].count,
         };
 
         return data;
@@ -516,10 +523,14 @@ const createLike = async (mumentId: string, userId: string): Promise<LikeCountRe
 
         // 결과 조회
         const getLikeResultQuery = `
-        SELECT mument.like.mument_id, mument.like.user_id, mument.mument.like_count
+        SELECT mument.like.mument_id, mument.like.user_id, mument.mument.like_count,
+        mument.mument.user_id AS writer_id, mument.mument.music_id AS music_id,
+        mument.music.name AS music_title
         FROM mument.like
         JOIN mument.mument
             ON mument.mument.id = mument.like.mument_id
+        JOIN mument.music
+            ON mument.music.id = mument.music_id
         WHERE mument.mument.id = ?
             AND mument.mument.is_deleted = 0
             AND mument.like.user_id = ?;
@@ -529,13 +540,40 @@ const createLike = async (mumentId: string, userId: string): Promise<LikeCountRe
 
         if (likeResult.length === 0) return constant.CREATE_FAIL;
 
+
+        //좋아요 눌린 뮤멘트 작성자의 소식창에 좋아요 알림 삽입
+        const userData = await connection.query('SELECT profile_id FROM user WHERE id=?', [userId]);
+
+        await connection.query(
+            `INSERT INTO news(type, user_id, like_profile_id, link_id, like_music_title) VALUES('like', ?, ?, ?, ?)`, 
+            [likeResult[0].writer_id, userData[0].profile_id, mumentId, likeResult[0].music_title]
+        );
+
+
         await connection.commit();
+
+
+        // 좋아요 눌린 뮤멘트 작성자에게 푸시알림
+        const writerData = await connection.query('SELECT fcm_token FROM user WHERE id=?', [likeResult[0].writer_id]);
+        
+        const pushAlarmResult = await pushHandler.likePushAlarmHandler(
+            '좋아요', 
+            `${userData[0].profile_id}님이 ${likeResult[0].music_title}에 쓴 뮤멘트를 좋아합니다.`, 
+            writerData[0].fcm_token
+        );
 
         const data: LikeCountResponeDto = {
             mumentId: likeResult[0].mument_id,
             likeCount: likeResult[0].like_count
         };
 
+        if (pushAlarmResult === constant.LIKE_PUSH_SUCCESS) {
+            Object.assign(data, { pushSuccess: true });
+            
+        } else if (pushAlarmResult === constant.LIKE_PUSH_FAIL) {
+            Object.assign(data, { pushSuccess: false });
+        }
+        
         return data;
     } catch (error) {
         console.log(error);

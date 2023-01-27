@@ -80,11 +80,29 @@ const blockedUserList = (userId) => __awaiter(void 0, void 0, void 0, function* 
     const blockedUserList = yield pool_1.default.queryValue(selectBlockQuery, [userId]);
     return blockedUserList;
 });
+// 뮤멘트 작성자에게 차단된 유저인지 확인
+const isBlockedUser = (userId, mumentId) => __awaiter(void 0, void 0, void 0, function* () {
+    const query = `
+    SELECT EXISTS(
+        SELECT *
+        FROM block
+        JOIN mument
+            ON mument.user_id = block.user_id
+        WHERE block.blocked_user_id = ?
+            AND mument.id = ?
+            AND mument.is_deleted = 0
+    ) as is_blocked;    
+    `;
+    const result = yield pool_1.default.queryValue(query, [userId, mumentId]);
+    const isBlocked = result[0].is_blocked;
+    return isBlocked;
+});
 exports.default = {
     userInfo,
     myMumentList,
     myLikeMumentList,
     blockedUserList,
     isExistUser,
+    isBlockedUser,
 };
 //# sourceMappingURL=User.js.map

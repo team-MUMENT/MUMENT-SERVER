@@ -43,5 +43,9 @@ router.post('/leave-category', [
 ], auth_1.default, controllers_1.UserController.postLeaveCategory);
 // 유저 탈퇴
 router.delete('/', auth_1.default, controllers_1.UserController.deleteUser);
+// 프로필 설정 완료 조회
+router.get('/profile/check', auth_1.default, controllers_1.UserController.checkProfileSet);
+// 공지사항 등록 - 서버, 기획에서만 사용
+router.post('/notice', controllers_1.UserController.postNotice);
 exports.default = router;
 //# sourceMappingURL=UserRouter.js.map

@@ -16,6 +16,7 @@ const dayjs_1 = __importDefault(require("dayjs"));
 const axios_1 = __importDefault(require("axios"));
 const serviceReturnConstant_1 = __importDefault(require("../modules/serviceReturnConstant"));
 const db_1 = __importDefault(require("../loaders/db"));
+const User_1 = __importDefault(require("../modules/db/User"));
 const Music_1 = __importDefault(require("../modules/db/Music"));
 const cardTagList_1 = __importDefault(require("../modules/cardTagList"));
 const qs = require('querystring');
@@ -144,6 +145,24 @@ const getMumentList = (musicId, userId, isLikeOrder, limit, offset) => __awaiter
         const music = yield connection.query(Music_1.default.SearchMusic(musicId));
         if (music.length === 0)
             return serviceReturnConstant_1.default.NO_MUSIC;
+        // 자신이 차단한, 자신을 차단한 유저 리스트
+        const blockUserList = [];
+        // 자신이 차단한 유저 반환
+        const blockUserResult = yield User_1.default.blockedUserList(userId);
+        blockUserResult.forEach(element => {
+            blockUserList.push(element.exist);
+        });
+        // 자신을 차단한 유저 반환
+        const getBlockMeUserQuery = `
+        SELECT user_id
+        FROM block
+        WHERE blocked_user_id = ?
+        `;
+        const blockMeUser = yield connection.query(getBlockMeUserQuery, [userId]);
+        blockMeUser.forEach(element => {
+            blockUserList.push(element.user_id);
+        });
+        const strBlockUserList = '(' + blockUserList.toString() + ')';
         let originalMumentList = [];
         switch (isLikeOrder) {
             case true: { // 좋아요순 정렬
@@ -153,6 +172,7 @@ const getMumentList = (musicId, userId, isLikeOrder, limit, offset) => __awaiter
                 JOIN user
                     ON mument.user_id = user.id
                 WHERE mument.music_id = ?
+                    AND mument.user_id NOT IN ${strBlockUserList}
                     AND mument.is_deleted = 0  
                     AND user.is_deleted = 0
                 ORDER BY mument.like_count DESC
@@ -167,6 +187,7 @@ const getMumentList = (musicId, userId, isLikeOrder, limit, offset) => __awaiter
                 JOIN user
                     ON mument.user_id = user.id
                 WHERE mument.music_id = ?
+                    AND mument.user_id NOT IN ${strBlockUserList}
                     AND mument.is_deleted = 0  
                     AND user.is_deleted = 0
                 ORDER BY mument.created_at DESC

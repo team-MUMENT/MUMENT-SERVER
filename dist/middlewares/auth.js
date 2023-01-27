@@ -50,7 +50,7 @@ exports.default = (req, res, next) => __awaiter(void 0, void 0, void 0, function
                     return res.status(statusCode_1.default.UNAUTHORIZED).send(util_1.default.fail(statusCode_1.default.UNAUTHORIZED, responseMessage_1.default.TOKEN_UNKNOWN_ERROR));
                 }
                 case serviceReturnConstant_1.default.NOT_PROFILE_SET_TOKEN: {
-                    return res.status(statusCode_1.default.BAD_REQUEST).send(util_1.default.fail(statusCode_1.default.UNAUTHORIZED, responseMessage_1.default.PROFILE_SET_REQUIRED));
+                    return res.status(statusCode_1.default.BAD_REQUEST).send(util_1.default.fail(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.PROFILE_SET_REQUIRED));
                 }
             }
         }

@@ -6,6 +6,7 @@ import { UserService } from '../services';
 import sendMessage, { SlackMessageFormat } from '../library/slackWebHook';
 import constant from '../modules/serviceReturnConstant';
 import { validationResult } from 'express-validator';
+import { NoticePushResponseDto } from '../interfaces/user/NoticePushResponseDto';
 
 /**
  * @ROUTE POST /profile
@@ -540,6 +541,45 @@ const checkProfileSet = async (req: Request, res: Response) => {
 }
 
 
+/**
+ *  @ROUTE POST /notice
+ *  @DESC 공지사항을 등록 후 푸시알림을 날립니다 - 서버, 기획에서만 사용
+ */
+const postNotice = async (req: Request, res: Response) => {
+    const { title, content } = req.body;
+
+    try {
+        const data = await UserService.postNotice(title, content);
+
+        if (typeof data === "number" && data === constant.CREATE_NOTICE_FAIL) {
+            return res.status(statusCode.BAD_REQUEST).send(util.success(statusCode.BAD_REQUEST, message.CREATE_NOTICE_FAIL));
+
+        } else if(!(data as NoticePushResponseDto).pushSuccess) {
+            return res.status(statusCode.CREATED).send(util.success(statusCode.CREATED, message.PUSH_ALARM_ERROR, data));
+
+        } else if ((data as NoticePushResponseDto).pushSuccess) {
+            return res.status(statusCode.CREATED).send(util.success(statusCode.CREATED, message.PUSH_ALARM_SUCCESS, data));
+        }
+    } catch (error) {
+        console.log(error);
+
+        const slackMessage: SlackMessageFormat = {
+            title: 'MUMENT ec2 서버 오류',
+            text: '서버 내부 오류입니다',
+            fields: [
+                {
+                    title: 'Error Stack:',
+                    value: `\`\`\`${error}\`\`\``,
+                },
+            ],
+        };
+        sendMessage(slackMessage);
+
+        res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
+    }
+};
+
+
 export default {
     getMyMumentList,
     getLikeMumentList,
@@ -556,4 +596,5 @@ export default {
     deleteNews,
     getNewsList,
     checkProfileSet,
+    postNotice,
 };

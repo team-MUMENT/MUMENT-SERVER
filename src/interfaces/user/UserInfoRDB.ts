@@ -12,4 +12,5 @@ export interface UserInfoRDB {
     gender?: string | null;
     age_render?: string | null;
     email?: string | null;
+    fcm_token?: string | null;
 }

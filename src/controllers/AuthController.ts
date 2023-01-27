@@ -13,15 +13,19 @@ import { AuthTokenResponseDto } from '../interfaces/auth/AuthTokenResponseDto';
  * @DESC match user profileId and password
  */
 const login = async (req: Request, res: Response) => {
-    const { provider, authentication_code } = req.body;
+    const { provider, authentication_code, fcm_token } = req.body;
 
     try {
-        const data = await AuthService.login(provider, authentication_code);
+        const data = await AuthService.login(provider, authentication_code, fcm_token);
 
         switch (data) {
             case constant.NO_AUTHENTICATION_CODE: {
                 // 공통 - authentication code가 없는 경우
                 return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.NO_AUTHENTICATION_CODE));
+            }
+            case constant.INVALID_AUTHENTICATION_CODE: {
+                // 공통 - authentication code로 카카오/애플 api 요청이 불가한 경우
+                return res.status(statusCode.UNAUTHORIZED).send(util.fail(statusCode.UNAUTHORIZED, message.INVALID_AUTHENTICATION_CODE));
             }
             case constant.NO_IDENTITY_TOKEN_SUB: {
                 // 애플 - authorization code에 sub값이 없을 때

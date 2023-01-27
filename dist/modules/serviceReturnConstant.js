@@ -15,12 +15,14 @@ const constant = {
     NO_HOME_CONTENT: -15,
     PRIVATE_MUMENT: -16,
     NO_NOTICE: -17,
+    CREATE_NOTICE_FAIL: -18,
     // apple
     NO_IDENTITY_TOKEN_SUB: -50,
     APPLE_UNAUTHORIZED: -51,
     APPLE_INTERNAL_SERVER_ERROR: -51,
     // kakao
     NO_AUTHENTICATION_CODE: -60,
+    INVALID_AUTHENTICATION_CODE: -61,
     // jwt token
     TOKEN_EXPIRED: -100,
     TOKEN_INVALID: -101,
@@ -31,6 +33,12 @@ const constant = {
     // 유저 차단
     ALREADY_BLOCK: -200,
     SELF_BLOCK: -201,
+    BLOCKED_USER: -202,
+    // push alarm
+    NOTICE_PUSH_FAIL: -300,
+    NOTICE_PUSH_SUCCESS: -301,
+    LIKE_PUSH_FAIL: -302,
+    LIKE_PUSH_SUCCESS: -303, // 좋아요 푸시 알림 성공
 };
 exports.default = constant;
 //# sourceMappingURL=serviceReturnConstant.js.map

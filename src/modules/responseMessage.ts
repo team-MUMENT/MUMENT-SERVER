@@ -50,6 +50,7 @@ const message = {
     READ_ISFIRST_SUCCESS: '뮤멘트 처음/다시 조회 성공',
     READ_NOTICE_LIST_SUCCESS: '공지사항 리스트 조회 성공',
     READ_NOTICE_DETAIL_SUCCESS: '공지사항 상세보기 성공',
+    CREATE_NOTICE_FAIL: '공지사항 등록 실패',
     READ_LIKE_USER_SUCCESS: '좋아요한 사용자 조회 성공',
 
     // home
@@ -75,6 +76,7 @@ const message = {
     NOT_CORRECT_TOKEN: 'refresh token이 일치하지 않습니다',
     RENEW_ACCESS_TOKEN: 'access token 갱신 성공',
     RENEW_ACCESS_REFRESH_TOKEN: 'access token과 refresh token 갱신 성공',
+    INVALID_AUTHENTICATION_CODE: '잘못된 AUTHENTICATION CODE 입니다.',
 
     //JWT
     NULL_VALUE_TOKEN: 'request-header에 토큰이 없습니다',
@@ -87,6 +89,10 @@ const message = {
     //신고 제재
     REPORT_RESTRICTION_USER_SUCCESS: '신고 제재 유무 조회 성공',
     CREATE_REPORT_SUCCESS: '뮤멘트 신고하기 성공',
+
+    //push alarm
+    PUSH_ALARM_SUCCESS: '공지사항 등록, 소식창 등록 성공 / 푸시알림 성공',
+    PUSH_ALARM_ERROR: '공지사항 등록, 소식창 등록 성공 / 푸시알림 실패',
 };
 
 export default message;

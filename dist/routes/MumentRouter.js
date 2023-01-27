@@ -17,7 +17,7 @@ router.put('/:mumentId', [
     (0, express_validator_1.body)('isFirst').notEmpty(),
 ], auth_1.default, controllers_1.MumentController.updateMument);
 // 히스토리 조회
-router.get('/:musicId/:userId/history', [
+router.get('/:userId/:musicId/history', [
     (0, express_validator_1.param)('musicId').toInt().isInt(),
     (0, express_validator_1.param)('userId').toInt().isInt(),
     (0, express_validator_1.query)('default').isString().isIn(['Y', 'N']),

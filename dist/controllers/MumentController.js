@@ -179,7 +179,7 @@ const getIsFirst = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
  * @DESC get mument history
  */
 const getMumentHistory = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { musicId, userId: writerId } = req.params;
+    const { userId: writerId, musicId } = req.params;
     const userId = req.body.userId;
     const { default: orderOption, limit, offset } = req.query;
     const error = (0, express_validator_1.validationResult)(req);
@@ -200,9 +200,13 @@ const getMumentHistory = (req, res) => __awaiter(void 0, void 0, void 0, functio
     ;
     try {
         const data = yield services_1.MumentService.getMumentHistory(userId, musicId, writerId, orderBy, limit, offset);
-        // 곡 검색 결과가 없을 경우
         if (data === serviceReturnConstant_1.default.NO_MUSIC) {
-            res.status(statusCode_1.default.NOT_FOUND).send(util_1.default.fail(statusCode_1.default.NOT_FOUND, responseMessage_1.default.NOT_FOUND));
+            // 곡 검색 결과가 없을 경우
+            return res.status(statusCode_1.default.NOT_FOUND).send(util_1.default.fail(statusCode_1.default.NOT_FOUND, responseMessage_1.default.NOT_FOUND));
+        }
+        else if (data === serviceReturnConstant_1.default.BLOCKED_USER) {
+            // 차단된 유저는 히스토리 조회 불가
+            return res.status(statusCode_1.default.BAD_REQUEST).send(util_1.default.fail(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.BLOCKED_USER));
         }
         res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.READ_MUMENT_HISTORY_SUCCESS, data));
     }
@@ -239,11 +243,15 @@ const createLike = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         switch (data) {
             case serviceReturnConstant_1.default.CREATE_FAIL: {
                 // 업데이트가 실패했을 때
-                res.status(statusCode_1.default.BAD_REQUEST).send(util_1.default.fail(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.CREATE_LIKE_FAIL));
+                return res.status(statusCode_1.default.BAD_REQUEST).send(util_1.default.fail(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.CREATE_LIKE_FAIL));
             }
             case serviceReturnConstant_1.default.NO_MUMENT: {
                 // 존재하지 않는 뮤멘트일 때
-                res.status(statusCode_1.default.BAD_REQUEST).send(util_1.default.fail(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.NO_MUMENT_ID));
+                return res.status(statusCode_1.default.BAD_REQUEST).send(util_1.default.fail(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.NO_MUMENT_ID));
+            }
+            case serviceReturnConstant_1.default.BLOCKED_USER: {
+                // 차단된 유저일 때
+                return res.status(statusCode_1.default.BAD_REQUEST).send(util_1.default.fail(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.BLOCKED_USER));
             }
         }
         res.status(statusCode_1.default.CREATED).send(util_1.default.success(statusCode_1.default.CREATED, responseMessage_1.default.CREATE_LIKE_SUCCESS, data));
