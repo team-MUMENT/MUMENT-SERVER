@@ -13,12 +13,23 @@ import { AuthTokenResponseDto } from '../interfaces/auth/AuthTokenResponseDto';
  * @DESC match user profileId and password
  */
 const login = async (req: Request, res: Response) => {
-    const { provider, authentication_code, fcm_token } = req.body;
+    const { provider, authentication_code, kakaoRefresh, fcm_token } = req.body;
 
     try {
-        const data = await AuthService.login(provider, authentication_code, fcm_token);
+        let data: number | AuthTokenResponseDto = 0;
+
+        if (kakaoRefresh) {
+            data = await AuthService.login(provider, authentication_code, kakaoRefresh, fcm_token);
+        } else {
+            data = await AuthService.login(provider, authentication_code, null, fcm_token);
+        }
+
 
         switch (data) {
+            case 0: {
+
+            }
+
             case constant.NO_AUTHENTICATION_CODE: {
                 // 공통 - authentication code가 없는 경우
                 return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.NO_AUTHENTICATION_CODE));
