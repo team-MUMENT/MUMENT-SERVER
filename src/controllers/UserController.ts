@@ -517,9 +517,13 @@ const getNewsList = async (req: Request, res: Response) => {
  * @DESC 프로필 설정이 완료되었는지 확인하는 API입니다.
  */
 const checkProfileSet = async (req: Request, res: Response) => {
+    const userId = req.body.userId;
+
     try {
-        // auth에서 401이 리턴되지 않았다면 204 리턴
-        res.status(statusCode.NO_CONTENT).send(util.success(statusCode.NO_CONTENT, message.COMPLETE_PROFILE_SET));
+        const data = await UserService.checkProfileSet(userId);
+
+        if (data) return res.status(statusCode.NO_CONTENT).send(util.success(statusCode.NO_CONTENT, message.COMPLETE_PROFILE_SET));
+        else return res.status(statusCode.OK).send(util.success(statusCode.OK, message.PROFILE_SET_REQUIRED));        
     } catch (error) {
         console.log(error);
 
