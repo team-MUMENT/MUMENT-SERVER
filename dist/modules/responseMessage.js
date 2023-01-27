@@ -33,6 +33,8 @@ const message = {
     DELETE_NEWS_SUCCESS: '소식창 알림 제거 성공',
     READ_UNREAD_NEWS_SUCCESS: '소식창 새로운 알림 읽음 처리 성공',
     READ_UNREAD_NEWS_IS_EXIST_SUCCESS: '새로 추가된 알림이 있는지 조회 성공',
+    COMPLETE_PROFILE_SET: '프로필 설정 완료된 유저입니다',
+    BLOCKED_USER: '차단된 유저입니다',
     // mument
     NO_MUMENT_ID: '해당 아이디의 뮤멘트가 존재하지 않습니다',
     CREATE_MUMENT_SUCCESS: '뮤멘트 기록하기 성공',
@@ -48,6 +50,7 @@ const message = {
     READ_ISFIRST_SUCCESS: '뮤멘트 처음/다시 조회 성공',
     READ_NOTICE_LIST_SUCCESS: '공지사항 리스트 조회 성공',
     READ_NOTICE_DETAIL_SUCCESS: '공지사항 상세보기 성공',
+    CREATE_NOTICE_FAIL: '공지사항 등록 실패',
     READ_LIKE_USER_SUCCESS: '좋아요한 사용자 조회 성공',
     // home
     GET_RANDOM_MUMENT_SUCCESS: '랜덤 뮤멘트 리스트 조회 성공',
@@ -70,6 +73,7 @@ const message = {
     NOT_CORRECT_TOKEN: 'refresh token이 일치하지 않습니다',
     RENEW_ACCESS_TOKEN: 'access token 갱신 성공',
     RENEW_ACCESS_REFRESH_TOKEN: 'access token과 refresh token 갱신 성공',
+    INVALID_AUTHENTICATION_CODE: '잘못된 AUTHENTICATION CODE 입니다.',
     //JWT
     NULL_VALUE_TOKEN: 'request-header에 토큰이 없습니다',
     TOKEN_EXPIRED: '토큰이 만료되었습니다',
@@ -80,6 +84,9 @@ const message = {
     //신고 제재
     REPORT_RESTRICTION_USER_SUCCESS: '신고 제재 유무 조회 성공',
     CREATE_REPORT_SUCCESS: '뮤멘트 신고하기 성공',
+    //push alarm
+    PUSH_ALARM_SUCCESS: '공지사항 등록, 소식창 등록 성공 / 푸시알림 성공',
+    PUSH_ALARM_ERROR: '공지사항 등록, 소식창 등록 성공 / 푸시알림 실패',
 };
 exports.default = message;
 //# sourceMappingURL=responseMessage.js.map

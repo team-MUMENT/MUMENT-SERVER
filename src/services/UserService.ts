@@ -24,6 +24,10 @@ import { NewsInfoRDB } from '../interfaces/user/NewsInfoRDB';
 import { NewsResponseDto } from '../interfaces/user/NewsResponseDto';
 import { ReportRestrictionInfoRDB } from '../interfaces/user/ReportRestrictionInfoRDB';
 import { ReportRestrictResponseDto } from '../interfaces/user/ReportRestrictResponseDto';
+import { NoticeInfoRDB } from '../interfaces/mument/NoticeInfoRDB';
+import pushHandler from '../library/pushHandler';
+import { NoticePushResponseDto } from '../interfaces/user/NoticePushResponseDto';
+import { BooleanBaseResponseDto } from '../interfaces/common/BooleanBaseResponseDto';
 
 
 /**
@@ -558,7 +562,7 @@ const getIsReportRestrictedUser = async (userId: number): Promise<ReportRestrict
 /**
  * 소식창에 안읽은 알림이 있는지 조회
  */
-const getUnreadNewsisExist = async (userId: number): Promise<NumberBaseResponseDto> => {
+const getUnreadNewsisExist = async (userId: number): Promise<BooleanBaseResponseDto> => {
     const pool: any = await poolPromise;
     const connection = await pool.getConnection();
 
@@ -575,8 +579,8 @@ const getUnreadNewsisExist = async (userId: number): Promise<NumberBaseResponseD
             userId,  comparedDate, dayjs(curr).format()
         ]);
 
-        if (data.length > 0) return { exist: 1 };
-        else return { exist: 0 };
+        if (data.length > 0) return { exist: true };
+        else return { exist: false };
 
     } catch (error) {
         console.log(error);
@@ -625,7 +629,6 @@ const updateUnreadNews  = async (userId: number, unreadNews: number[]): Promise<
 const deleteNews = async (userId: number, newsId: number): Promise<void | number> => {
     const pool: any = await poolPromise;
     const connection = await pool.getConnection();
-    connection.beginTransaction(); //롤백을 위해 필요함
 
     try {
         const updateNewsQuery = `
@@ -637,11 +640,8 @@ const deleteNews = async (userId: number, newsId: number): Promise<void | number
         // update가 되지 않을 경우
         if (updateResult.changedRows !== undefined && updateResult.changedRows == 0) return constant.UPDATE_FAIL;
 
-
-        await connection.commit();
     } catch (error) {
         console.log(error);
-        await connection.rollback(); // 하나라도 에러시 롤백 (데이터 적용 원상복귀)
         throw error;
     } finally {
         connection.release(); // pool connection 회수
@@ -675,8 +675,8 @@ const getNewsList = async (userId: number): Promise<NewsResponseDto[]> => {
                     id: item.id,
                     type: item.type,
                     userId: item.user_id,
-                    isDeleted: item.is_deleted,
-                    isRead: item.is_read,
+                    isDeleted: Boolean(item.is_deleted),
+                    isRead: Boolean(item.is_read),
                     createdAt: dayjs(item.created_at).format('MM/DD HH:mm'),
                     linkId: item.link_id,
                     noticeTitle: item.notice_title,
@@ -700,6 +700,76 @@ const getNewsList = async (userId: number): Promise<NewsResponseDto[]> => {
 };
 
 
+/**
+ * 공지사항 등록 - 기획, 서버에서만 사용
+ */
+const postNotice = async (title: string, content:string): Promise<NoticePushResponseDto | number> => {
+    const pool: any = await poolPromise;
+    const connection = await pool.getConnection();
+
+    try {
+        connection.beginTransaction(); //롤백을 위해 필요함
+
+        // 공지사항 추가
+        const createdNotice = await connection.query('INSERT INTO notice(title, content) VALUES(?, ?)', [title, content]);
+        if (createdNotice?.affectedRows === 0) return constant.CREATE_NOTICE_FAIL;
+
+
+        // 공지사항 row 조회
+        const createdNoticeRow: NoticeInfoRDB[] = await connection.query(
+            'SELECT * FROM notice WHERE id=?', [createdNotice.insertId]
+        );
+        const noticeTitle = createdNoticeRow[0].title;
+        const noticeId = createdNoticeRow[0].id;
+        let fcmTokenList: string[] = [];
+
+
+        // 모든 활성 유저의 소식창에 공지사항 알림 추가        
+        const allActiveUser: UserInfoRDB[] = await connection.query('SELECT * FROM user WHERE is_deleted=0');
+
+        const insertNewsToAllActiveUser = async (item: UserInfoRDB, idx: number) => {
+            await connection.query(
+                `INSERT INTO news(type, user_id, notice_title, link_id) VALUES('notice', ?, ?, ?)`, [item.id, noticeTitle, noticeId]
+            );
+
+            if (item.fcm_token && item.fcm_token.length > 0) {
+                fcmTokenList.push(item.fcm_token);
+            }
+        };
+
+        await allActiveUser.reduce(async (acc, curr, index) => {
+            return acc.then(() => insertNewsToAllActiveUser(curr, index));
+        }, Promise.resolve());
+        
+
+        await connection.commit();
+
+
+        // 새로운 공지사항 활성 유저에게 푸시알림
+        const pushAlarmResult = await pushHandler.noticePushAlarmHandler('공지', noticeTitle, fcmTokenList);
+        if (Array.isArray(pushAlarmResult)) {
+            return {
+                pushSuccess: true,
+                noticeId: createdNoticeRow[0].id,
+                pushFailFcmToken: pushAlarmResult
+            };
+        } 
+        
+        return {
+            pushSuccess: false,
+            noticeId: createdNoticeRow[0].id
+        };
+
+    } catch (error) {
+        console.log(error);
+        await connection.rollback(); // 하나라도 에러시 롤백 (데이터 적용 원상복귀)
+        throw error;
+    } finally {
+        connection.release(); // pool connection 회수
+    }
+};
+
+
 export default {
     getMyMumentList,
     getLikeMumentList,
@@ -715,4 +785,5 @@ export default {
     updateUnreadNews,
     deleteNews,
     getNewsList,
+    postNotice,
 };

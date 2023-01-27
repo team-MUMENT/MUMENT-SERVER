@@ -39,5 +39,10 @@ exports.default = {
     s3AccessKey: process.env.S3_ACCESS_KEY,
     s3SecretKey: process.env.S3_SECRET_KEY,
     bucketName: process.env.BUCKET_NAME,
+    /**
+     * Push alarm
+     */
+    noticePushAlarmImage: process.env.NOTICE_PUSH_ALARM_IMAGE,
+    likePushAlarmImage: process.env.LIKE_PUSH_ALARM_IMAGE,
 };
 //# sourceMappingURL=index.js.map

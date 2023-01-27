@@ -7,7 +7,8 @@ const dbConfig = {
     user: config.user,
     password: config.password,
     database: config.database,
-    connectionLimit: 50 // 최대 connection 개수
+    connectionLimit: 150,
+    charset: 'utf8mb4',
 };
 console.log("create Pool");
 

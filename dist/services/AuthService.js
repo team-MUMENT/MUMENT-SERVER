@@ -23,13 +23,14 @@ const path = require('path');
 /**
 * 로그인/회원가입
 */
-const login = (provider, authenticationCode) => __awaiter(void 0, void 0, void 0, function* () {
+const login = (provider, authenticationCode, fcm_token) => __awaiter(void 0, void 0, void 0, function* () {
     const pool = yield db_1.default;
     const connection = yield pool.getConnection();
     // authentication code가 없는 경우
     if (!authenticationCode)
         return serviceReturnConstant_1.default.NO_AUTHENTICATION_CODE;
     try {
+        yield connection.beginTransaction(); // 트랜잭션 적용 시작
         let user = undefined;
         let type = 'login'; // 회원가입이면 -> 'signUp' 재할당, 로그인이면 -> 'login'
         if (provider === 'kakao') {
@@ -37,9 +38,13 @@ const login = (provider, authenticationCode) => __awaiter(void 0, void 0, void 0
              * 카카오 로그인/회원가입
              */
             // authentication code로 카카오 토큰 발급 받아오기
-            const kakaoToken = kakaoAuth_1.default.getKakaoToken(authenticationCode);
+            const kakaoToken = yield kakaoAuth_1.default.getKakaoToken(authenticationCode);
+            if (typeof kakaoToken === 'number')
+                return serviceReturnConstant_1.default.INVALID_AUTHENTICATION_CODE; // 카카오 토큰 조회 실패시 반환
             // 카카오 토큰으로 프로필 조회
-            const kakaoProfile = kakaoAuth_1.default.getKakaoProfile(yield kakaoToken);
+            const kakaoProfile = kakaoAuth_1.default.getKakaoProfile(kakaoToken);
+            if (typeof kakaoToken === 'number')
+                return serviceReturnConstant_1.default.INVALID_AUTHENTICATION_CODE; // 카카오 프로필 조회 실패시 반환
             // 해당 유저가 이미 가입한 유저인지 확인 - authentication_code 사용
             const findUserQuery = `
                 SELECT *
@@ -122,13 +127,15 @@ const login = (provider, authenticationCode) => __awaiter(void 0, void 0, void 0
         // 발급된 refresh token db에 update
         const updateTokenQuery = `
             UPDATE user
-            SET refresh_token = ?
+            SET refresh_token = ?, fcm_token = ?
             WHERE id = ? AND is_deleted = 0;
         `;
         yield connection.query(updateTokenQuery, [
             refreshToken,
+            fcm_token === undefined ? null : fcm_token,
             user.id,
         ]);
+        yield connection.commit();
         // 새로 발급한 jwt token과 유저 id, 로그인/회원가입 타입 return
         const data = {
             _id: user.id.toString(),

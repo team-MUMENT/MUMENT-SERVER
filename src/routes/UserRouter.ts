@@ -58,4 +58,7 @@ router.delete('/', auth, UserController.deleteUser);
 // 프로필 설정 완료 조회
 router.get('/profile/check', auth, UserController.checkProfileSet);
 
+// 공지사항 등록 - 서버, 기획에서만 사용
+router.post('/notice', UserController.postNotice);
+
 export default router;

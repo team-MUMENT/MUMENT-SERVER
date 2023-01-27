@@ -172,3 +172,6 @@ out
 
 # Apple login
 src/config/apple
+
+# firebase
+src/config/serviceAccountKey.json

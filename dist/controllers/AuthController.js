@@ -23,13 +23,17 @@ const slackWebHook_1 = __importDefault(require("../library/slackWebHook"));
  * @DESC match user profileId and password
  */
 const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { provider, authentication_code } = req.body;
+    const { provider, authentication_code, fcm_token } = req.body;
     try {
-        const data = yield services_1.AuthService.login(provider, authentication_code);
+        const data = yield services_1.AuthService.login(provider, authentication_code, fcm_token);
         switch (data) {
             case serviceReturnConstant_1.default.NO_AUTHENTICATION_CODE: {
                 // 공통 - authentication code가 없는 경우
                 return res.status(statusCode_1.default.BAD_REQUEST).send(util_1.default.fail(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.NO_AUTHENTICATION_CODE));
+            }
+            case serviceReturnConstant_1.default.INVALID_AUTHENTICATION_CODE: {
+                // 공통 - authentication code로 카카오/애플 api 요청이 불가한 경우
+                return res.status(statusCode_1.default.UNAUTHORIZED).send(util_1.default.fail(statusCode_1.default.UNAUTHORIZED, responseMessage_1.default.INVALID_AUTHENTICATION_CODE));
             }
             case serviceReturnConstant_1.default.NO_IDENTITY_TOKEN_SUB: {
                 // 애플 - authorization code에 sub값이 없을 때
