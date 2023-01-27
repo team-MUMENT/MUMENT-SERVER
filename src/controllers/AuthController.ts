@@ -13,17 +13,10 @@ import { AuthTokenResponseDto } from '../interfaces/auth/AuthTokenResponseDto';
  * @DESC match user profileId and password
  */
 const login = async (req: Request, res: Response) => {
-    const { provider, authentication_code, kakao_refresh, fcm_token } = req.body;
+    const { provider, authentication_code, fcm_token } = req.body;
 
     try {
-        let data: number | AuthTokenResponseDto = 0;
-
-        if (kakao_refresh) {
-            data = await AuthService.login(provider, authentication_code, kakao_refresh, fcm_token);
-        } else {
-            data = await AuthService.login(provider, authentication_code, null, fcm_token);
-        }
-
+        const data = await AuthService.login(provider, authentication_code, fcm_token);
 
         switch (data) {
             case constant.NO_AUTHENTICATION_CODE: {
@@ -37,10 +30,6 @@ const login = async (req: Request, res: Response) => {
             case constant.NO_IDENTITY_TOKEN_SUB: {
                 // 애플 - authorization code에 sub값이 없을 때
                 return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.NO_IDENTITY_TOKEN_SUB));
-            }
-            case constant.NO_KAKAO_REFRESH_TOKEN: {
-                // 카카오 - 리프래쉬 토큰값이 없을 때
-                return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.NO_KAKAO_REFRESH_TOKEN));
             }
             case constant.NO_USER: {
                 // 카카오 - 회원가입 진행 중 유저가 생성되지 않았을 때
