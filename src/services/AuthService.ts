@@ -17,7 +17,7 @@ const path = require('path');
 /**
 * 로그인/회원가입
 */
-const login = async (provider: string, authenticationCode: string, kakaoRefresh: string | null, fcm_token: string): Promise<AuthTokenResponseDto | number> => {
+const login = async (provider: string, authenticationCode: string, fcm_token: string): Promise<AuthTokenResponseDto | number> => {
     const pool: any = await poolPromise;
     const connection = await pool.getConnection();
     
@@ -32,8 +32,6 @@ const login = async (provider: string, authenticationCode: string, kakaoRefresh:
             
 
         if (provider === 'kakao') {
-            if (!kakaoRefresh) return constant.NO_KAKAO_REFRESH_TOKEN;
-
             /**
              * 카카오 로그인/회원가입
              */
@@ -42,6 +40,9 @@ const login = async (provider: string, authenticationCode: string, kakaoRefresh:
             // 카카오 토큰으로 프로필 조회
             const kakaoProfile: any = kakaoAuth.getKakaoProfile(kakaoToken);
 
+            // 유저를 식별할 수 있는 id값
+            const kakaoId = kakaoProfile.id;
+
 
             // 해당 유저가 이미 가입한 유저인지 확인 - kakao refresh token 사용
             const findUserQuery = `
@@ -49,7 +50,7 @@ const login = async (provider: string, authenticationCode: string, kakaoRefresh:
                 FROM user
                 WHERE provider = ? AND authentication_code = ? AND is_deleted = 0;
             `;
-            const findUserResult = await connection.query(findUserQuery, ['kakao', kakaoRefresh]);
+            const findUserResult = await connection.query(findUserQuery, ['kakao', kakaoId]);
             user = findUserResult;
             
 
@@ -65,14 +66,14 @@ const login = async (provider: string, authenticationCode: string, kakaoRefresh:
 
                 await connection.query(insertUserQuery, [
                     'kakao',
-                    kakaoRefresh, 
+                    kakaoId, 
                     kakaoProfile.account_email,
                     kakaoProfile.gender,
                     kakaoProfile.age_range,
                 ]);
 
                 // 유저 insert 결과 조회
-                const findUserAfterInsertResult = await connection.query(findUserQuery, ['kakao', kakaoRefresh]);
+                const findUserAfterInsertResult = await connection.query(findUserQuery, ['kakao', kakaoId]);
                 if (findUserAfterInsertResult.length === 0) return constant.NO_USER;
 
                 user = findUserAfterInsertResult[0];
