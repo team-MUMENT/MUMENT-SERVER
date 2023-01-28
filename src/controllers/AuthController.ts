@@ -3,7 +3,6 @@ import statusCode from '../modules/statusCode';
 import message from '../modules/responseMessage';
 import util from '../modules/util';
 import constant from '../modules/serviceReturnConstant';
-import { validationResult } from 'express-validator';
 import { AuthService } from '../services';
 import sendMessage, { SlackMessageFormat } from '../library/slackWebHook';
 import { AuthTokenResponseDto } from '../interfaces/auth/AuthTokenResponseDto';

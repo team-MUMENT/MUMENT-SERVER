@@ -703,7 +703,7 @@ const getNewsList = async (userId: number): Promise<NewsResponseDto[]> => {
 /**
  * 공지사항 등록 - 기획, 서버에서만 사용
  */
-const postNotice = async (title: string, content:string): Promise<NoticePushResponseDto | number> => {
+const postNotice = async (point: string | null, title: string, content:string): Promise<NoticePushResponseDto | number> => {
     const pool: any = await poolPromise;
     const connection = await pool.getConnection();
 
@@ -711,7 +711,7 @@ const postNotice = async (title: string, content:string): Promise<NoticePushResp
         connection.beginTransaction(); //롤백을 위해 필요함
 
         // 공지사항 추가
-        const createdNotice = await connection.query('INSERT INTO notice(title, content) VALUES(?, ?)', [title, content]);
+        const createdNotice = await connection.query('INSERT INTO notice(title, content, notice_point_word) VALUES(?, ?, ?)', [title, content, point]);
         if (createdNotice?.affectedRows === 0) return constant.CREATE_NOTICE_FAIL;
 
 
@@ -721,6 +721,7 @@ const postNotice = async (title: string, content:string): Promise<NoticePushResp
         );
         const noticeTitle = createdNoticeRow[0].title;
         const noticeId = createdNoticeRow[0].id;
+        const noticePointWord = createdNoticeRow[0].notice_point_word;
         let fcmTokenList: string[] = [];
 
 
@@ -729,7 +730,8 @@ const postNotice = async (title: string, content:string): Promise<NoticePushResp
 
         const insertNewsToAllActiveUser = async (item: UserInfoRDB, idx: number) => {
             await connection.query(
-                `INSERT INTO news(type, user_id, notice_title, link_id) VALUES('notice', ?, ?, ?)`, [item.id, noticeTitle, noticeId]
+                `INSERT INTO news(type, user_id, notice_title, link_id, notice_point_word) VALUES('notice', ?, ?, ?, ?)`, 
+                [item.id, noticeTitle, noticeId, noticePointWord]
             );
 
             if (item.fcm_token && item.fcm_token.length > 0) {
@@ -768,6 +770,8 @@ const postNotice = async (title: string, content:string): Promise<NoticePushResp
         connection.release(); // pool connection 회수
     }
 };
+
+
 /**
  * 프로필 설정이 완료되었는지 확인
  */
