@@ -23,6 +23,7 @@ const constant = {
     // kakao
     NO_AUTHENTICATION_CODE: -60,
     INVALID_AUTHENTICATION_CODE: -61,
+    NO_KAKAO_REFRESH_TOKEN: -62,
     // jwt token
     TOKEN_EXPIRED: -100,
     TOKEN_INVALID: -101,

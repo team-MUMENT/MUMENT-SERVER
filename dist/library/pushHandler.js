@@ -68,7 +68,7 @@ const noticePushAlarmHandler = (pushTitle, pushBody, fcmTokenList) => __awaiter(
     };
     try {
         let pushFailFcmTokenList = [];
-        admin
+        yield admin
             .messaging()
             .sendMulticast(message)
             .then(function (res) {
@@ -81,13 +81,12 @@ const noticePushAlarmHandler = (pushTitle, pushBody, fcmTokenList) => __awaiter(
                         return;
                 });
             }
-            console.log(responseMessage_1.default.PUSH_ALARM_SUCCESS, res, pushFailFcmTokenList);
         })
             .catch(function (err) {
             console.log(responseMessage_1.default.PUSH_ALARM_ERROR, err);
             return serviceReturnConstant_1.default.NOTICE_PUSH_FAIL;
         });
-        return pushFailFcmTokenList;
+        return serviceReturnConstant_1.default.NOTICE_PUSH_SUCCESS;
     }
     catch (error) {
         console.log(error);
@@ -123,11 +122,10 @@ const likePushAlarmHandler = (pushTitle, pushBody, fcmToken) => __awaiter(void 0
         },
     };
     try {
-        admin
+        yield admin
             .messaging()
             .send(message)
             .then(function (res) {
-            console.log(responseMessage_1.default.PUSH_ALARM_SUCCESS, res);
         })
             .catch(function (err) {
             console.log(responseMessage_1.default.PUSH_ALARM_ERROR, err);

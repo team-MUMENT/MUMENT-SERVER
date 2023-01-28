@@ -461,9 +461,13 @@ const getNewsList = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
  * @DESC 프로필 설정이 완료되었는지 확인하는 API입니다.
  */
 const checkProfileSet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userId = req.body.userId;
     try {
-        // auth에서 401이 리턴되지 않았다면 204 리턴
-        res.status(statusCode_1.default.NO_CONTENT).send(util_1.default.success(statusCode_1.default.NO_CONTENT, responseMessage_1.default.COMPLETE_PROFILE_SET));
+        const data = yield services_1.UserService.checkProfileSet(userId);
+        if (data)
+            return res.status(statusCode_1.default.NO_CONTENT).send(util_1.default.success(statusCode_1.default.NO_CONTENT, responseMessage_1.default.COMPLETE_PROFILE_SET));
+        else
+            return res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.PROFILE_SET_REQUIRED));
     }
     catch (error) {
         console.log(error);
@@ -486,9 +490,9 @@ const checkProfileSet = (req, res) => __awaiter(void 0, void 0, void 0, function
  *  @DESC 공지사항을 등록 후 푸시알림을 날립니다 - 서버, 기획에서만 사용
  */
 const postNotice = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { title, content } = req.body;
+    const { point, title, content, noticeCategory } = req.body;
     try {
-        const data = yield services_1.UserService.postNotice(title, content);
+        const data = yield services_1.UserService.postNotice(point, title, content, noticeCategory);
         if (typeof data === "number" && data === serviceReturnConstant_1.default.CREATE_NOTICE_FAIL) {
             return res.status(statusCode_1.default.BAD_REQUEST).send(util_1.default.success(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.CREATE_NOTICE_FAIL));
         }
