@@ -829,10 +829,11 @@ const getNoticeDetail = async (noticeId: string): Promise<NoticeInfoRDB | number
         
         if (notice.length === 0) return constant.NO_NOTICE;
 
+        const notcieFullTitle = (!notice[0].notice_point_word) ? notice[0].title: notice[0].notice_point_word + notice[0].title;
         
         const data: NoticeInfoRDB = {
             id: notice[0].id,
-            title: notice[0].title,
+            title: notcieFullTitle,
             content: notice[0].content,
             created_at: dayjs(notice[0].created_at).format('YYYY.MM.DD')
         };
