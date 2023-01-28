@@ -44,5 +44,9 @@ exports.default = {
      */
     noticePushAlarmImage: process.env.NOTICE_PUSH_ALARM_IMAGE,
     likePushAlarmImage: process.env.LIKE_PUSH_ALARM_IMAGE,
+    /**
+     * apple music
+     */
+    appleDeveloperToken: process.env.APPLE_DEVELOPER_TOKEN,
 };
 //# sourceMappingURL=index.js.map
