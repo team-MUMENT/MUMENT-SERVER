@@ -14,6 +14,8 @@ import { MusicResponseDto } from '../interfaces/music/MusicResponseDto';
 import musicDB from '../modules/db/Music';
 
 import cardTagList from '../modules/cardTagList';
+import config from '../config';
+import appleSignIn from '../library/appleSignIn';
 
 const qs = require('querystring');
 require('dotenv').config();
@@ -335,24 +337,26 @@ const getMumentList = async (musicId: string, userId: string, isLikeOrder: boole
  */
 const getMusicListBySearch = async (keyword: string): Promise<MusicResponseDto[] | number | void> => {
     try {        
-        const token = 'Bearer ' + process.env.APPLE_DEVELOPER_TOKEN as string;
+        const token = `Bearer ${config.appleDeveloperToken as string}`;
+
         let musiclist: MusicResponseDto[] = [];
 
         const appleResponse = async (searchKeyword: string) => {
-            await axios.get('https://api.music.apple.com/v1/catalog/kr/search?types=songs&limit=25&term=' 
+    
+            await axios.get('https://api.music.apple.com/v1/catalog/kr/search?types=songs&limit=20&term=' 
                 + encodeURI(searchKeyword), {
                     headers: {
                       'Content-Type': 'application/x-www-form-urlencoded',
                       'Authorization': token
-                    },
+                    }
                 }
             )
-            .then(function (response) {
+            .then(async function (response) {
                 /* apple api에서 받을 수 있는 3개 status code 대응 - 200, 401, 500*/
                 // 200 - success
                 const appleMusicList = response.data.results.songs.data;
 
-                musiclist =  appleMusicList.map((music: any) => {
+                musiclist =  await appleMusicList.map((music: any) => {
                     let imageUrl = music.attributes.artwork.url;
                     imageUrl = imageUrl.replace('{w}x{h}', '400x400'); //앨범 이미지 크기 400으로 지정
 
@@ -366,7 +370,7 @@ const getMusicListBySearch = async (keyword: string): Promise<MusicResponseDto[]
                 });
                 return musiclist;
             })
-            .catch(function (error) {
+            .catch(async function (error) {
                 // 401 - A response indicating an incorrect Authorization header
                 if (error.response.status == 401) return constant.APPLE_UNAUTHORIZED;
 
@@ -386,6 +390,7 @@ const getMusicListBySearch = async (keyword: string): Promise<MusicResponseDto[]
         throw error;
     }
 };
+
 export default {
     getMusicAndMyMument,
     getMumentList,
