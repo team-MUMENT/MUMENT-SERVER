@@ -768,7 +768,23 @@ const postNotice = async (title: string, content:string): Promise<NoticePushResp
         connection.release(); // pool connection 회수
     }
 };
+/**
+ * 프로필 설정이 완료되었는지 확인
+ */
+const checkProfileSet = async (userId: string): Promise<boolean> => {
+    try {
+        // userId로 유저 정보 가져오기
+        const user = await userDB.userInfo(userId);
 
+        // 프로필 설정이 완료되지 않았으면 false 리턴
+        if (!user.profile_id) return false;
+
+        return true;
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+};
 
 export default {
     getMyMumentList,
@@ -786,4 +802,5 @@ export default {
     deleteNews,
     getNewsList,
     postNotice,
+    checkProfileSet,
 };
