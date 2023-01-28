@@ -696,9 +696,10 @@ const getNoticeDetail = (noticeId) => __awaiter(void 0, void 0, void 0, function
         const notice = yield pool_1.default.queryValue(selectNoticeQuery, [noticeId]);
         if (notice.length === 0)
             return serviceReturnConstant_1.default.NO_NOTICE;
+        const notcieFullTitle = (!notice[0].notice_point_word) ? notice[0].title : notice[0].notice_point_word + notice[0].title;
         const data = {
             id: notice[0].id,
-            title: notice[0].title,
+            title: notcieFullTitle,
             content: notice[0].content,
             created_at: (0, dayjs_1.default)(notice[0].created_at).format('YYYY.MM.DD')
         };
@@ -715,9 +716,10 @@ const getNoticeList = () => __awaiter(void 0, void 0, void 0, function* () {
         const selectNoticeQuery = 'SELECT * FROM notice ORDER BY created_at DESC;';
         let noticeList = yield pool_1.default.query(selectNoticeQuery);
         const noticeListDateFormat = (item, idx) => __awaiter(void 0, void 0, void 0, function* () {
+            const notcieFullTitle = (!item.notice_point_word) ? item.title : item.notice_point_word + item.title;
             noticeList[idx] = {
                 id: item.id,
-                title: item.title,
+                title: notcieFullTitle,
                 content: item.content,
                 created_at: (0, dayjs_1.default)(item.created_at).format('YYYY.MM.DD')
             };
