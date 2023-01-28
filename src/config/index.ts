@@ -48,4 +48,9 @@ export default {
      */
     noticePushAlarmImage: process.env.NOTICE_PUSH_ALARM_IMAGE as string,
     likePushAlarmImage: process.env.LIKE_PUSH_ALARM_IMAGE as string,
+
+    /**
+     * apple music
+     */
+    appleDeveloperToken: process.env.APPLE_DEVELOPER_TOKEN as string,
 };
