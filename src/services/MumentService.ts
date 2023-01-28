@@ -829,10 +829,11 @@ const getNoticeDetail = async (noticeId: string): Promise<NoticeInfoRDB | number
         
         if (notice.length === 0) return constant.NO_NOTICE;
 
+        const notcieFullTitle = (!notice[0].notice_point_word) ? notice[0].title: notice[0].notice_point_word + notice[0].title;
         
         const data: NoticeInfoRDB = {
             id: notice[0].id,
-            title: notice[0].title,
+            title: notcieFullTitle,
             content: notice[0].content,
             created_at: dayjs(notice[0].created_at).format('YYYY.MM.DD')
         };
@@ -852,9 +853,11 @@ const getNoticeList = async (): Promise<NoticeInfoRDB[]> => {
         let noticeList: NoticeInfoRDB[] = await pools.query(selectNoticeQuery);
         
         const noticeListDateFormat = async (item: NoticeInfoRDB, idx: number) => {
+            const notcieFullTitle = (!item.notice_point_word) ? item.title: item.notice_point_word + item.title;
+
             noticeList[idx] = {
                 id: item.id,
-                title: item.title,
+                title: notcieFullTitle,
                 content: item.content,
                 created_at: dayjs(item.created_at).format('YYYY.MM.DD')
             };

@@ -7,7 +7,7 @@ import { Message, MulticastMessage } from 'firebase-admin/lib/messaging/messagin
  * 푸시알림 - 공지사항용
  * FCM TOKEN - 여러 개 배열로 받음
  */
-const noticePushAlarmHandler = async (pushTitle: string, pushBody: string, fcmTokenList: string[]): Promise<void | number | string[]> => {
+const noticePushAlarmHandler = async (pushTitle: string, pushBody: string, fcmTokenList: string[]): Promise<void | number> => {
     if (fcmTokenList.length === 0) return constant.NOTICE_PUSH_FAIL;
 
     let message: MulticastMessage = {
@@ -35,7 +35,7 @@ const noticePushAlarmHandler = async (pushTitle: string, pushBody: string, fcmTo
     try {
         let pushFailFcmTokenList: string[] = [];
 
-        admin
+        await admin
             .messaging()
             .sendMulticast(message)
             .then(function (res) {
@@ -47,14 +47,13 @@ const noticePushAlarmHandler = async (pushTitle: string, pushBody: string, fcmTo
                     })
                 }
                 
-                console.log(responseMessage.PUSH_ALARM_SUCCESS, res, pushFailFcmTokenList);
             })
             .catch(function (err) {
                 console.log(responseMessage.PUSH_ALARM_ERROR, err);
                 return constant.NOTICE_PUSH_FAIL;
             });
         
-        return pushFailFcmTokenList;
+        return constant.NOTICE_PUSH_SUCCESS;
     } catch (error) {
         console.log(error);
         throw error;
@@ -91,11 +90,10 @@ const likePushAlarmHandler = async (pushTitle: string, pushBody: string, fcmToke
     };
 
     try {
-        admin
+        await admin
             .messaging()
             .send(message)
             .then(function (res) {        
-                console.log(responseMessage.PUSH_ALARM_SUCCESS, res);
             })
             .catch(function (err) {
                 console.log(responseMessage.PUSH_ALARM_ERROR, err);

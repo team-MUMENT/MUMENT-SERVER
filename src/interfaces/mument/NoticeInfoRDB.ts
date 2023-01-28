@@ -6,4 +6,6 @@ export interface NoticeInfoRDB {
     title: string;
     content: string;
     created_at: Date | string; 
+    notice_point_word?: string | null;
+    category?: number | null;
 }
