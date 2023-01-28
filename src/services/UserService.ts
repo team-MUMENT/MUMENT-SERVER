@@ -722,7 +722,7 @@ const postNotice = async (point: string | null, title: string, content:string, n
         const createdNoticeRow: NoticeInfoRDB[] = await connection.query(
             'SELECT * FROM notice WHERE id=?', [createdNotice.insertId]
         );
-        const noticeTitle = createdNoticeRow[0].title;
+        const noticeTitle = (!createdNoticeRow[0].notice_point_word) ? createdNoticeRow[0].title: createdNoticeRow[0].notice_point_word + createdNoticeRow[0].title;;
         const noticeId = createdNoticeRow[0].id;
         const noticePointWord = createdNoticeRow[0].notice_point_word;
         let fcmTokenList: string[] = [];

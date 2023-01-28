@@ -852,9 +852,11 @@ const getNoticeList = async (): Promise<NoticeInfoRDB[]> => {
         let noticeList: NoticeInfoRDB[] = await pools.query(selectNoticeQuery);
         
         const noticeListDateFormat = async (item: NoticeInfoRDB, idx: number) => {
+            const notcieFullTitle = (!item.notice_point_word) ? item.title: item.notice_point_word + item.title;
+
             noticeList[idx] = {
                 id: item.id,
-                title: item.title,
+                title: notcieFullTitle,
                 content: item.content,
                 created_at: dayjs(item.created_at).format('YYYY.MM.DD')
             };
