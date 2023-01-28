@@ -734,7 +734,7 @@ const postNotice = async (point: string | null, title: string, content:string, n
         const insertNewsToAllActiveUser = async (item: UserInfoRDB, idx: number) => {
             await connection.query(
                 `INSERT INTO news(type, user_id, notice_title, link_id, notice_point_word) VALUES('notice', ?, ?, ?, ?)`, 
-                [item.id, noticeTitle, noticeId, noticePointWord]
+                [item.id, createdNoticeRow[0].title, noticeId, noticePointWord]
             );
 
             if (item.fcm_token && item.fcm_token.length > 0) {
@@ -752,13 +752,12 @@ const postNotice = async (point: string | null, title: string, content:string, n
 
         // 새로운 공지사항 활성 유저에게 푸시알림
         const pushAlarmResult = await pushHandler.noticePushAlarmHandler('공지', noticeTitle, fcmTokenList);
-        if (Array.isArray(pushAlarmResult)) {
+        if (pushAlarmResult === constant.NOTICE_PUSH_SUCCESS) {
             return {
                 pushSuccess: true,
-                noticeId: createdNoticeRow[0].id,
-                pushFailFcmToken: pushAlarmResult
+                noticeId: createdNoticeRow[0].id
             };
-        } 
+        }
         
         return {
             pushSuccess: false,
