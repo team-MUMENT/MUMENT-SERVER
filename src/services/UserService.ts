@@ -679,6 +679,7 @@ const getNewsList = async (userId: number): Promise<NewsResponseDto[]> => {
                     isRead: Boolean(item.is_read),
                     createdAt: dayjs(item.created_at).format('MM/DD HH:mm'),
                     linkId: item.link_id,
+                    noticePoint: item.notice_point_word,
                     noticeTitle: item.notice_title,
                     likeProfileId: item.like_profile_id,
                     likeMusicTitle: item.like_music_title
@@ -703,7 +704,7 @@ const getNewsList = async (userId: number): Promise<NewsResponseDto[]> => {
 /**
  * 공지사항 등록 - 기획, 서버에서만 사용
  */
-const postNotice = async (title: string, content:string): Promise<NoticePushResponseDto | number> => {
+const postNotice = async (point: string | null, title: string, content:string, noticeCategory: number): Promise<NoticePushResponseDto | number> => {
     const pool: any = await poolPromise;
     const connection = await pool.getConnection();
 
@@ -711,7 +712,9 @@ const postNotice = async (title: string, content:string): Promise<NoticePushResp
         connection.beginTransaction(); //롤백을 위해 필요함
 
         // 공지사항 추가
-        const createdNotice = await connection.query('INSERT INTO notice(title, content) VALUES(?, ?)', [title, content]);
+        const createdNotice = await connection.query(
+            'INSERT INTO notice(category, title, content, notice_point_word) VALUES(?, ?, ?, ?)', 
+            [noticeCategory, title, content, point]);
         if (createdNotice?.affectedRows === 0) return constant.CREATE_NOTICE_FAIL;
 
 
@@ -719,8 +722,9 @@ const postNotice = async (title: string, content:string): Promise<NoticePushResp
         const createdNoticeRow: NoticeInfoRDB[] = await connection.query(
             'SELECT * FROM notice WHERE id=?', [createdNotice.insertId]
         );
-        const noticeTitle = createdNoticeRow[0].title;
+        const noticeTitle = (!createdNoticeRow[0].notice_point_word) ? createdNoticeRow[0].title: createdNoticeRow[0].notice_point_word + createdNoticeRow[0].title;;
         const noticeId = createdNoticeRow[0].id;
+        const noticePointWord = createdNoticeRow[0].notice_point_word;
         let fcmTokenList: string[] = [];
 
 
@@ -729,7 +733,8 @@ const postNotice = async (title: string, content:string): Promise<NoticePushResp
 
         const insertNewsToAllActiveUser = async (item: UserInfoRDB, idx: number) => {
             await connection.query(
-                `INSERT INTO news(type, user_id, notice_title, link_id) VALUES('notice', ?, ?, ?)`, [item.id, noticeTitle, noticeId]
+                `INSERT INTO news(type, user_id, notice_title, link_id, notice_point_word) VALUES('notice', ?, ?, ?, ?)`, 
+                [item.id, createdNoticeRow[0].title, noticeId, noticePointWord]
             );
 
             if (item.fcm_token && item.fcm_token.length > 0) {
@@ -747,13 +752,12 @@ const postNotice = async (title: string, content:string): Promise<NoticePushResp
 
         // 새로운 공지사항 활성 유저에게 푸시알림
         const pushAlarmResult = await pushHandler.noticePushAlarmHandler('공지', noticeTitle, fcmTokenList);
-        if (Array.isArray(pushAlarmResult)) {
+        if (pushAlarmResult === constant.NOTICE_PUSH_SUCCESS) {
             return {
                 pushSuccess: true,
-                noticeId: createdNoticeRow[0].id,
-                pushFailFcmToken: pushAlarmResult
+                noticeId: createdNoticeRow[0].id
             };
-        } 
+        }
         
         return {
             pushSuccess: false,
@@ -768,6 +772,8 @@ const postNotice = async (title: string, content:string): Promise<NoticePushResp
         connection.release(); // pool connection 회수
     }
 };
+
+
 /**
  * 프로필 설정이 완료되었는지 확인
  */
