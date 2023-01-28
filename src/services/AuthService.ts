@@ -36,22 +36,21 @@ const login = async (provider: string, authenticationCode: string, fcm_token: st
              * 카카오 로그인/회원가입
              */
 
-            // authentication code로 카카오 토큰 발급 받아오기
-            const kakaoToken = await kakaoAuth.getKakaoToken(authenticationCode);
-            if (typeof kakaoToken === 'number') return constant.INVALID_AUTHENTICATION_CODE; // 카카오 토큰 조회 실패시 반환
-
+            const kakaoToken = authenticationCode;
             // 카카오 토큰으로 프로필 조회
             const kakaoProfile: any = kakaoAuth.getKakaoProfile(kakaoToken);
-            if (typeof kakaoToken === 'number') return constant.INVALID_AUTHENTICATION_CODE; // 카카오 프로필 조회 실패시 반환
+
+            // 유저를 식별할 수 있는 id값
+            const kakaoId = kakaoProfile.id;
 
 
-            // 해당 유저가 이미 가입한 유저인지 확인 - authentication_code 사용
+            // 해당 유저가 이미 가입한 유저인지 확인 - kakao refresh token 사용
             const findUserQuery = `
                 SELECT *
                 FROM user
                 WHERE provider = ? AND authentication_code = ? AND is_deleted = 0;
             `;
-            const findUserResult = await connection.query(findUserQuery, ['kakao', authenticationCode]);
+            const findUserResult = await connection.query(findUserQuery, ['kakao', kakaoId]);
             user = findUserResult;
             
 
@@ -67,14 +66,14 @@ const login = async (provider: string, authenticationCode: string, fcm_token: st
 
                 await connection.query(insertUserQuery, [
                     'kakao',
-                    authenticationCode, 
+                    kakaoId, 
                     kakaoProfile.account_email,
                     kakaoProfile.gender,
                     kakaoProfile.age_range,
                 ]);
 
                 // 유저 insert 결과 조회
-                const findUserAfterInsertResult = await connection.query(findUserQuery, ['kakao', authenticationCode]);
+                const findUserAfterInsertResult = await connection.query(findUserQuery, ['kakao', kakaoId]);
                 if (findUserAfterInsertResult.length === 0) return constant.NO_USER;
 
                 user = findUserAfterInsertResult[0];
