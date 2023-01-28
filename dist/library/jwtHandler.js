@@ -42,7 +42,7 @@ const verify = (token) => {
         return decoded;
     }
     catch (err) {
-        if (err.name == jsonwebtoken_1.TokenExpiredError) {
+        if (err.name == 'TokenExpiredError') {
             // 토큰 만료
             console.log(err.message);
             return serviceReturnConstant_1.default.TOKEN_EXPIRED;

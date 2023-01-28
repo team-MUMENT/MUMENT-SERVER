@@ -47,7 +47,7 @@ const verify = (token: string) => {
 
         return decoded;
     } catch (err: any) {
-        if (err.name == TokenExpiredError) {
+        if (err.name == 'TokenExpiredError') {
             // 토큰 만료
             console.log(err.message);
             return constant.TOKEN_EXPIRED;
