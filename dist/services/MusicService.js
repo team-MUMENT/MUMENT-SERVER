@@ -19,6 +19,7 @@ const db_1 = __importDefault(require("../loaders/db"));
 const User_1 = __importDefault(require("../modules/db/User"));
 const Music_1 = __importDefault(require("../modules/db/Music"));
 const cardTagList_1 = __importDefault(require("../modules/cardTagList"));
+const config_1 = __importDefault(require("../config"));
 const qs = require('querystring');
 require('dotenv').config();
 /**
@@ -300,41 +301,45 @@ const getMumentList = (musicId, userId, isLikeOrder, limit, offset) => __awaiter
  */
 const getMusicListBySearch = (keyword) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const token = 'Bearer ' + process.env.APPLE_DEVELOPER_TOKEN;
+        const token = `Bearer ${config_1.default.appleDeveloperToken}`;
         let musiclist = [];
         const appleResponse = (searchKeyword) => __awaiter(void 0, void 0, void 0, function* () {
-            yield axios_1.default.get('https://api.music.apple.com/v1/catalog/kr/search?types=songs&limit=25&term='
+            yield axios_1.default.get('https://api.music.apple.com/v1/catalog/kr/search?types=songs&limit=20&term='
                 + encodeURI(searchKeyword), {
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                     'Authorization': token
-                },
+                }
             })
                 .then(function (response) {
-                /* apple api에서 받을 수 있는 3개 status code 대응 - 200, 401, 500*/
-                // 200 - success
-                const appleMusicList = response.data.results.songs.data;
-                musiclist = appleMusicList.map((music) => {
-                    let imageUrl = music.attributes.artwork.url;
-                    imageUrl = imageUrl.replace('{w}x{h}', '400x400'); //앨범 이미지 크기 400으로 지정
-                    const m = {
-                        '_id': music.id,
-                        'name': music.attributes.name,
-                        'artist': music.attributes.artistName,
-                        'image': imageUrl
-                    };
-                    return m;
+                return __awaiter(this, void 0, void 0, function* () {
+                    /* apple api에서 받을 수 있는 3개 status code 대응 - 200, 401, 500*/
+                    // 200 - success
+                    const appleMusicList = response.data.results.songs.data;
+                    musiclist = yield appleMusicList.map((music) => {
+                        let imageUrl = music.attributes.artwork.url;
+                        imageUrl = imageUrl.replace('{w}x{h}', '400x400'); //앨범 이미지 크기 400으로 지정
+                        const m = {
+                            '_id': music.id,
+                            'name': music.attributes.name,
+                            'artist': music.attributes.artistName,
+                            'image': imageUrl
+                        };
+                        return m;
+                    });
+                    return musiclist;
                 });
-                return musiclist;
             })
                 .catch(function (error) {
-                // 401 - A response indicating an incorrect Authorization header
-                if (error.response.status == 401)
-                    return serviceReturnConstant_1.default.APPLE_UNAUTHORIZED;
-                // 500 - indicating an error occurred on the apple music server
-                if (error.response.status == 500)
-                    return serviceReturnConstant_1.default.APPLE_INTERNAL_SERVER_ERROR;
-                console.log(error);
+                return __awaiter(this, void 0, void 0, function* () {
+                    // 401 - A response indicating an incorrect Authorization header
+                    if (error.response.status == 401)
+                        return serviceReturnConstant_1.default.APPLE_UNAUTHORIZED;
+                    // 500 - indicating an error occurred on the apple music server
+                    if (error.response.status == 500)
+                        return serviceReturnConstant_1.default.APPLE_INTERNAL_SERVER_ERROR;
+                    console.log(error);
+                });
             });
             return musiclist;
         });
