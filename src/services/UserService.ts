@@ -704,7 +704,7 @@ const getNewsList = async (userId: number): Promise<NewsResponseDto[]> => {
 /**
  * 공지사항 등록 - 기획, 서버에서만 사용
  */
-const postNotice = async (point: string | null, title: string, content:string): Promise<NoticePushResponseDto | number> => {
+const postNotice = async (point: string | null, title: string, content:string, noticeCategory: number): Promise<NoticePushResponseDto | number> => {
     const pool: any = await poolPromise;
     const connection = await pool.getConnection();
 
@@ -712,7 +712,9 @@ const postNotice = async (point: string | null, title: string, content:string): 
         connection.beginTransaction(); //롤백을 위해 필요함
 
         // 공지사항 추가
-        const createdNotice = await connection.query('INSERT INTO notice(title, content, notice_point_word) VALUES(?, ?, ?)', [title, content, point]);
+        const createdNotice = await connection.query(
+            'INSERT INTO notice(category, title, content, notice_point_word) VALUES(?, ?, ?, ?)', 
+            [noticeCategory, title, content, point]);
         if (createdNotice?.affectedRows === 0) return constant.CREATE_NOTICE_FAIL;
 
 
