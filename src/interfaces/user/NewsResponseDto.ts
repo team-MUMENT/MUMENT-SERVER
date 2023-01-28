@@ -7,6 +7,7 @@ export interface NewsResponseDto{
     isRead: boolean;
     createdAt: Date | string;
     linkId: number;
+    noticePoint: string | null;
     noticeTitle: string | null;
     likeProfileId: string | null;
     likeMusicTitle: string | null;
