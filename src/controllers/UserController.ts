@@ -550,10 +550,10 @@ const checkProfileSet = async (req: Request, res: Response) => {
  *  @DESC 공지사항을 등록 후 푸시알림을 날립니다 - 서버, 기획에서만 사용
  */
 const postNotice = async (req: Request, res: Response) => {
-    const { title, content } = req.body;
+    const { point, title, content } = req.body;
 
     try {
-        const data = await UserService.postNotice(title, content);
+        const data = await UserService.postNotice(point, title, content);
 
         if (typeof data === "number" && data === constant.CREATE_NOTICE_FAIL) {
             return res.status(statusCode.BAD_REQUEST).send(util.success(statusCode.BAD_REQUEST, message.CREATE_NOTICE_FAIL));
