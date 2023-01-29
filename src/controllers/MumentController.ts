@@ -132,7 +132,7 @@ const deleteMument = async (req: Request, res: Response) => {
     try {
         const data = await MumentService.deleteMument(mumentId);
 
-        res.status(statusCode.NO_CONTENT).send(util.success(statusCode.NO_CONTENT, message.DELETE_MUMENT_SUCCESS));
+        res.status(statusCode.OK).send(util.success(statusCode.OK, message.DELETE_MUMENT_SUCCESS));
     } catch (error) {
         console.log(error);
 
