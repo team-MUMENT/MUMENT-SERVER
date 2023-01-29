@@ -461,7 +461,7 @@ const deleteNews = async (req: Request, res: Response) => {
             return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.BAD_REQUEST));
         }
 
-        return res.status(statusCode.NO_CONTENT).send(util.success(statusCode.NO_CONTENT, message.DELETE_NEWS_SUCCESS));
+        return res.status(statusCode.OK).send(util.success(statusCode.OK, message.DELETE_NEWS_SUCCESS));
     } catch (error) {
         console.log(error);
 
