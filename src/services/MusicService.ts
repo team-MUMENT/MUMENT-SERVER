@@ -56,7 +56,7 @@ const getMusicAndMyMument = async (musicId: string, userId: string): Promise<Mus
         if (latestMument.length === 0) {
             const data: MusicMyMumentResponseDto = {
                 music: {
-                    _id: music[0].id,
+                    _id: music[0].id.toString(),
                     name: music[0].name,
                     artist: music[0].artist,
                     image: music[0].image,
@@ -103,28 +103,30 @@ const getMusicAndMyMument = async (musicId: string, userId: string): Promise<Mus
         `;
 
         const isLikedResult = await connection.query(getIsLikedQuery, [latestMument[0].id, userId]);
-        const isLiked: boolean = isLikedResult[0].is_liked;
+        const isLiked: boolean = Boolean(isLikedResult[0].is_liked);
 
 
         // 날짜 가공
         const mumentDate = dayjs(latestMument[0].createdAt).format('D MMM, YYYY');
 
         const myMument: MumentCardViewInterface = {
-            _id: latestMument[0].id,
-            musicId: latestMument[0].music_id,
+            _id: latestMument[0].id.toString(),
+            music: {
+                _id: latestMument[0].music_id.toString(),
+            },
             user: {
-                _id: latestMument[0].user_id,
+                _id: latestMument[0].user_id.toString(),
                 name: latestMument[0].user_name,
                 image: latestMument[0].user_image,
             },
-            isFirst: latestMument[0].is_first,
+            isFirst: Boolean(latestMument[0].is_first),
             impressionTag,
             feelingTag,
             cardTag: mumentCardTag,
             content: latestMument[0].content,
-            isPrivate: latestMument[0].is_private,
+            isPrivate: Boolean(latestMument[0].is_private),
             likeCount: latestMument[0].like_count,
-            isDeleted: latestMument[0].is_deleted,
+            isDeleted: Boolean(latestMument[0].is_deleted),
             createdAt: latestMument[0].created_at,
             updatedAt: latestMument[0].updated_at,
             date: mumentDate,
@@ -133,7 +135,7 @@ const getMusicAndMyMument = async (musicId: string, userId: string): Promise<Mus
 
         const data: MusicMyMumentResponseDto = {
             music: {
-                _id: music[0].id,
+                _id: music[0].id.toString(),
                 name: music[0].name,
                 artist: music[0].artist,
                 image: music[0].image,
