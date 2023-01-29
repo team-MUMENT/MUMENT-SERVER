@@ -3,9 +3,6 @@ export interface MumentCardViewInterface {
     musicId?: number;
     music?: { // 채은 - 곡상세보기 명세서 response에 맞추기위해 추가했습니다
         _id: string;
-        name: string;
-        artist: string;
-        image: string;
     };
     user: {
         _id: number | string; 

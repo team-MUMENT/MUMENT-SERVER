@@ -46,7 +46,6 @@ const login = async (provider: string, authenticationCode: string, fcm_token: st
                 return constant.INVALID_AUTHENTICATION_CODE;
             }
 
-            
     
             // 유저를 식별할 수 있는 id값
             let kakaoId: any;
