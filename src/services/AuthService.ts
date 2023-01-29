@@ -38,11 +38,21 @@ const login = async (provider: string, authenticationCode: string, fcm_token: st
 
             const kakaoToken = authenticationCode;
             // 카카오 토큰으로 프로필 조회
-            const kakaoProfile: any = kakaoAuth.getKakaoProfile(kakaoToken);
+            const kakaoProfile: any = await kakaoAuth.getKakaoProfile(kakaoToken);
 
+
+            if (kakaoProfile === constant.INVALID_AUTHENTICATION_CODE || kakaoProfile === undefined) {
+                //프로필 조회 실패 시
+                return constant.INVALID_AUTHENTICATION_CODE;
+            }
+
+            
+    
             // 유저를 식별할 수 있는 id값
-            const kakaoId = kakaoProfile.id;
-
+            let kakaoId: any;
+            if (kakaoProfile.id !== undefined) {
+                kakaoId = kakaoProfile.id;
+            }
 
             // 해당 유저가 이미 가입한 유저인지 확인 - kakao refresh token 사용
             const findUserQuery = `
@@ -67,9 +77,9 @@ const login = async (provider: string, authenticationCode: string, fcm_token: st
                 await connection.query(insertUserQuery, [
                     'kakao',
                     kakaoId, 
-                    kakaoProfile.account_email,
-                    kakaoProfile.gender,
-                    kakaoProfile.age_range,
+                    Boolean(kakaoProfile.kakao_account.has_email) ? kakaoProfile.kakao_account.email : null,
+                    Boolean(kakaoProfile.kakao_account.has_gender) ? kakaoProfile.kakao_account.gender : null,
+                    Boolean(kakaoProfile.kakao_account.has_age_range) ? kakaoProfile.kakao_account.age_range : null,
                 ]);
 
                 // 유저 insert 결과 조회

@@ -23,7 +23,7 @@ const login = async (req: Request, res: Response) => {
                 return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.NO_AUTHENTICATION_CODE));
             }
             case constant.INVALID_AUTHENTICATION_CODE: {
-                // 공통 - authentication code로 카카오/애플 api 요청이 불가한 경우
+                // 공통 - authentication code로 애플 api 요청이 불가한 경우 & 카카오 토큰으로 프로필 조회에 실패한 경우
                 return res.status(statusCode.UNAUTHORIZED).send(util.fail(statusCode.UNAUTHORIZED, message.INVALID_AUTHENTICATION_CODE));
             }
             case constant.NO_IDENTITY_TOKEN_SUB: {

@@ -58,9 +58,9 @@ const getKakaoProfile = (kakaoAccessToken) => __awaiter(void 0, void 0, void 0, 
                 'Content-type': 'application/x-www-form-urlencoded;charset=utf-8'
             }
         }).then((response) => {
-            kakaoProfile = response;
+            kakaoProfile = response.data;
         }).catch((error) => {
-            console.log('카카오 프로필 조회 실패');
+            console.log('카카오 프로필 조회 실패: ');
             console.log(error);
             return serviceReturnConstant_1.default.INVALID_AUTHENTICATION_CODE;
         });

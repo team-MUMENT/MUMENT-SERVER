@@ -49,11 +49,11 @@ const getKakaoProfile = async (kakaoAccessToken: string) => {
                 'Authorization': 'Bearer ' + kakaoAccessToken,
                 'Content-type': 'application/x-www-form-urlencoded;charset=utf-8'
             }
-        }).then((response: string) => {
-            kakaoProfile = response;
+        }).then((response: any) => {
+            kakaoProfile = response.data;
 
         }).catch((error: Error)=> {
-            console.log('카카오 프로필 조회 실패');
+            console.log('카카오 프로필 조회 실패: ');
             console.log(error);
             return constant.INVALID_AUTHENTICATION_CODE;
         });
