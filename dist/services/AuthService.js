@@ -40,7 +40,6 @@ const login = (provider, authenticationCode, fcm_token) => __awaiter(void 0, voi
             const kakaoToken = authenticationCode;
             // 카카오 토큰으로 프로필 조회
             const kakaoProfile = yield kakaoAuth_1.default.getKakaoProfile(kakaoToken);
-            console.log('서비스로직에서 받은 결과: ', kakaoProfile);
             if (kakaoProfile === serviceReturnConstant_1.default.INVALID_AUTHENTICATION_CODE || kakaoProfile === undefined) {
                 //프로필 조회 실패 시
                 return serviceReturnConstant_1.default.INVALID_AUTHENTICATION_CODE;
