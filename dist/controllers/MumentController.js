@@ -129,7 +129,7 @@ const deleteMument = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     const { mumentId } = req.params;
     try {
         const data = yield services_1.MumentService.deleteMument(mumentId);
-        res.status(statusCode_1.default.NO_CONTENT).send(util_1.default.success(statusCode_1.default.NO_CONTENT, responseMessage_1.default.DELETE_MUMENT_SUCCESS));
+        res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.DELETE_MUMENT_SUCCESS));
     }
     catch (error) {
         console.log(error);
