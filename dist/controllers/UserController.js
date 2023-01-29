@@ -412,7 +412,7 @@ const deleteNews = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         if (data === serviceReturnConstant_1.default.UPDATE_FAIL) {
             return res.status(statusCode_1.default.BAD_REQUEST).send(util_1.default.fail(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.BAD_REQUEST));
         }
-        return res.status(statusCode_1.default.NO_CONTENT).send(util_1.default.success(statusCode_1.default.NO_CONTENT, responseMessage_1.default.DELETE_NEWS_SUCCESS));
+        return res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.DELETE_NEWS_SUCCESS));
     }
     catch (error) {
         console.log(error);
