@@ -31,6 +31,7 @@ import cardTagList from '../modules/cardTagList';
 import { NoticeInfoRDB } from '../interfaces/mument/NoticeInfoRDB';
 import { NumberBaseResponseDto } from '../interfaces/common/NumberBaseResponseDto';
 import pushHandler from '../library/pushHandler';
+import { RandomMumentInterface } from '../interfaces/home/RandomMumentInterface';
 
 
 /** 
@@ -655,53 +656,85 @@ const deleteLike = async (mumentId: string, userId: string): Promise<LikeCountRe
 };
 
 // 랜덤 태그, 뮤멘트 조회
-const getRandomMument = async (): Promise<RandomMumentResponseDto | null> => {
+const getRandomMument = async (): Promise<RandomMumentResponseDto> => {
     try {
         // 난수 생성 함수
         const createRandomNum = (min: number, max: number): number => {
             return Math.floor(Math.random() * (max - min + 1)) + min;
         };
 
-        // 태그 종류 결정을 위해 1과 2 사이에서 난수 생성
-        const tagSort: number = createRandomNum(1, 2);
-
-        // 태그 종류에 따라 세부 태그 결정
+        // 태그 넘버를 담을 변수
         let detailTag = 0;
-        switch (tagSort) {
-            case 1: {
-                // impressionTag
-                detailTag = createRandomNum(100, 105);
-                break;
-            }
-            case 2: {
-                // feelingTag
-                detailTag = createRandomNum(200, 215);
-                break;
-            }
+
+        // 태그에 따른 제목을 가져올 변수
+        let tagTitle: string = '';
+
+        // 랜덤 뮤멘트를 가져오는 쿼리
+        const getRandomMumentQuery = `
+        SELECT music.name as music_name, music.artist, m.content, user.profile_id as user_name, user.image as user_image, m.created_at
+        FROM home_random as hr
+        JOIN mument as m
+            ON m.id = hr.mument_id
+        JOIN mument_tag as mt
+            ON mt.mument_id = m.id
+        JOIN music
+            ON music.id = m.music_id
+        JOIN user
+            ON user.id = m.user_id
+        WHERE mt.tag_id = ?
+            AND m.is_deleted = 0
+            AND m.is_private = 0
+        ORDER BY rand()
+        LIMIT 3;
+        `;
+
+        // 랜덤 뮤멘트 결과를 담을 리스트
+        let randomMumentList = [];
+
+        // 랜덤 뮤멘트 리스트가 빈배열을 반환하지 않도록 while문 사용
+        while (randomMumentList.length === 0) {
+            // 태그 종류 결정을 위해 1과 2 사이에서 난수 생성
+            const tagSort: number = createRandomNum(1, 2);
+
+            // 태그 종류에 따라 세부 태그 결정
+            switch (tagSort) {
+                case 1: {
+                    // impressionTag
+                    detailTag = createRandomNum(100, 105);
+                    break;
+                }
+                case 2: {
+                    // feelingTag
+                    detailTag = createRandomNum(200, 215);
+                    break;
+                }
+            }    
+            tagTitle = tagRandomTitle[detailTag as keyof typeof tagRandomTitle];
+
+            randomMumentList = await pools.queryValue(getRandomMumentQuery, [detailTag]);
         }
 
-        if (detailTag === 0) {
-            return null;
-        }
+        const mumentList: RandomMumentInterface[] = [];
 
-        const tagTitle: string = tagRandomTitle[detailTag as keyof typeof tagRandomTitle];
+        randomMumentList.forEach(element => {
+            mumentList.push({
+                _id: element.id,
+                music: {
+                    name: element.music_name,
+                    artist: element.artist,
+                },
+                user: {
+                    name: element.user_name,
+                    image: element.user_image,
+                },
+                content: element.content,
+                createdAt: element.created_at,
+            })
+        })
 
-        /**
-         * ✅몽고디비 연결 임시 주석처리 + data 변수에 임시로 더미 넣어둠
-         */
-        // // 조건에 맞는 랜덤 뮤멘트 가져오기
-        // const randomMumentList: RandomMumentInterface[] = await HomeCandidate.aggregate([
-        //     { $match: { $and: [{ isDeleted: false }, { isPrivate: false }, { $or: [{ impressionTag: detailTag }, { feelingTag: detailTag }] }] } },
-        //     { $sample: { size: 3 } },
-        //     { $project: { _id: '$mumentId', music: { name: 1, artist: 1 }, user: { name: 1, image: 1 }, impressionTag: 1, feelingTag: 1, content: 1, createdAt: 1 } },
-        // ]);
-        // const data: RandomMumentResponseDto = {
-        //     title: tagTitle,
-        //     mumentList: randomMumentList,
-        // };
         const data: RandomMumentResponseDto = {
             title: tagTitle,
-            mumentList: []
+            mumentList: mumentList,
         };
 
         return data;
