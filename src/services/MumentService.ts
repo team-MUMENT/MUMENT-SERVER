@@ -774,7 +774,7 @@ const getTodayMument = async (): Promise<TodayMumentResponseDto | number> => {
         // 결과가 0일 경우에는 백업데이터 조회
         if (getTodayMumentResult.length === 0) {
             const getBackUpMumentQuery = `
-            SELECT mument.*, ht.display_date, music.*, user.profile_id as user_name, user.image as user_image
+            SELECT mument.*, ht.display_date, music.id as music_id, music.name, music.artist, music.image, user.profile_id as user_name, user.image as user_image
             FROM home_today as ht
             JOIN mument
                 ON mument.id = ht.mument_id
@@ -790,6 +790,8 @@ const getTodayMument = async (): Promise<TodayMumentResponseDto | number> => {
 
             getTodayMumentResult = await pools.queryValue(getBackUpMumentQuery, ['2023-01-01']);
         };
+
+        if (getTodayMumentResult.length === 0) return constant.NO_HOME_CONTENT;
 
         const todayMument = getTodayMumentResult[0];
 
@@ -929,6 +931,8 @@ const getAgainMument = async (): Promise<AgainMumentResponseDto | number> => {
         `;
 
         const homeAgainResult = await pools.query(getAgainQuery);
+
+        if (homeAgainResult.length === 0) return constant.NO_HOME_CONTENT;
 
         const againMument: AgainSelectionInfo[] = [];
 
