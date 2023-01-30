@@ -569,6 +569,7 @@ const getRandomMument = () => __awaiter(void 0, void 0, void 0, function* () {
         WHERE mt.tag_id = ?
             AND m.is_deleted = 0
             AND m.is_private = 0
+            AND user.is_deleted = 0
         ORDER BY rand()
         LIMIT 3;
         `;
@@ -690,6 +691,7 @@ const getTodayMument = () => __awaiter(void 0, void 0, void 0, function* () {
             const date = (0, dayjs_1.default)(createdAt).format('D MMM, YYYY');
             return date;
         };
+        const isFirst = todayMument.is_first ? true : false;
         const todayMumentCard = {
             mumentId: todayMument.id,
             music: {
@@ -704,7 +706,7 @@ const getTodayMument = () => __awaiter(void 0, void 0, void 0, function* () {
                 image: todayMument.user_image,
             },
             content: todayMument.content,
-            isFirst: todayMument.is_first,
+            isFirst: isFirst,
             feelingTag: feelingTag,
             impressionTag: impressionTag,
             cardTag: cardTag,
@@ -780,6 +782,7 @@ const getAgainMument = () => __awaiter(void 0, void 0, void 0, function* () {
         WHERE mument.is_deleted = 0
             AND mument.is_private = 0
             AND mument.is_first = 0
+            AND user.is_deleted = 0
         ORDER BY rand()
         LIMIT 3;
         `;

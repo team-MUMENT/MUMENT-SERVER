@@ -687,6 +687,7 @@ const getRandomMument = async (): Promise<RandomMumentResponseDto> => {
         WHERE mt.tag_id = ?
             AND m.is_deleted = 0
             AND m.is_private = 0
+            AND user.is_deleted = 0
         ORDER BY rand()
         LIMIT 3;
         `;
@@ -825,6 +826,8 @@ const getTodayMument = async (): Promise<TodayMumentResponseDto | number> => {
             return date;
         };
 
+        const isFirst: boolean = todayMument.is_first ? true : false;
+
         const todayMumentCard: TodaySelectionInfo = {
             mumentId: todayMument.id,
             music: {
@@ -839,7 +842,7 @@ const getTodayMument = async (): Promise<TodayMumentResponseDto | number> => {
                 image: todayMument.user_image,
             },
             content: todayMument.content,
-            isFirst: todayMument.is_first,
+            isFirst: isFirst,
             feelingTag: feelingTag,
             impressionTag: impressionTag,
             cardTag: cardTag,
@@ -926,6 +929,7 @@ const getAgainMument = async (): Promise<AgainMumentResponseDto | number> => {
         WHERE mument.is_deleted = 0
             AND mument.is_private = 0
             AND mument.is_first = 0
+            AND user.is_deleted = 0
         ORDER BY rand()
         LIMIT 3;
         `;
