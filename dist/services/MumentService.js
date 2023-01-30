@@ -564,7 +564,7 @@ const getRandomMument = () => __awaiter(void 0, void 0, void 0, function* () {
         let tagTitle = '';
         // 랜덤 뮤멘트를 가져오는 쿼리
         const getRandomMumentQuery = `
-        SELECT music.name as music_name, music.artist, m.content, user.profile_id as user_name, user.image as user_image, m.created_at
+        SELECT m.id, music.name as music_name, music.artist, m.content, user.profile_id as user_name, user.image as user_image, m.created_at
         FROM home_random as hr
         JOIN mument as m
             ON m.id = hr.mument_id
