@@ -8,8 +8,6 @@ export interface RandomMumentInterface {
         name: string;
         image?: string;
     };
-    impressionTag: number[];
-    feelingTag: number[];
     content: string;
     createdAt: Date;
 }
