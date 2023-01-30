@@ -1,5 +1,5 @@
 export interface RandomMumentInterface {
-    _id: string;
+    _id: number;
     music: {
         name: string;
         artist: string;
