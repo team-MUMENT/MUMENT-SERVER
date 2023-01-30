@@ -9,7 +9,7 @@ import mumentDB from '../modules/db/Mument';
 import userDB from '../modules/db/User';
 import musicDB from '../modules/db/Music';
 
-import { tagRandomTitle } from '../modules/tagTitle';
+import { tagBannerTitle, tagRandomTitle } from '../modules/tagTitle';
 import { PostBaseResponseDto } from '../interfaces/common/PostBaseResponseDto';
 import { MumentCardViewInterface } from '../interfaces/mument/MumentCardViewInterface';
 import { MumentCreateDto } from '../interfaces/mument/MumentCreateDto';
@@ -32,6 +32,7 @@ import { NoticeInfoRDB } from '../interfaces/mument/NoticeInfoRDB';
 import { NumberBaseResponseDto } from '../interfaces/common/NumberBaseResponseDto';
 import pushHandler from '../library/pushHandler';
 import { RandomMumentInterface } from '../interfaces/home/RandomMumentInterface';
+import { BannerSelectionInfo } from '../interfaces/home/BannerSelectionInfo';
 
 
 /** 
@@ -788,26 +789,42 @@ const getBanner = async (): Promise<TodayBannerResponseDto | number> => {
         dayjs.extend(utc);
 
         // 날짜 비교를 위해 이번주 월요일 자정 날짜 받아오기
-        const mondayMidnight = dayjs().day(1).hour(0).minute(0).second(0).millisecond(0).utc().format();
+        const mondayMidnight = dayjs().day(1).hour(0).minute(0).second(0).millisecond(0).format();
 
         const todayDate = dayjs().format('YYYY-MM-DD');
 
-        /**
-         * ✅몽고디비 연결 임시 주석처리 + data 변수에 임시로 더미 넣어둠
-         */
-        // const bannerList: BannerSelectionInfo[] = await BannerSelection.find({
-        //     displayDate: mondayMidnight,
-        // });
+        const getBannerQuery = `
+        SELECT *
+        FROM home_banner
+        JOIN music
+            ON music.id = home_banner.music_id
+        WHERE home_banner.display_date = ?;
+        `;
 
-        // if (bannerList.length === 0) return constant.NO_HOME_CONTENT;
+        const bannerResult = await pools.queryValue(getBannerQuery, [mondayMidnight]);
 
-        // const data: TodayBannerResponseDto = {
-        //     todayDate,
-        //     bannerList,
-        // };
+        if (bannerResult.length === 0) return constant.NO_HOME_CONTENT;
+
+        const bannerList: BannerSelectionInfo[]= [];
+
+        bannerResult.forEach(element => {
+            const tagTitle = tagBannerTitle[element.tag_id as keyof typeof tagBannerTitle];
+
+            bannerList.push({
+                music: {
+                    _id: element.music_id,
+                    name: element.name,
+                    artist: element.artist,
+                    image: element.image,
+                },
+                tagTitle: tagTitle,
+                displayDate: element.display_date,
+            })
+        })
+
         const data: TodayBannerResponseDto = {
             todayDate: todayDate,
-            bannerList: []
+            bannerList: bannerList,
         };
         
         return data;
