@@ -2,7 +2,7 @@ import { MumentCardViewInterface } from '../mument/MumentCardViewInterface';
 
 export interface MusicMyMumentResponseDto {
     music: {
-        _id: number | string;
+        _id: string;
         name: string;
         artist: string;
         image?: string;

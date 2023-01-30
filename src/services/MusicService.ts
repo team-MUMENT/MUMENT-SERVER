@@ -1,7 +1,6 @@
 import dayjs from 'dayjs';
 import axios from 'axios';
 import constant from '../modules/serviceReturnConstant';
-import pools from '../modules/pool';
 import poolPromise from '../loaders/db';
 
 import userDB from '../modules/db/User';
@@ -15,7 +14,6 @@ import musicDB from '../modules/db/Music';
 
 import cardTagList from '../modules/cardTagList';
 import config from '../config';
-import appleSignIn from '../library/appleSignIn';
 
 const qs = require('querystring');
 require('dotenv').config();
@@ -110,12 +108,12 @@ const getMusicAndMyMument = async (musicId: string, userId: string): Promise<Mus
         const mumentDate = dayjs(latestMument[0].createdAt).format('D MMM, YYYY');
 
         const myMument: MumentCardViewInterface = {
-            _id: latestMument[0].id.toString(),
+            _id: latestMument[0].id,
             music: {
                 _id: latestMument[0].music_id.toString(),
             },
             user: {
-                _id: latestMument[0].user_id.toString(),
+                _id: latestMument[0].user_id,
                 name: latestMument[0].user_name,
                 image: latestMument[0].user_image,
             },
@@ -300,24 +298,24 @@ const getMumentList = async (musicId: string, userId: string, isLikeOrder: boole
         for (const mument of originalMumentList) {
             mumentList.push({
                 _id: mument.id,
-                musicId: mument.music_id,
+                musicId: mument.music_id.toString(),
                 user: {
                     _id: mument.user_id,
                     name: mument.user_name,
                     image: mument.user_image,
                 },
-                isFirst: mument.is_first,
+                isFirst: Boolean(mument.is_first),
                 impressionTag: tagList[tagList.findIndex(o => o.id == mument.id)].impressionTag,
                 feelingTag: tagList[tagList.findIndex(o => o.id == mument.id)].feelingTag,
                 cardTag: tagList[tagList.findIndex(o => o.id == mument.id)].cardTag,
                 content: mument.content,
-                isPrivate: mument.is_private,
+                isPrivate: Boolean(mument.is_private),
                 likeCount: mument.like_count,
-                isDeleted: mument.is_deleted,
+                isDeleted: Boolean(mument.is_deleted),
                 createdAt: mument.created_at,
                 updatedAt: mument.updated_at,
                 date: createDate(mument.created_at),
-                isLiked: isLikedList[isLikedList.findIndex(o => o.id == mument.id)].isLiked,
+                isLiked: Boolean(isLikedList[isLikedList.findIndex(o => o.id == mument.id)].isLiked),
             });
         };
 

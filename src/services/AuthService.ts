@@ -165,7 +165,7 @@ const login = async (provider: string, authenticationCode: string, fcm_token: st
 
         // 새로 발급한 jwt token과 유저 id, 로그인/회원가입 타입 return
         const data: AuthTokenResponseDto = {
-            _id: user.id.toString(),
+            _id: user.id,
             type: type,
             accessToken,
             refreshToken,
@@ -227,7 +227,7 @@ const getNewAccessToken = async (userId: number, refreshToken: string): Promise<
         const returnRefreshToken: string = newRefreshToken ? newRefreshToken : refreshToken;
 
         const data: AuthTokenResponseDto = {
-            _id: user.id.toString(),
+            _id: user.id,
             type,
             accessToken,
             refreshToken: returnRefreshToken
