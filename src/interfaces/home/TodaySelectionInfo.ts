@@ -1,12 +1,13 @@
 export interface TodaySelectionInfo {
-    mumentId: string;
+    mumentId: number;
     music: {
         _id: string;
         name: string;
         artist: string;
+        image: string;
     };
     user: {
-        _id: string;
+        _id: number;
         name: string;
         image?: string;
     };

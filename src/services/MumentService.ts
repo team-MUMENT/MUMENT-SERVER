@@ -34,6 +34,7 @@ import pushHandler from '../library/pushHandler';
 import { RandomMumentInterface } from '../interfaces/home/RandomMumentInterface';
 import { BannerSelectionInfo } from '../interfaces/home/BannerSelectionInfo';
 import { AgainSelectionInfo } from '../interfaces/home/AgainSelectionInfo';
+import { TodaySelectionInfo } from '../interfaces/home/TodaySelectionInfo';
 
 
 /** 
@@ -749,32 +750,105 @@ const getRandomMument = async (): Promise<RandomMumentResponseDto> => {
 // 오늘의 뮤멘트 조회
 const getTodayMument = async (): Promise<TodayMumentResponseDto | number> => {
     try {
-        dayjs.extend(utc);
-        dayjs.extend(timezone);
-
         // 리퀘스트 받아온 시간 판단 후 당일 자정으로 수정
-        const todayMidnight = dayjs().hour(0).minute(0).second(0).millisecond(0);
-        const todayUtcDate = dayjs(todayMidnight).utc().format();
-        const todayDate = dayjs(todayMidnight).format('YYYY-MM-DD');
+        const todayDate = dayjs().hour(0).minute(0).second(0).millisecond(0).format('YYYY-MM-DD');
 
-        /**
-         * ✅몽고디비 연결 임시 주석처리 + 변수에 임시로 더미 넣어둠
-         */        
-        // const todayMument = await TodaySelection.findOne({
-        //     displayDate: todayUtcDate,
-        // });
+        const getTodayMumentQuery = `
+        SELECT mument.*, ht.display_date, music.id as music_id, music.name, music.artist, music.image, user.profile_id as user_name, user.image as user_image
+        FROM home_today as ht
+        JOIN mument
+            ON mument.id = ht.mument_id
+        JOIN user
+            ON mument.user_id = user.id
+        JOIN music
+            ON music.id = mument.music_id
+        WHERE ht.display_date = ?
+            AND mument.is_deleted = 0
+            AND mument.is_private = 0
+            AND user.is_deleted = 0;
+        `;
 
-        // if (!todayMument) {
-        //     return constant.NO_HOME_CONTENT;
-        // }
+        let getTodayMumentResult = [];
+        getTodayMumentResult = await pools.queryValue(getTodayMumentQuery, [todayDate]); 
 
-        // const data: TodayMumentResponseDto = {
-        //     todayDate,
-        //     todayMument,
-        // };
+        // 결과가 0일 경우에는 백업데이터 조회
+        if (getTodayMumentResult.length === 0) {
+            const getBackUpMumentQuery = `
+            SELECT mument.*, ht.display_date, music.*, user.profile_id as user_name, user.image as user_image
+            FROM home_today as ht
+            JOIN mument
+                ON mument.id = ht.mument_id
+            JOIN user
+                ON mument.user_id = user.id
+            JOIN music
+                ON music.id = mument.music_id
+            WHERE ht.display_date = ?
+                AND mument.is_deleted = 0
+                AND mument.is_private = 0
+                AND user.is_deleted = 0;
+            `;
+
+            getTodayMumentResult = await pools.queryValue(getBackUpMumentQuery, ['2023-01-01']);
+        };
+
+        const todayMument = getTodayMumentResult[0];
+
+        const getTagQuery = `
+        SELECT *
+        FROM mument_tag
+        WHERE mument_id = ?
+            AND is_deleted = 0
+        ORDER BY created_at ASC;
+        `;
+
+        const getTagResult = await pools.queryValue(getTagQuery, [todayMument.id]);
+
+        const tagList: number[] = [];
+        const impressionTag: number[] = [];
+        const feelingTag: number[] = [];
+
+        for (const object of getTagResult) {
+            tagList.push(object.tag_id);
+            if (object.tag_id < 200) {
+                impressionTag.push(object.tag_id);
+            } else if (object.tag_id < 300) {
+                feelingTag.push(object.tag_id);
+            }
+        };
+
+        const cardTag: number[] = await cardTagList.cardTag(tagList);
+
+        const createDate = (createdAt: Date): string => {
+            const date = dayjs(createdAt).format('D MMM, YYYY');
+            return date;
+        };
+
+        const todayMumentCard: TodaySelectionInfo = {
+            mumentId: todayMument.id,
+            music: {
+                _id: todayMument.music_id,
+                name: todayMument.name,
+                artist: todayMument.artist,
+                image: todayMument.image,
+            },
+            user: {
+                _id: todayMument.user_id,
+                name: todayMument.user_name,
+                image: todayMument.user_image,
+            },
+            content: todayMument.content,
+            isFirst: todayMument.is_first,
+            feelingTag: feelingTag,
+            impressionTag: impressionTag,
+            cardTag: cardTag,
+            createdAt: todayMument.created_at,
+            date: createDate(todayMument.created_at),
+            displayDate: todayMument.display_date
+        };
+
         const data: TodayMumentResponseDto = {
             todayDate: todayDate,
-            todayMument: null
+            todayMument: todayMumentCard,
         };
 
         return data;
