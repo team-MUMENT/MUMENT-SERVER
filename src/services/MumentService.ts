@@ -33,6 +33,7 @@ import { NumberBaseResponseDto } from '../interfaces/common/NumberBaseResponseDt
 import pushHandler from '../library/pushHandler';
 import { RandomMumentInterface } from '../interfaces/home/RandomMumentInterface';
 import { BannerSelectionInfo } from '../interfaces/home/BannerSelectionInfo';
+import { AgainSelectionInfo } from '../interfaces/home/AgainSelectionInfo';
 
 
 /** 
@@ -837,31 +838,47 @@ const getBanner = async (): Promise<TodayBannerResponseDto | number> => {
 // 다시 들은 곡의 뮤멘트 조회
 const getAgainMument = async (): Promise<AgainMumentResponseDto | number> => {
     try {
-        dayjs.extend(utc);
+        const getAgainQuery = `
+        SELECT mument.id, music.id as music_id, music.name as music_name, music.artist, music.image as music_image, user.id as user_id, user.profile_id as user_name, user.image as user_image, mument.content, mument.created_at
+        FROM home_again as ha
+        JOIN mument
+            ON mument.id = ha.mument_id
+        JOIN music
+            ON music.id = mument.music_id
+        JOIN user
+            ON user.id = mument.user_id
+        WHERE mument.is_deleted = 0
+            AND mument.is_private = 0
+            AND mument.is_first = 0
+        ORDER BY rand()
+        LIMIT 3;
+        `;
 
-        // 리퀘스트 받아온 시간 판단 후 당일 자정으로 수정
-        const todayMidnight = dayjs().hour(0).minute(0).second(0).millisecond(0);
-        const todayUtcDate = dayjs(todayMidnight).utc().format();
-        const todayDate = dayjs(todayMidnight).format('YYYY-MM-DD');
+        const homeAgainResult = await pools.query(getAgainQuery);
 
-        /**
-         * ✅몽고디비 연결 임시 주석처리 + data 변수에 임시로 더미 넣어둠
-         */
-        // const againMument: AgainSelectionInfo[] = await AgainSelection.find({
-        //     displayDate: todayUtcDate,
-        // });
+        const againMument: AgainSelectionInfo[] = [];
 
-        // if (!againMument) {
-        //     return constant.NO_HOME_CONTENT;
-        // }
+        homeAgainResult.forEach(element => {
+            againMument.push({
+                mumentId: element.id,
+                music: {
+                    _id: element.music_id,
+                    name: element.music_name,
+                    artist: element.artist,
+                    image: element.music_image,
+                },
+                user: {
+                    _id: element.user_id,
+                    name: element.user_name,
+                    image: element.user_image,
+                },
+                content: element.content,
+                createdAt: element.created_at,
+            })
+        });
 
-        // const data: AgainMumentResponseDto = {
-        //     todayDate,
-        //     againMument,
-        // };
         const data: AgainMumentResponseDto = {
-            todayDate,
-            againMument: []
+            againMument: againMument
         };
 
         return data;
