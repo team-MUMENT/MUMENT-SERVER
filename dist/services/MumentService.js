@@ -241,15 +241,6 @@ const getMumentHistory = (userId, musicId, writerId, orderBy, limit, offset) => 
     const pool = yield db_1.default;
     const connection = yield pool.getConnection();
     try {
-        // 노래 정보 가져오기
-        const getMusicQuery = `
-        SELECT id, name, artist, image
-        FROM music
-        WHERE id = ?;
-        `;
-        const getMusicResult = yield connection.query(getMusicQuery, [musicId]);
-        if (getMusicResult.length === 0)
-            return serviceReturnConstant_1.default.NO_MUSIC;
         let getMumentListResult = [];
         // 비밀글도 볼 수 있게 함
         if (userId === writerId) {
@@ -269,22 +260,9 @@ const getMumentHistory = (userId, musicId, writerId, orderBy, limit, offset) => 
             ORDER BY created_at ${orderBy}
             LIMIT ? OFFSET ?;
             `;
-            getMumentListResult = yield connection.query(getMumentListQuery, [userId, musicId, userId, limit, offset]);
-            console.log('getmumentlistResult값: ', getMumentListResult);
+            getMumentListResult = yield connection.query(getMumentListQuery, [userId, musicId, writerId, limit, offset]);
         }
         else {
-            // 차단된 유저인지 확인
-            const getIsBlockedQuery = `
-            SELECT EXISTS (
-                SELECT *
-                FROM block
-                WHERE blocked_user_id = ?
-                    AND user_id = ?
-            ) as is_blocked;
-            `;
-            const isBlocked = yield connection.query(getIsBlockedQuery, [userId, writerId]);
-            if (isBlocked[0].is_blocked)
-                return serviceReturnConstant_1.default.BLOCKED_USER;
             // 비밀글 볼 수 없게 함
             const getMumentListQuery = `
             SELECT mument.*, user.profile_id as user_name, user.image as user_image,
@@ -303,17 +281,13 @@ const getMumentHistory = (userId, musicId, writerId, orderBy, limit, offset) => 
             ORDER BY created_at ${orderBy}
             LIMIT ? OFFSET ?;
             `;
-            getMumentListResult = yield connection.query(getMumentListQuery, [userId, musicId, userId, limit, offset]);
+            getMumentListResult = yield connection.query(getMumentListQuery, [userId, musicId, writerId, limit, offset]);
+            console.log(getMumentListQuery);
+            console.log(userId, musicId, writerId, limit, offset);
         }
         // 해당 유저가 작성한 뮤멘트가 없을 경우 리턴
         if (getMumentListResult.length === 0) {
             const data = {
-                music: {
-                    _id: getMusicResult[0].id.toString(),
-                    name: getMusicResult[0].name,
-                    artist: getMusicResult[0].artist,
-                    image: getMusicResult[0].image,
-                },
                 mumentHistory: []
             };
             return data;
@@ -323,9 +297,6 @@ const getMumentHistory = (userId, musicId, writerId, orderBy, limit, offset) => 
         const strMumentIdList = '(' + mumentIdList.join(', ') + ')';
         const tagList = [];
         try {
-            // mumentIdList.forEach( (element: number) => {
-            //     tagList.push({ id: element, impressionTag: [], feelingTag: [], cardTag: []})
-            // });
             for (var mumentIdList_1 = __asyncValues(mumentIdList), mumentIdList_1_1; mumentIdList_1_1 = yield mumentIdList_1.next(), !mumentIdList_1_1.done;) {
                 let element = mumentIdList_1_1.value;
                 tagList.push({ id: element, impressionTag: [], feelingTag: [], cardTag: [] });
@@ -366,9 +337,6 @@ const getMumentHistory = (userId, musicId, writerId, orderBy, limit, offset) => 
         // id와 좋아요 여부 담은 리스트 생성
         const isLikedList = [];
         try {
-            // mumentIdList.forEach((element: number) => {
-            //     isLikedList.push({id: element, isLiked: false});
-            // });
             for (var mumentIdList_2 = __asyncValues(mumentIdList), mumentIdList_2_1; mumentIdList_2_1 = yield mumentIdList_2.next(), !mumentIdList_2_1.done;) {
                 let element = mumentIdList_2_1.value;
                 isLikedList.push({ id: element, isLiked: false });
@@ -415,7 +383,7 @@ const getMumentHistory = (userId, musicId, writerId, orderBy, limit, offset) => 
                         name: mument.user_name,
                         image: mument.user_image,
                     },
-                    isFirst: Boolean(),
+                    isFirst: Boolean(mument.is_first),
                     impressionTag: tagList[tagList.findIndex(o => o.id == mument.id)].impressionTag,
                     feelingTag: tagList[tagList.findIndex(o => o.id === mument.id)].feelingTag,
                     cardTag: tagList[tagList.findIndex(o => o.id === mument.id)].cardTag,
@@ -438,12 +406,6 @@ const getMumentHistory = (userId, musicId, writerId, orderBy, limit, offset) => 
             finally { if (e_3) throw e_3.error; }
         }
         const data = {
-            music: {
-                _id: getMusicResult[0].id.toString(),
-                name: getMusicResult[0].name,
-                artist: getMusicResult[0].artist,
-                image: getMusicResult[0].image
-            },
             mumentHistory
         };
         return data;
