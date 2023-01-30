@@ -350,7 +350,7 @@ const getRandomMument = async (req: Request, res: Response) => {
         const data = await MumentService.getRandomMument();
 
         if (!data) {
-            res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.BAD_REQUEST, message.RANDOM_TAG_FAIL));
+            res.status(statusCode.NO_CONTENT).send(util.success(statusCode.NO_CONTENT, message.RANDOM_TAG_FAIL));
         }
 
         res.status(statusCode.OK).send(util.success(statusCode.OK, message.GET_RANDOM_MUMENT_SUCCESS, data));
@@ -383,7 +383,7 @@ const getTodayMument = async (req: Request, res: Response) => {
 
         // 조회는 성공했으나 결과값이 없을 경우
         if (data === constant.NO_HOME_CONTENT) {
-            res.status(statusCode.NO_CONTENT).send();
+            res.status(statusCode.NO_CONTENT).send(util.success(statusCode.NO_CONTENT, message.GET_TODAY_MUMENT_SUCCESS));
         }
 
         res.status(statusCode.OK).send(util.success(statusCode.OK, message.GET_TODAY_MUMENT_SUCCESS, data));
