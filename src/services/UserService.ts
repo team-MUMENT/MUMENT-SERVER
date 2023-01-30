@@ -70,7 +70,7 @@ const getMyMumentList = async (userId: string, tagList: number[]): Promise<UserM
                         name: user.profile_id as string
                     },
                     music: {
-                        _id: item.music_id,
+                        _id: item.music_id.toString(),
                         name: item.name,
                         artist: item.artist,
                         image: item.music_image
@@ -166,7 +166,7 @@ const getLikeMumentList = async (userId: string, tagList: number[]): Promise<Use
                         name: item.profile_id as string
                     },
                     music: {
-                        _id: item.music_id,
+                        _id: item.music_id.toString(),
                         name: item.name,
                         artist: item.artist,
                         image: item.music_image
@@ -319,6 +319,9 @@ const getBlockedUserList = async (userId: number): Promise<UserResponseDto[] | n
     }
 };
 
+/**
+ *  프로필 설정 (소셜 로그인 후) & 프로필 수정
+ */
 const putProfile = async (userId: number, profileId: string, image: string | null): Promise<UserProfileSetResponseDto | number> => {
     const pool: any = await poolPromise;
     const connection = await pool.getConnection();
@@ -385,6 +388,10 @@ const putProfile = async (userId: number, profileId: string, image: string | nul
     }
 }
 
+
+/**
+ *  프로필 아이디 중복 체크
+ */
 const checkDuplicateName = async (profileId: string): Promise<boolean> => {
     try {
         const checkQuery = `
@@ -410,6 +417,10 @@ const checkDuplicateName = async (profileId: string): Promise<boolean> => {
     }
 }
 
+
+/**
+ * 유저 탈퇴 (사유 등록)
+ */
 const postLeaveCategory = async (userId: number, leaveCategoryId: string, reasonEtc: string | null): Promise<Number | UserLeaveResponseDto> => {
     const pool: any = await poolPromise;
     const connection = await pool.getConnection();
@@ -469,6 +480,9 @@ const postLeaveCategory = async (userId: number, leaveCategoryId: string, reason
     }
 };
 
+/** 
+ * 유저 탈퇴
+*/
 const deleteUser = async (userId: number): Promise<Number | UserDeleteResponseDto> => {
     const pool: any = await poolPromise;
     const connection = await pool.getConnection();
