@@ -155,17 +155,10 @@ const getMumentList = (musicId, userId, isLikeOrder, limit, offset) => __awaiter
         blockUserResult.forEach(element => {
             blockUserList.push(element.exist);
         });
-        // 자신을 차단한 유저 반환
-        const getBlockMeUserQuery = `
-        SELECT user_id
-        FROM block
-        WHERE blocked_user_id = ?
-        `;
-        const blockMeUser = yield connection.query(getBlockMeUserQuery, [userId]);
-        blockMeUser.forEach(element => {
-            blockUserList.push(element.user_id);
-        });
-        const strBlockUserList = '(' + blockUserList.toString() + ')';
+        let strBlockUserList = '( 0 )';
+        if (blockUserResult.length != 0) {
+            strBlockUserList = '(' + blockUserList.toString() + ')';
+        }
         let originalMumentList = [];
         switch (isLikeOrder) {
             case true: { // 좋아요순 정렬
