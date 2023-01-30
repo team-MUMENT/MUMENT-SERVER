@@ -307,23 +307,8 @@ const getMumentHistory = async (userId: string, musicId: string, writerId: strin
             LIMIT ? OFFSET ?;
             `;
 
-            getMumentListResult = await connection.query(getMumentListQuery, [userId, musicId, userId, limit, offset]);
-            console.log('getmumentlistResult값: ', getMumentListResult);
+            getMumentListResult = await connection.query(getMumentListQuery, [userId, musicId, writerId, limit, offset]);
         } else {
-            // 차단된 유저인지 확인
-            const getIsBlockedQuery = `
-            SELECT EXISTS (
-                SELECT *
-                FROM block
-                WHERE blocked_user_id = ?
-                    AND user_id = ?
-            ) as is_blocked;
-            `;
-
-            const isBlocked = await connection.query(getIsBlockedQuery, [userId, writerId]);
-
-            if (isBlocked[0].is_blocked) return constant.BLOCKED_USER;
-
             // 비밀글 볼 수 없게 함
             const getMumentListQuery = `
             SELECT mument.*, user.profile_id as user_name, user.image as user_image,
@@ -343,7 +328,9 @@ const getMumentHistory = async (userId: string, musicId: string, writerId: strin
             LIMIT ? OFFSET ?;
             `;
 
-            getMumentListResult = await connection.query(getMumentListQuery, [userId, musicId, userId, limit, offset]);
+            getMumentListResult = await connection.query(getMumentListQuery, [userId, musicId, writerId, limit, offset]);
+            console.log(getMumentListQuery);
+            console.log(userId, musicId, writerId, limit, offset)
         }
 
 
@@ -363,9 +350,7 @@ const getMumentHistory = async (userId: string, musicId: string, writerId: strin
 
         const tagList: {id: number, impressionTag: number[], feelingTag: number[], cardTag: number[]}[] = [];
         
-        // mumentIdList.forEach( (element: number) => {
-        //     tagList.push({ id: element, impressionTag: [], feelingTag: [], cardTag: []})
-        // });
+
         for await (let element of mumentIdList) {
             tagList.push({ id: element, impressionTag: [], feelingTag: [], cardTag: []})
         }
@@ -400,9 +385,6 @@ const getMumentHistory = async (userId: string, musicId: string, writerId: strin
         // id와 좋아요 여부 담은 리스트 생성
         const isLikedList: {id: number, isLiked: boolean}[] = [];
 
-        // mumentIdList.forEach((element: number) => {
-        //     isLikedList.push({id: element, isLiked: false});
-        // });
         for await (let element of mumentIdList) {
             isLikedList.push({id: element, isLiked: false});
         }
@@ -446,7 +428,7 @@ const getMumentHistory = async (userId: string, musicId: string, writerId: strin
                     name: mument.user_name,
                     image: mument.user_image,
                 },
-                isFirst: Boolean(),
+                isFirst: Boolean(mument.is_first),
                 impressionTag: tagList[tagList.findIndex(o => o.id == mument.id)].impressionTag,
                 feelingTag: tagList[tagList.findIndex(o => o.id === mument.id)].feelingTag,
                 cardTag: tagList[tagList.findIndex(o => o.id === mument.id)].cardTag,
