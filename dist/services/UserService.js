@@ -61,7 +61,7 @@ const getMyMumentList = (userId, tagList) => __awaiter(void 0, void 0, void 0, f
                         name: user.profile_id
                     },
                     music: {
-                        _id: item.music_id,
+                        _id: item.music_id.toString(),
                         name: item.name,
                         artist: item.artist,
                         image: item.music_image
@@ -146,7 +146,7 @@ const getLikeMumentList = (userId, tagList) => __awaiter(void 0, void 0, void 0,
                         name: item.profile_id
                     },
                     music: {
-                        _id: item.music_id,
+                        _id: item.music_id.toString(),
                         name: item.name,
                         artist: item.artist,
                         image: item.music_image
@@ -282,6 +282,9 @@ const getBlockedUserList = (userId) => __awaiter(void 0, void 0, void 0, functio
         throw error;
     }
 });
+/**
+ *  프로필 설정 (소셜 로그인 후) & 프로필 수정
+ */
 const putProfile = (userId, profileId, image) => __awaiter(void 0, void 0, void 0, function* () {
     const pool = yield db_1.default;
     const connection = yield pool.getConnection();
@@ -336,6 +339,9 @@ const putProfile = (userId, profileId, image) => __awaiter(void 0, void 0, void 
         connection.release();
     }
 });
+/**
+ *  프로필 아이디 중복 체크
+ */
 const checkDuplicateName = (profileId) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const checkQuery = `
@@ -356,6 +362,9 @@ const checkDuplicateName = (profileId) => __awaiter(void 0, void 0, void 0, func
         throw error;
     }
 });
+/**
+ * 유저 탈퇴 (사유 등록)
+ */
 const postLeaveCategory = (userId, leaveCategoryId, reasonEtc) => __awaiter(void 0, void 0, void 0, function* () {
     const pool = yield db_1.default;
     const connection = yield pool.getConnection();
@@ -406,6 +415,9 @@ const postLeaveCategory = (userId, leaveCategoryId, reasonEtc) => __awaiter(void
         connection.release();
     }
 });
+/**
+ * 유저 탈퇴
+*/
 const deleteUser = (userId) => __awaiter(void 0, void 0, void 0, function* () {
     const pool = yield db_1.default;
     const connection = yield pool.getConnection();
