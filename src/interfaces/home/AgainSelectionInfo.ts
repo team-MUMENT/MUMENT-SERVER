@@ -1,5 +1,5 @@
 export interface AgainSelectionInfo {
-    mumentId: string;
+    mumentId: number;
     music: {
         _id: string;
         name: string;
@@ -7,11 +7,10 @@ export interface AgainSelectionInfo {
         image: string;
     };
     user: {
-        _id: string;
+        _id: number;
         name: string;
         image?: string;
     };
     content: string;
     createdAt: Date;
-    displayDate: Date;
 }
