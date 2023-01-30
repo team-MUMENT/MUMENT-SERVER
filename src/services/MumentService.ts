@@ -118,7 +118,7 @@ const updateMument = async (mumentId: string, mumentUpdateDto: MumentCreateDto):
         await connection.commit(); // query1, query2 모두 성공시 커밋(데이터 적용)
 
         const data = {
-            _id: mumentId,
+            _id: Number(mumentId),
         };
 
         return data;
@@ -362,7 +362,7 @@ const getMumentHistory = async (userId: string, musicId: string, writerId: strin
         if (getMumentListResult.length === 0) {
             const data: MumentHistoryResponseDto = {
                 music: {
-                    _id: getMusicResult.id,
+                    _id: getMusicResult.id.toString(),
                     name: getMusicResult.name,
                     artist: getMusicResult.artist,
                     image: getMusicResult.image,
@@ -451,30 +451,30 @@ const getMumentHistory = async (userId: string, musicId: string, writerId: strin
         for (const mument of getMumentListResult) {
             mumentHistory.push({
                 _id: mument.id,
-                musicId: mument.music_id,
+                musicId: mument.music_id.toString(),
                 user: {
                     _id: mument.user_id,
                     name: mument.user_name,
                     image: mument.user_image,
                 },
-                isFirst: mument.is_first,
+                isFirst: Boolean(),
                 impressionTag: tagList[tagList.findIndex(o => o.id == mument.id)].impressionTag,
                 feelingTag: tagList[tagList.findIndex(o => o.id === mument.id)].feelingTag,
                 cardTag: tagList[tagList.findIndex(o => o.id === mument.id)].cardTag,
                 content: mument.content,
-                isPrivate: mument.is_private,
+                isPrivate: Boolean(mument.is_private),
                 likeCount: mument.like_count,
-                isDeleted: mument.is_deleted,
+                isDeleted: Boolean(mument.is_deleted),
                 createdAt: mument.created_at,
                 updatedAt: mument.updated_at,
                 date: createDate(mument.created_at),
-                isLiked: isLikedList[isLikedList.findIndex(o => o.id === mument.id)].isLiked,
+                isLiked: Boolean(isLikedList[isLikedList.findIndex(o => o.id === mument.id)].isLiked),
             });
         }
 
         const data: MumentHistoryResponseDto = {
             music: {
-                _id: getMusicResult[0].id,
+                _id: getMusicResult[0].id.toString(),
                 name: getMusicResult[0].name,
                 artist: getMusicResult[0].artist,
                 image: getMusicResult[0].image

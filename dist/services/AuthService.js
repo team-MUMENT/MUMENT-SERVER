@@ -142,7 +142,7 @@ const login = (provider, authenticationCode, fcm_token) => __awaiter(void 0, voi
         yield connection.commit();
         // 새로 발급한 jwt token과 유저 id, 로그인/회원가입 타입 return
         const data = {
-            _id: user.id.toString(),
+            _id: user.id,
             type: type,
             accessToken,
             refreshToken,
@@ -194,7 +194,7 @@ const getNewAccessToken = (userId, refreshToken) => __awaiter(void 0, void 0, vo
         // 리턴할 refresh token
         const returnRefreshToken = newRefreshToken ? newRefreshToken : refreshToken;
         const data = {
-            _id: user.id.toString(),
+            _id: user.id,
             type,
             accessToken,
             refreshToken: returnRefreshToken
