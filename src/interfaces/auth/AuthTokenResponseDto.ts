@@ -3,7 +3,7 @@
 */ 
 
 export interface AuthTokenResponseDto {
-    _id: string; // 유저 id
+    _id: number; // 유저 id
     type: string; //signUp or login
     accessToken: string;
     refreshToken: string;

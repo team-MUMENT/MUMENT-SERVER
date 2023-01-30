@@ -1,3 +1,3 @@
 export interface StringBaseResponseDto {
-    _id: string;
+    _id: string | number;
 }
