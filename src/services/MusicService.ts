@@ -171,19 +171,11 @@ const getMumentList = async (musicId: string, userId: string, isLikeOrder: boole
             blockUserList.push(element.exist);
         });
 
-        // 자신을 차단한 유저 반환
-        const getBlockMeUserQuery = `
-        SELECT user_id
-        FROM block
-        WHERE blocked_user_id = ?
-        `;
+        let strBlockUserList = '( 0 )';
 
-        const blockMeUser: {user_id: number}[] = await connection.query(getBlockMeUserQuery, [userId]);
-        blockMeUser.forEach(element => {
-            blockUserList.push(element.user_id);
-        })
-
-        const strBlockUserList = '(' + blockUserList.toString() + ')';
+        if (blockUserResult.length != 0) {
+            strBlockUserList = '(' + blockUserList.toString() + ')';
+        }
 
         let originalMumentList = [];
 

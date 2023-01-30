@@ -703,7 +703,7 @@ const getTodayMument = () => __awaiter(void 0, void 0, void 0, function* () {
         const todayMumentCard = {
             mumentId: todayMument.id,
             music: {
-                _id: todayMument.music_id,
+                _id: todayMument.music_id.toString(),
                 name: todayMument.name,
                 artist: todayMument.artist,
                 image: todayMument.image,
@@ -755,7 +755,7 @@ const getBanner = () => __awaiter(void 0, void 0, void 0, function* () {
             const tagTitle = tagTitle_1.tagBannerTitle[element.tag_id];
             bannerList.push({
                 music: {
-                    _id: element.music_id,
+                    _id: element.music_id.toString(),
                     name: element.name,
                     artist: element.artist,
                     image: element.image,
@@ -802,7 +802,7 @@ const getAgainMument = () => __awaiter(void 0, void 0, void 0, function* () {
             againMument.push({
                 mumentId: element.id,
                 music: {
-                    _id: element.music_id,
+                    _id: element.music_id.toString(),
                     name: element.music_name,
                     artist: element.artist,
                     image: element.music_image,
