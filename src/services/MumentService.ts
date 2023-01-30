@@ -315,7 +315,7 @@ const getMumentHistory = async (userId: string, musicId: string, writerId: strin
             `;
 
             getMumentListResult = await connection.query(getMumentListQuery, [userId, musicId, userId, limit, offset]);
-
+            console.log('getmumentlistResult값: ', getMumentListResult);
         } else {
             // 차단된 유저인지 확인
             const getIsBlockedQuery = `
@@ -358,10 +358,10 @@ const getMumentHistory = async (userId: string, musicId: string, writerId: strin
         if (getMumentListResult.length === 0) {
             const data: MumentHistoryResponseDto = {
                 music: {
-                    _id: getMusicResult.id.toString(),
-                    name: getMusicResult.name,
-                    artist: getMusicResult.artist,
-                    image: getMusicResult.image,
+                    _id: getMusicResult[0].id.toString(),
+                    name: getMusicResult[0].name,
+                    artist: getMusicResult[0].artist,
+                    image: getMusicResult[0].image,
                 },
                 mumentHistory: []
             };
@@ -371,14 +371,17 @@ const getMumentHistory = async (userId: string, musicId: string, writerId: strin
 
 
         // 태그 조회를 위해 뮤멘트 아이디만 빼오고, 스트링으로 만들어주기
-        const mumentIdList = getMumentListResult.map((x: { id: number; }) => x.id);
+        const mumentIdList = await getMumentListResult.map((x: { id: number; }) => x.id);
         const strMumentIdList = '(' + mumentIdList.join(', ') + ')';
 
         const tagList: {id: number, impressionTag: number[], feelingTag: number[], cardTag: number[]}[] = [];
         
-        mumentIdList.forEach( (element: number) => {
+        // mumentIdList.forEach( (element: number) => {
+        //     tagList.push({ id: element, impressionTag: [], feelingTag: [], cardTag: []})
+        // });
+        for await (let element of mumentIdList) {
             tagList.push({ id: element, impressionTag: [], feelingTag: [], cardTag: []})
-        });
+        }
 
         // 해당 뮤멘트들의 태그 모두 가져오기
         const getAllTagQuery = `
@@ -392,7 +395,7 @@ const getMumentHistory = async (userId: string, musicId: string, writerId: strin
         const getAllTagList = await connection.query(getAllTagQuery);
 
         // impression tag, feeling tag 분류하기
-        getAllTagList.reduce((ac: any[], cur: any) =>  {
+        await getAllTagList.reduce((ac: any[], cur: any) =>  {
             const mumentIdx = tagList.findIndex(o => o.id === cur.mument_id);
             if (cur.tag_id < 200) {
                 tagList[mumentIdx].impressionTag.push(cur.tag_id);
@@ -410,9 +413,12 @@ const getMumentHistory = async (userId: string, musicId: string, writerId: strin
         // id와 좋아요 여부 담은 리스트 생성
         const isLikedList: {id: number, isLiked: boolean}[] = [];
 
-        mumentIdList.forEach((element: number) => {
+        // mumentIdList.forEach((element: number) => {
+        //     isLikedList.push({id: element, isLiked: false});
+        // });
+        for await (let element of mumentIdList) {
             isLikedList.push({id: element, isLiked: false});
-        });
+        }
         
 
         // 좋아요 여부 확인
@@ -430,7 +436,7 @@ const getMumentHistory = async (userId: string, musicId: string, writerId: strin
         const isLikedResult = await connection.query(getIsLikedQuery, [userId]);
 
         // 쿼리 결과에 있을 시에만 isLiked를 true로 바꿈
-        isLikedResult.reduce((ac: any[], cur: any) => {
+        await isLikedResult.reduce((ac: any[], cur: any) => {
             const mumentIdx = isLikedList.findIndex(o => o.id === cur.mument_id);
             isLikedList[mumentIdx].isLiked = true;
         }, isLikedResult);
@@ -444,7 +450,7 @@ const getMumentHistory = async (userId: string, musicId: string, writerId: strin
 
         const mumentHistory: MumentCardViewInterface[] = []
 
-        for (const mument of getMumentListResult) {
+        for await (const mument of getMumentListResult) {
             mumentHistory.push({
                 _id: mument.id,
                 musicId: mument.music_id.toString(),
@@ -498,9 +504,6 @@ const createLike = async (mumentId: string, userId: string): Promise<LikeCountRe
         const findMumentResult = await mumentDB.isExistMument(mumentId, connection);
         if (findMumentResult === false) return constant.NO_MUMENT;
 
-        const isBlocked = await userDB.isBlockedUser(userId, mumentId);
-        if (isBlocked) return constant.BLOCKED_USER;
-
         await connection.beginTransaction();
 
         // 좋아요 등록
@@ -553,28 +556,38 @@ const createLike = async (mumentId: string, userId: string): Promise<LikeCountRe
         await connection.commit();
 
 
-        // 좋아요 눌린 뮤멘트 작성자에게 푸시알림
-        const writerData = await connection.query('SELECT fcm_token FROM user WHERE id=?', [likeResult[0].writer_id]);
-        
-        const pushAlarmResult = await pushHandler.likePushAlarmHandler(
-            '좋아요', 
-            `${userData[0].profile_id}님이 ${likeResult[0].music_title}에 쓴 뮤멘트를 좋아합니다.`, 
-            writerData[0].fcm_token
-        );
-
         const data: LikeCountResponeDto = {
             mumentId: likeResult[0].mument_id,
             likeCount: likeResult[0].like_count
         };
-
-        if (pushAlarmResult === constant.LIKE_PUSH_SUCCESS) {
-            Object.assign(data, { pushSuccess: true });
-            
-        } else if (pushAlarmResult === constant.LIKE_PUSH_FAIL) {
-            Object.assign(data, { pushSuccess: false });
-        }
         
-        return data;
+        
+        // 좋아요 눌린 뮤멘트 작성자에게 푸시알림 - 차단 유저에겐 가지 않음
+        const blockedUser = await connection.query(
+            'SELECT * FROM block WHERE user_id=? AND blocked_user_id=?', [likeResult[0].writer_id, userId]
+        );
+
+        if (blockedUser.length === 0 ) {
+            
+            const writerData = await connection.query('SELECT fcm_token FROM user WHERE id=?', [likeResult[0].writer_id]);
+        
+            const pushAlarmResult = await pushHandler.likePushAlarmHandler(
+                '좋아요', 
+                `${userData[0].profile_id}님이 ${likeResult[0].music_title}에 쓴 뮤멘트를 좋아합니다.`, 
+                writerData[0].fcm_token
+            );
+
+            if (pushAlarmResult === constant.LIKE_PUSH_SUCCESS) {
+                Object.assign(data, { pushSuccess: true });
+
+            } else if (pushAlarmResult === constant.LIKE_PUSH_FAIL) {
+                Object.assign(data, { pushSuccess: false });
+            }
+    
+            return data;
+        }
+        return Object.assign(data, { pushSuccess: false });
+    
     } catch (error) {
         console.log(error);
         await connection.rollback();
