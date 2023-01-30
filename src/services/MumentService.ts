@@ -286,17 +286,6 @@ const getMumentHistory = async (userId: string, musicId: string, writerId: strin
     const connection = await pool.getConnection();
     
     try {
-        // 노래 정보 가져오기
-        const getMusicQuery = `
-        SELECT id, name, artist, image
-        FROM music
-        WHERE id = ?;
-        `;
-
-        const getMusicResult = await connection.query(getMusicQuery, [musicId]);
-
-        if (getMusicResult.length === 0) return constant.NO_MUSIC;
-
         let getMumentListResult = [];
 
         // 비밀글도 볼 수 있게 함
@@ -361,12 +350,6 @@ const getMumentHistory = async (userId: string, musicId: string, writerId: strin
         // 해당 유저가 작성한 뮤멘트가 없을 경우 리턴
         if (getMumentListResult.length === 0) {
             const data: MumentHistoryResponseDto = {
-                music: {
-                    _id: getMusicResult[0].id.toString(),
-                    name: getMusicResult[0].name,
-                    artist: getMusicResult[0].artist,
-                    image: getMusicResult[0].image,
-                },
                 mumentHistory: []
             };
 
@@ -479,12 +462,6 @@ const getMumentHistory = async (userId: string, musicId: string, writerId: strin
         }
 
         const data: MumentHistoryResponseDto = {
-            music: {
-                _id: getMusicResult[0].id.toString(),
-                name: getMusicResult[0].name,
-                artist: getMusicResult[0].artist,
-                image: getMusicResult[0].image
-            },
             mumentHistory
         };
 
