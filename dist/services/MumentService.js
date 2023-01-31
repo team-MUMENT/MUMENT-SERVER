@@ -121,7 +121,7 @@ const getMument = (mumentId, userId) => __awaiter(void 0, void 0, void 0, functi
         // 사용자가 이 뮤멘트에 좋아요 눌렀으면 1, 아니면 0
         const isLiked = yield Mument_1.default.isLiked(mumentId, userId);
         // 사용자 정보 가져오기
-        const user = yield User_1.default.userInfo(mument.user_id.toString());
+        const user = yield User_1.default.userInfoIncludeLeave(mument.user_id.toString());
         // 뮤멘트 히스토리 개수 - 뮤멘트의 작성자가 해당 곡에 쓴 뮤멘트 개수 : 조건 isDeleted와 isPrivate가 false인 뮤멘트 개수
         const historyCount = yield Mument_1.default.mumentHistoryCount(mument.music_id.toString(), mument.user_id.toString());
         // 작성 시간

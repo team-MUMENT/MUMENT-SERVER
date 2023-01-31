@@ -35,6 +35,17 @@ const userInfo = async (userId: string) => {
     const query = 'SELECT * FROM user WHERE id=? AND is_deleted=0'; //탈퇴하지 않은 유저
     
     const user: UserInfoRDB[] = await pools.queryValue(query, [userId]);
+    console.log(user);
+
+    return user[0];
+}
+
+// userId로 탈퇴한 유저 포함 레코드 가져오기
+const userInfoIncludeLeave = async (userId: string) => {
+    const query = 'SELECT * FROM user WHERE id=?';
+    
+    const user: UserInfoRDB[] = await pools.queryValue(query, [userId]);
+    console.log(user);
 
     return user[0];
 }
@@ -114,6 +125,7 @@ const isBlockedUser = async (userId: string, mumentId: string): Promise<boolean>
 
 export default {
     userInfo,
+    userInfoIncludeLeave,
     myMumentList,
     myLikeMumentList,
     blockedUserList,
