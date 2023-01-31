@@ -4,7 +4,7 @@ import message from '../modules/responseMessage';
 import util from '../modules/util';
 import { validationResult } from 'express-validator';
 import { MusicService } from '../services';
-import sendMessage, { SlackMessageFormat } from '../library/slackWebHook';
+import slackWebHook, { SlackMessageFormat } from '../library/slackWebHook';
 import constant from '../modules/serviceReturnConstant';
 
 /**
@@ -28,22 +28,13 @@ const getMusicAndMyMument = async (req: Request, res: Response) => {
         } else {
             res.status(statusCode.OK).send(util.success(statusCode.OK, message.FIND_MUSIC_MYMUMENT_SUCCESS, data));
         }
-    } catch (error) {
+    } catch (error: any) {
         console.log(error);
 
-        const slackMessage: SlackMessageFormat = {
-            title: 'MUMENT ec2 서버 오류',
-            text: '서버 내부 오류입니다',
-            fields: [
-                {
-                    title: 'Error Stack:',
-                    value: `\`\`\`${error}\`\`\``,
-                },
-            ],
-        };
-        sendMessage(slackMessage);
-
-        res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.SERVICE_UNAVAILABLE, message.INTERNAL_SERVER_ERROR));
+        const slackMessage: SlackMessageFormat = slackWebHook.slackErrorMessage(error.stack);
+        slackWebHook.sendMessage(slackMessage);
+        
+        return res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
     }
 };
 
@@ -84,22 +75,13 @@ const getMumentList = async (req: Request, res: Response) => {
         }
 
         res.status(statusCode.OK).send(util.success(statusCode.OK, message.READ_MUSIC_MUMENTLIST_SUCCESS, data));
-    } catch (error) {
+    } catch (error: any) {
         console.log(error);
 
-        const slackMessage: SlackMessageFormat = {
-            title: 'MUMENT ec2 서버 오류',
-            text: '서버 내부 오류입니다',
-            fields: [
-                {
-                    title: 'Error Stack:',
-                    value: `\`\`\`${error}\`\`\``,
-                },
-            ],
-        };
-        sendMessage(slackMessage);
-
-        res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
+        const slackMessage: SlackMessageFormat = slackWebHook.slackErrorMessage(error.stack);
+        slackWebHook.sendMessage(slackMessage);
+        
+        return res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
     }
 };
 
@@ -122,22 +104,13 @@ const getMusicListBySearch = async (req: Request, res: Response) => {
         }
 
         res.status(statusCode.OK).send(util.success(statusCode.OK, message.SEARCH_MUSIC_LIST_SUCCESS, data));
-    } catch (error) {
+    } catch (error: any) {
         console.log(error);
 
-        const slackMessage: SlackMessageFormat = {
-            title: 'MUMENT ec2 서버 오류',
-            text: '서버 내부 오류입니다',
-            fields: [
-                {
-                    title: 'Error Stack:',
-                    value: `\`\`\`${error}\`\`\``,
-                },
-            ],
-        };
-        sendMessage(slackMessage);
-
-        res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
+        const slackMessage: SlackMessageFormat = slackWebHook.slackErrorMessage(error.stack);
+        slackWebHook.sendMessage(slackMessage);
+        
+        return res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
     }
 };
 
