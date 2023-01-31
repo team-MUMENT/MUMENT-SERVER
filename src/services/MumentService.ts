@@ -36,39 +36,31 @@ import { BannerSelectionInfo } from '../interfaces/home/BannerSelectionInfo';
 import { AgainSelectionInfo } from '../interfaces/home/AgainSelectionInfo';
 import { TodaySelectionInfo } from '../interfaces/home/TodaySelectionInfo';
 
-
-/** 
+/**
  * 뮤멘트 기록하기
-*/
+ */
 const createMument = async (userId: string, musicId: string, mumentCreateDto: MumentCreateDto): Promise<PostBaseResponseDto | null> => {
     const pool: any = await poolPromise;
     const connection = await pool.getConnection();
 
-    try {    
+    try {
         await connection.beginTransaction(); // 트랜잭션 적용 시작
 
         // 음악 db에 존재안하면 db에 삽입하기
         await musicDB.SearchAndCreateMusic(mumentCreateDto, connection);
 
-
         // 뮤멘트 생성
         const query1 = 'INSERT INTO mument(user_id, music_id, content, is_first, is_Private) VALUES(?, ?, ?, ?, ?)';
-        const query1Result = await connection.query(query1, [
-            userId, musicId, 
-            !mumentCreateDto.content ? null : mumentCreateDto.content, 
-            mumentCreateDto.isFirst, 
-            mumentCreateDto.isPrivate
-        ]);
+        const query1Result = await connection.query(query1, [userId, musicId, !mumentCreateDto.content ? null : mumentCreateDto.content, mumentCreateDto.isFirst, mumentCreateDto.isPrivate]);
 
         // 뮤멘트 태그 생성
         await mumentDB.mumentTagCreate(mumentCreateDto.impressionTag, mumentCreateDto.feelingTag, connection, query1Result.insertId);
-        
-        await connection.commit();
 
+        await connection.commit();
 
         // 몇 번째 뮤멘트 기록인지 count
         const mumentCount = await connection.query('SELECT COUNT(*) as count FROM mument WHERE user_id = ?', [userId]);
-        
+
         const data = {
             _id: query1Result.insertId,
             count: mumentCount[0].count,
@@ -96,7 +88,7 @@ const updateMument = async (mumentId: string, mumentUpdateDto: MumentCreateDto):
 
         // 존재하지 않는 id의 뮤멘트를 수정하려고 할 때
         const isExistMument: boolean = await mumentDB.isExistMument(mumentId, connection);
-        if (isExistMument===false) return constant.NO_MUMENT;
+        if (isExistMument === false) return constant.NO_MUMENT;
 
         //뮤멘트 수정사항 update
         const query2 = 'UPDATE mument SET is_first=?, content=?, is_private=? WHERE id=?;';
@@ -106,7 +98,7 @@ const updateMument = async (mumentId: string, mumentUpdateDto: MumentCreateDto):
             mumentUpdateDto.isFirst,
             mumentUpdateDto.content != undefined ? mumentUpdateDto.content : null,
             mumentUpdateDto.isPrivate != undefined ? mumentUpdateDto.isPrivate : 0,
-            mumentId
+            mumentId,
         ]);
 
         // 뮤멘트 태그 업데이트 : 기존 태그 모두 삭제 후 새로 삽입
@@ -137,11 +129,11 @@ const updateMument = async (mumentId: string, mumentUpdateDto: MumentCreateDto):
 const getMument = async (mumentId: string, userId: string): Promise<MumentResponseDto | null | number> => {
     const pool: any = await poolPromise;
     const connection = await pool.getConnection();
-    
+
     try {
         // 존재하지 않는 id의 뮤멘트를 조회하려고 할 때
         const isExistMumentInfo: ExistMumentDto = await mumentDB.isExistMumentInfo(mumentId, connection);
-        
+
         if (isExistMumentInfo.isExist === false) return constant.NO_MUMENT;
 
         const mument = isExistMumentInfo.mument as MumentInfoRDB; // 뮤멘트 데이터 가져오기
@@ -149,27 +141,21 @@ const getMument = async (mumentId: string, userId: string): Promise<MumentRespon
         //  비밀글인데, 본인의 뮤멘트가 아닐 경우 -> 조회하지 못하도록
         if (mument.is_private === 1 && mument.user_id.toString() != userId) return constant.PRIVATE_MUMENT;
 
-    
         // 사용자가 이 뮤멘트에 좋아요 눌렀으면 1, 아니면 0
         const isLiked = await mumentDB.isLiked(mumentId, userId);
 
-
         // 사용자 정보 가져오기
-        const user = await userDB.userInfo(userId);
-        
+        const user = await userDB.userInfo(mument.user_id.toString());
 
         // 뮤멘트 히스토리 개수 - 뮤멘트의 작성자가 해당 곡에 쓴 뮤멘트 개수 : 조건 isDeleted와 isPrivate가 false인 뮤멘트 개수
         const historyCount = await mumentDB.mumentHistoryCount(mument.music_id.toString(), mument.user_id.toString());
 
-
         // 작성 시간
         const createdTime = dayjs(mument.created_at).format('YYYY.MM.DD h:mm A');
-
 
         // 좋아요 개수
         const likeCount = await mumentDB.likeCount(mumentId);
 
-        
         // 뮤멘트의 태그 검색해서 impressionTag, feelingTag 리스트로 반환
         const tagList = await mumentDB.mumentTagListGet(mumentId);
         const impressionTag: number[] = tagList.impressionTag;
@@ -177,9 +163,9 @@ const getMument = async (mumentId: string, userId: string): Promise<MumentRespon
 
         const data: MumentResponseDto = {
             user: {
-                _id: user.id, 
-                image: user.image as string, 
-                name: user.profile_id as string, 
+                _id: user.id,
+                image: user.image as string,
+                name: user.profile_id as string,
             },
             isFirst: Boolean(mument.is_first),
             impressionTag: impressionTag,
@@ -193,7 +179,6 @@ const getMument = async (mumentId: string, userId: string): Promise<MumentRespon
 
         await connection.commit(); // 모두 성공시 커밋(데이터 적용)
 
-        
         return data;
     } catch (error) {
         console.log(error);
@@ -204,9 +189,9 @@ const getMument = async (mumentId: string, userId: string): Promise<MumentRespon
     }
 };
 
-/** 
+/**
  * 뮤멘트 삭제하기
-*/
+ */
 const deleteMument = async (mumentId: string): Promise<void | null> => {
     const pool: any = await poolPromise;
     const connection = await pool.getConnection();
@@ -247,7 +232,7 @@ const getIsFirst = async (userId: string, musicId: string): Promise<IsFirstRespo
         const userMument = result;
 
         if (userMument.length === 0) {
-            // 뮤멘트 기록이 처음인 경우 
+            // 뮤멘트 기록이 처음인 경우
             return {
                 isFirst: true,
                 firstAvailable: true,
@@ -284,7 +269,7 @@ const getIsFirst = async (userId: string, musicId: string): Promise<IsFirstRespo
 const getMumentHistory = async (userId: string, musicId: string, writerId: string, orderBy: string, limit: any, offset: any): Promise<MumentHistoryResponseDto | number | null> => {
     const pool: any = await poolPromise;
     const connection = await pool.getConnection();
-    
+
     try {
         let getMumentListResult = [];
 
@@ -330,29 +315,26 @@ const getMumentHistory = async (userId: string, musicId: string, writerId: strin
 
             getMumentListResult = await connection.query(getMumentListQuery, [userId, musicId, writerId, limit, offset]);
             console.log(getMumentListQuery);
-            console.log(userId, musicId, writerId, limit, offset)
+            console.log(userId, musicId, writerId, limit, offset);
         }
-
 
         // 해당 유저가 작성한 뮤멘트가 없을 경우 리턴
         if (getMumentListResult.length === 0) {
             const data: MumentHistoryResponseDto = {
-                mumentHistory: []
+                mumentHistory: [],
             };
 
             return data;
         }
 
-
         // 태그 조회를 위해 뮤멘트 아이디만 빼오고, 스트링으로 만들어주기
-        const mumentIdList = await getMumentListResult.map((x: { id: number; }) => x.id);
+        const mumentIdList = await getMumentListResult.map((x: { id: number }) => x.id);
         const strMumentIdList = '(' + mumentIdList.join(', ') + ')';
 
-        const tagList: {id: number, impressionTag: number[], feelingTag: number[], cardTag: number[]}[] = [];
-        
+        const tagList: { id: number; impressionTag: number[]; feelingTag: number[]; cardTag: number[] }[] = [];
 
         for await (let element of mumentIdList) {
-            tagList.push({ id: element, impressionTag: [], feelingTag: [], cardTag: []})
+            tagList.push({ id: element, impressionTag: [], feelingTag: [], cardTag: [] });
         }
 
         // 해당 뮤멘트들의 태그 모두 가져오기
@@ -367,28 +349,26 @@ const getMumentHistory = async (userId: string, musicId: string, writerId: strin
         const getAllTagList = await connection.query(getAllTagQuery);
 
         // impression tag, feeling tag 분류하기
-        await getAllTagList.reduce((ac: any[], cur: any) =>  {
+        await getAllTagList.reduce((ac: any[], cur: any) => {
             const mumentIdx = tagList.findIndex(o => o.id === cur.mument_id);
             if (cur.tag_id < 200) {
                 tagList[mumentIdx].impressionTag.push(cur.tag_id);
             } else if (cur.tag_id < 300) {
                 tagList[mumentIdx].feelingTag.push(cur.tag_id);
-            };
+            }
         }, getAllTagList);
 
         for (const object of tagList) {
             const allTagList = object.impressionTag.concat(object.feelingTag);
             object.cardTag = await cardTagList.cardTag(allTagList);
-        };
-
+        }
 
         // id와 좋아요 여부 담은 리스트 생성
-        const isLikedList: {id: number, isLiked: boolean}[] = [];
+        const isLikedList: { id: number; isLiked: boolean }[] = [];
 
         for await (let element of mumentIdList) {
-            isLikedList.push({id: element, isLiked: false});
+            isLikedList.push({ id: element, isLiked: false });
         }
-        
 
         // 좋아요 여부 확인
         const getIsLikedQuery = `
@@ -416,8 +396,7 @@ const getMumentHistory = async (userId: string, musicId: string, writerId: strin
             return date;
         };
 
-
-        const mumentHistory: MumentCardViewInterface[] = []
+        const mumentHistory: MumentCardViewInterface[] = [];
 
         for await (const mument of getMumentListResult) {
             mumentHistory.push({
@@ -444,7 +423,7 @@ const getMumentHistory = async (userId: string, musicId: string, writerId: strin
         }
 
         const data: MumentHistoryResponseDto = {
-            mumentHistory
+            mumentHistory,
         };
 
         return data;
@@ -457,8 +436,8 @@ const getMumentHistory = async (userId: string, musicId: string, writerId: strin
 };
 
 /**
- * 뮤멘트 좋아요 등록 
-*/ 
+ * 뮤멘트 좋아요 등록
+ */
 const createLike = async (mumentId: string, userId: string): Promise<LikeCountResponeDto | null | number> => {
     const pool: any = await poolPromise;
     const connection = await pool.getConnection();
@@ -506,51 +485,40 @@ const createLike = async (mumentId: string, userId: string): Promise<LikeCountRe
 
         if (likeResult.length === 0) return constant.CREATE_FAIL;
 
-
         //좋아요 눌린 뮤멘트 작성자의 소식창에 좋아요 알림 삽입
         const userData = await connection.query('SELECT profile_id FROM user WHERE id=?', [userId]);
 
-        await connection.query(
-            `INSERT INTO news(type, user_id, like_profile_id, link_id, like_music_title) VALUES('like', ?, ?, ?, ?)`, 
-            [likeResult[0].writer_id, userData[0].profile_id, mumentId, likeResult[0].music_title]
-        );
-
+        await connection.query(`INSERT INTO news(type, user_id, like_profile_id, link_id, like_music_title) VALUES('like', ?, ?, ?, ?)`, [
+            likeResult[0].writer_id,
+            userData[0].profile_id,
+            mumentId,
+            likeResult[0].music_title,
+        ]);
 
         await connection.commit();
 
-
         const data: LikeCountResponeDto = {
             mumentId: likeResult[0].mument_id,
-            likeCount: likeResult[0].like_count
+            likeCount: likeResult[0].like_count,
         };
-        
-        
-        // 좋아요 눌린 뮤멘트 작성자에게 푸시알림 - 차단 유저에겐 가지 않음
-        const blockedUser = await connection.query(
-            'SELECT * FROM block WHERE user_id=? AND blocked_user_id=?', [likeResult[0].writer_id, userId]
-        );
 
-        if (blockedUser.length === 0 ) {
-            
+        // 좋아요 눌린 뮤멘트 작성자에게 푸시알림 - 차단 유저에겐 가지 않음
+        const blockedUser = await connection.query('SELECT * FROM block WHERE user_id=? AND blocked_user_id=?', [likeResult[0].writer_id, userId]);
+
+        if (blockedUser.length === 0) {
             const writerData = await connection.query('SELECT fcm_token FROM user WHERE id=?', [likeResult[0].writer_id]);
-        
-            const pushAlarmResult = await pushHandler.likePushAlarmHandler(
-                '좋아요', 
-                `${userData[0].profile_id}님이 ${likeResult[0].music_title}에 쓴 뮤멘트를 좋아합니다.`, 
-                writerData[0].fcm_token
-            );
+
+            const pushAlarmResult = await pushHandler.likePushAlarmHandler('좋아요', `${userData[0].profile_id}님이 ${likeResult[0].music_title}에 쓴 뮤멘트를 좋아합니다.`, writerData[0].fcm_token);
 
             if (pushAlarmResult === constant.LIKE_PUSH_SUCCESS) {
                 Object.assign(data, { pushSuccess: true });
-
             } else if (pushAlarmResult === constant.LIKE_PUSH_FAIL) {
                 Object.assign(data, { pushSuccess: false });
             }
-    
+
             return data;
         }
         return Object.assign(data, { pushSuccess: false });
-    
     } catch (error) {
         console.log(error);
         await connection.rollback();
@@ -566,7 +534,7 @@ const createLike = async (mumentId: string, userId: string): Promise<LikeCountRe
 const deleteLike = async (mumentId: string, userId: string): Promise<LikeCountResponeDto | null | number> => {
     const pool: any = await poolPromise;
     const connection = await pool.getConnection();
-    
+
     try {
         await connection.beginTransaction();
         const findMumentResult = await mumentDB.isExistMument(mumentId, connection);
@@ -617,7 +585,7 @@ const deleteLike = async (mumentId: string, userId: string): Promise<LikeCountRe
 
         const data: LikeCountResponeDto = {
             mumentId: getLikeCountResult[0].id,
-            likeCount: getLikeCountResult[0].like_count
+            likeCount: getLikeCountResult[0].like_count,
         };
 
         return data;
@@ -684,7 +652,7 @@ const getRandomMument = async (): Promise<RandomMumentResponseDto> => {
                     detailTag = createRandomNum(200, 215);
                     break;
                 }
-            }    
+            }
             tagTitle = tagRandomTitle[detailTag as keyof typeof tagRandomTitle];
 
             randomMumentList = await pools.queryValue(getRandomMumentQuery, [detailTag]);
@@ -705,8 +673,8 @@ const getRandomMument = async (): Promise<RandomMumentResponseDto> => {
                 },
                 content: element.content,
                 createdAt: element.created_at,
-            })
-        })
+            });
+        });
 
         const data: RandomMumentResponseDto = {
             title: tagTitle,
@@ -742,7 +710,7 @@ const getTodayMument = async (): Promise<TodayMumentResponseDto | number> => {
         `;
 
         let getTodayMumentResult = [];
-        getTodayMumentResult = await pools.queryValue(getTodayMumentQuery, [todayDate]); 
+        getTodayMumentResult = await pools.queryValue(getTodayMumentQuery, [todayDate]);
 
         // 결과가 0일 경우에는 백업데이터 조회
         if (getTodayMumentResult.length === 0) {
@@ -762,7 +730,7 @@ const getTodayMument = async (): Promise<TodayMumentResponseDto | number> => {
             `;
 
             getTodayMumentResult = await pools.queryValue(getBackUpMumentQuery, ['2023-01-01']);
-        };
+        }
 
         if (getTodayMumentResult.length === 0) return constant.NO_HOME_CONTENT;
 
@@ -789,7 +757,7 @@ const getTodayMument = async (): Promise<TodayMumentResponseDto | number> => {
             } else if (object.tag_id < 300) {
                 feelingTag.push(object.tag_id);
             }
-        };
+        }
 
         const cardTag: number[] = await cardTagList.cardTag(tagList);
 
@@ -820,7 +788,7 @@ const getTodayMument = async (): Promise<TodayMumentResponseDto | number> => {
             cardTag: cardTag,
             createdAt: todayMument.created_at,
             date: createDate(todayMument.created_at),
-            displayDate: todayMument.display_date
+            displayDate: todayMument.display_date,
         };
 
         const data: TodayMumentResponseDto = {
@@ -857,7 +825,7 @@ const getBanner = async (): Promise<TodayBannerResponseDto | number> => {
 
         if (bannerResult.length === 0) return constant.NO_HOME_CONTENT;
 
-        const bannerList: BannerSelectionInfo[]= [];
+        const bannerList: BannerSelectionInfo[] = [];
 
         bannerResult.forEach(element => {
             const tagTitle = tagBannerTitle[element.tag_id as keyof typeof tagBannerTitle];
@@ -871,14 +839,14 @@ const getBanner = async (): Promise<TodayBannerResponseDto | number> => {
                 },
                 tagTitle: tagTitle,
                 displayDate: element.display_date,
-            })
-        })
+            });
+        });
 
         const data: TodayBannerResponseDto = {
             todayDate: todayDate,
             bannerList: bannerList,
         };
-        
+
         return data;
     } catch (error) {
         console.log(error);
@@ -928,11 +896,11 @@ const getAgainMument = async (): Promise<AgainMumentResponseDto | number> => {
                 },
                 content: element.content,
                 createdAt: element.created_at,
-            })
+            });
         });
 
         const data: AgainMumentResponseDto = {
-            againMument: againMument
+            againMument: againMument,
         };
 
         return data;
@@ -945,18 +913,18 @@ const getAgainMument = async (): Promise<AgainMumentResponseDto | number> => {
 // 공지사항 상세보기
 const getNoticeDetail = async (noticeId: string): Promise<NoticeInfoRDB | number> => {
     try {
-        const selectNoticeQuery = 'SELECT * FROM notice WHERE id=?'
+        const selectNoticeQuery = 'SELECT * FROM notice WHERE id=?';
         const notice: NoticeInfoRDB[] = await pools.queryValue(selectNoticeQuery, [noticeId]);
-        
+
         if (notice.length === 0) return constant.NO_NOTICE;
 
-        const notcieFullTitle = (!notice[0].notice_point_word) ? notice[0].title: notice[0].notice_point_word + notice[0].title;
-        
+        const notcieFullTitle = !notice[0].notice_point_word ? notice[0].title : notice[0].notice_point_word + notice[0].title;
+
         const data: NoticeInfoRDB = {
             id: notice[0].id,
             title: notcieFullTitle,
             content: notice[0].content,
-            created_at: dayjs(notice[0].created_at).format('YYYY.MM.DD')
+            created_at: dayjs(notice[0].created_at).format('YYYY.MM.DD'),
         };
 
         return data;
@@ -966,28 +934,26 @@ const getNoticeDetail = async (noticeId: string): Promise<NoticeInfoRDB | number
     }
 };
 
-
 // 공지사항 리스트 조회
 const getNoticeList = async (): Promise<NoticeInfoRDB[]> => {
     try {
-        const selectNoticeQuery = 'SELECT * FROM notice ORDER BY created_at DESC;'
+        const selectNoticeQuery = 'SELECT * FROM notice ORDER BY created_at DESC;';
         let noticeList: NoticeInfoRDB[] = await pools.query(selectNoticeQuery);
-        
+
         const noticeListDateFormat = async (item: NoticeInfoRDB, idx: number) => {
-            const notcieFullTitle = (!item.notice_point_word) ? item.title: item.notice_point_word + item.title;
+            const notcieFullTitle = !item.notice_point_word ? item.title : item.notice_point_word + item.title;
 
             noticeList[idx] = {
                 id: item.id,
                 title: notcieFullTitle,
                 content: item.content,
-                created_at: dayjs(item.created_at).format('YYYY.MM.DD')
+                created_at: dayjs(item.created_at).format('YYYY.MM.DD'),
             };
         };
 
         await noticeList.reduce(async (acc, curr, index) => {
             return acc.then(() => noticeListDateFormat(curr, index));
         }, Promise.resolve());
-
 
         return noticeList;
     } catch (error) {
@@ -996,12 +962,11 @@ const getNoticeList = async (): Promise<NoticeInfoRDB[]> => {
     }
 };
 
-
 // 뮤멘트 신고하기
 const createReport = async (mumentId: string, reportCategory: number[], etcContent: string, userId: string): Promise<void | number> => {
     const pool: any = await poolPromise;
     const connection = await pool.getConnection();
-    
+
     try {
         await connection.beginTransaction(); //롤백을 위해 필요함
 
@@ -1012,7 +977,6 @@ const createReport = async (mumentId: string, reportCategory: number[], etcConte
         if (!reportedMument.isExist) return constant.NO_MUMENT;
         reportedUser = reportedMument.mument?.user_id as number;
 
-
         // 신고 사유 배열에 대해 모두 POST
         const postReport = async (item: number, idx: number) => {
             const postReportQuery = `
@@ -1020,19 +984,12 @@ const createReport = async (mumentId: string, reportCategory: number[], etcConte
                     VALUES(?, ?, ?, ?, ?);
             `;
 
-            await connection.query(postReportQuery, [
-                userId,
-                reportedUser,
-                item,
-                etcContent,
-                mumentId
-            ]);
+            await connection.query(postReportQuery, [userId, reportedUser, item, etcContent, mumentId]);
         };
 
         await reportCategory.reduce(async (acc, curr, index) => {
             return acc.then(() => postReport(curr, index));
         }, Promise.resolve());
-
 
         await connection.commit(); // 모두 성공시 커밋(데이터 적용)
     } catch (error) {
@@ -1074,7 +1031,7 @@ const getLikeUserList = async (mumentId: string, userId: string, limit: any, off
         LIMIT ? OFFSET ?;
         `;
 
-        const getLikeUser = await connection.query (getLikeUserQuery, [mumentId, limit, offset]);
+        const getLikeUser = await connection.query(getLikeUserQuery, [mumentId, limit, offset]);
 
         // 결과가 없는 경우
         if (getLikeUser.length === 0) return constant.NO_RESULT;
@@ -1097,7 +1054,7 @@ const getLikeUserList = async (mumentId: string, userId: string, limit: any, off
     } finally {
         connection.release();
     }
-}
+};
 
 export default {
     createMument,

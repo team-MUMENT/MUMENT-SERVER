@@ -32,7 +32,7 @@ const cardTagList_1 = __importDefault(require("../modules/cardTagList"));
 const pushHandler_1 = __importDefault(require("../library/pushHandler"));
 /**
  * 뮤멘트 기록하기
-*/
+ */
 const createMument = (userId, musicId, mumentCreateDto) => __awaiter(void 0, void 0, void 0, function* () {
     const pool = yield db_1.default;
     const connection = yield pool.getConnection();
@@ -42,12 +42,7 @@ const createMument = (userId, musicId, mumentCreateDto) => __awaiter(void 0, voi
         yield Music_1.default.SearchAndCreateMusic(mumentCreateDto, connection);
         // 뮤멘트 생성
         const query1 = 'INSERT INTO mument(user_id, music_id, content, is_first, is_Private) VALUES(?, ?, ?, ?, ?)';
-        const query1Result = yield connection.query(query1, [
-            userId, musicId,
-            !mumentCreateDto.content ? null : mumentCreateDto.content,
-            mumentCreateDto.isFirst,
-            mumentCreateDto.isPrivate
-        ]);
+        const query1Result = yield connection.query(query1, [userId, musicId, !mumentCreateDto.content ? null : mumentCreateDto.content, mumentCreateDto.isFirst, mumentCreateDto.isPrivate]);
         // 뮤멘트 태그 생성
         yield Mument_1.default.mumentTagCreate(mumentCreateDto.impressionTag, mumentCreateDto.feelingTag, connection, query1Result.insertId);
         yield connection.commit();
@@ -87,7 +82,7 @@ const updateMument = (mumentId, mumentUpdateDto) => __awaiter(void 0, void 0, vo
             mumentUpdateDto.isFirst,
             mumentUpdateDto.content != undefined ? mumentUpdateDto.content : null,
             mumentUpdateDto.isPrivate != undefined ? mumentUpdateDto.isPrivate : 0,
-            mumentId
+            mumentId,
         ]);
         // 뮤멘트 태그 업데이트 : 기존 태그 모두 삭제 후 새로 삽입
         const query3 = 'DELETE FROM mument_tag where mument_id = ?;';
@@ -126,7 +121,7 @@ const getMument = (mumentId, userId) => __awaiter(void 0, void 0, void 0, functi
         // 사용자가 이 뮤멘트에 좋아요 눌렀으면 1, 아니면 0
         const isLiked = yield Mument_1.default.isLiked(mumentId, userId);
         // 사용자 정보 가져오기
-        const user = yield User_1.default.userInfo(userId);
+        const user = yield User_1.default.userInfo(mument.user_id.toString());
         // 뮤멘트 히스토리 개수 - 뮤멘트의 작성자가 해당 곡에 쓴 뮤멘트 개수 : 조건 isDeleted와 isPrivate가 false인 뮤멘트 개수
         const historyCount = yield Mument_1.default.mumentHistoryCount(mument.music_id.toString(), mument.user_id.toString());
         // 작성 시간
@@ -166,7 +161,7 @@ const getMument = (mumentId, userId) => __awaiter(void 0, void 0, void 0, functi
 });
 /**
  * 뮤멘트 삭제하기
-*/
+ */
 const deleteMument = (mumentId) => __awaiter(void 0, void 0, void 0, function* () {
     const pool = yield db_1.default;
     const connection = yield pool.getConnection();
@@ -201,7 +196,7 @@ const getIsFirst = (userId, musicId) => __awaiter(void 0, void 0, void 0, functi
         const result = yield pool_1.default.queryValue(query1, [userId, musicId]);
         const userMument = result;
         if (userMument.length === 0) {
-            // 뮤멘트 기록이 처음인 경우 
+            // 뮤멘트 기록이 처음인 경우
             return {
                 isFirst: true,
                 firstAvailable: true,
@@ -288,7 +283,7 @@ const getMumentHistory = (userId, musicId, writerId, orderBy, limit, offset) => 
         // 해당 유저가 작성한 뮤멘트가 없을 경우 리턴
         if (getMumentListResult.length === 0) {
             const data = {
-                mumentHistory: []
+                mumentHistory: [],
             };
             return data;
         }
@@ -327,13 +322,11 @@ const getMumentHistory = (userId, musicId, writerId, orderBy, limit, offset) => 
             else if (cur.tag_id < 300) {
                 tagList[mumentIdx].feelingTag.push(cur.tag_id);
             }
-            ;
         }, getAllTagList);
         for (const object of tagList) {
             const allTagList = object.impressionTag.concat(object.feelingTag);
             object.cardTag = yield cardTagList_1.default.cardTag(allTagList);
         }
-        ;
         // id와 좋아요 여부 담은 리스트 생성
         const isLikedList = [];
         try {
@@ -406,7 +399,7 @@ const getMumentHistory = (userId, musicId, writerId, orderBy, limit, offset) => 
             finally { if (e_3) throw e_3.error; }
         }
         const data = {
-            mumentHistory
+            mumentHistory,
         };
         return data;
     }
@@ -420,7 +413,7 @@ const getMumentHistory = (userId, musicId, writerId, orderBy, limit, offset) => 
 });
 /**
  * 뮤멘트 좋아요 등록
-*/
+ */
 const createLike = (mumentId, userId) => __awaiter(void 0, void 0, void 0, function* () {
     const pool = yield db_1.default;
     const connection = yield pool.getConnection();
@@ -462,11 +455,16 @@ const createLike = (mumentId, userId) => __awaiter(void 0, void 0, void 0, funct
             return serviceReturnConstant_1.default.CREATE_FAIL;
         //좋아요 눌린 뮤멘트 작성자의 소식창에 좋아요 알림 삽입
         const userData = yield connection.query('SELECT profile_id FROM user WHERE id=?', [userId]);
-        yield connection.query(`INSERT INTO news(type, user_id, like_profile_id, link_id, like_music_title) VALUES('like', ?, ?, ?, ?)`, [likeResult[0].writer_id, userData[0].profile_id, mumentId, likeResult[0].music_title]);
+        yield connection.query(`INSERT INTO news(type, user_id, like_profile_id, link_id, like_music_title) VALUES('like', ?, ?, ?, ?)`, [
+            likeResult[0].writer_id,
+            userData[0].profile_id,
+            mumentId,
+            likeResult[0].music_title,
+        ]);
         yield connection.commit();
         const data = {
             mumentId: likeResult[0].mument_id,
-            likeCount: likeResult[0].like_count
+            likeCount: likeResult[0].like_count,
         };
         // 좋아요 눌린 뮤멘트 작성자에게 푸시알림 - 차단 유저에겐 가지 않음
         const blockedUser = yield connection.query('SELECT * FROM block WHERE user_id=? AND blocked_user_id=?', [likeResult[0].writer_id, userId]);
@@ -538,7 +536,7 @@ const deleteLike = (mumentId, userId) => __awaiter(void 0, void 0, void 0, funct
         const getLikeCountResult = yield connection.query(getLikeCountQuery, [mumentId]);
         const data = {
             mumentId: getLikeCountResult[0].id,
-            likeCount: getLikeCountResult[0].like_count
+            likeCount: getLikeCountResult[0].like_count,
         };
         return data;
     }
@@ -669,7 +667,6 @@ const getTodayMument = () => __awaiter(void 0, void 0, void 0, function* () {
             `;
             getTodayMumentResult = yield pool_1.default.queryValue(getBackUpMumentQuery, ['2023-01-01']);
         }
-        ;
         if (getTodayMumentResult.length === 0)
             return serviceReturnConstant_1.default.NO_HOME_CONTENT;
         const todayMument = getTodayMumentResult[0];
@@ -693,7 +690,6 @@ const getTodayMument = () => __awaiter(void 0, void 0, void 0, function* () {
                 feelingTag.push(object.tag_id);
             }
         }
-        ;
         const cardTag = yield cardTagList_1.default.cardTag(tagList);
         const createDate = (createdAt) => {
             const date = (0, dayjs_1.default)(createdAt).format('D MMM, YYYY');
@@ -720,7 +716,7 @@ const getTodayMument = () => __awaiter(void 0, void 0, void 0, function* () {
             cardTag: cardTag,
             createdAt: todayMument.created_at,
             date: createDate(todayMument.created_at),
-            displayDate: todayMument.display_date
+            displayDate: todayMument.display_date,
         };
         const data = {
             todayDate: todayDate,
@@ -817,7 +813,7 @@ const getAgainMument = () => __awaiter(void 0, void 0, void 0, function* () {
             });
         });
         const data = {
-            againMument: againMument
+            againMument: againMument,
         };
         return data;
     }
@@ -833,12 +829,12 @@ const getNoticeDetail = (noticeId) => __awaiter(void 0, void 0, void 0, function
         const notice = yield pool_1.default.queryValue(selectNoticeQuery, [noticeId]);
         if (notice.length === 0)
             return serviceReturnConstant_1.default.NO_NOTICE;
-        const notcieFullTitle = (!notice[0].notice_point_word) ? notice[0].title : notice[0].notice_point_word + notice[0].title;
+        const notcieFullTitle = !notice[0].notice_point_word ? notice[0].title : notice[0].notice_point_word + notice[0].title;
         const data = {
             id: notice[0].id,
             title: notcieFullTitle,
             content: notice[0].content,
-            created_at: (0, dayjs_1.default)(notice[0].created_at).format('YYYY.MM.DD')
+            created_at: (0, dayjs_1.default)(notice[0].created_at).format('YYYY.MM.DD'),
         };
         return data;
     }
@@ -853,12 +849,12 @@ const getNoticeList = () => __awaiter(void 0, void 0, void 0, function* () {
         const selectNoticeQuery = 'SELECT * FROM notice ORDER BY created_at DESC;';
         let noticeList = yield pool_1.default.query(selectNoticeQuery);
         const noticeListDateFormat = (item, idx) => __awaiter(void 0, void 0, void 0, function* () {
-            const notcieFullTitle = (!item.notice_point_word) ? item.title : item.notice_point_word + item.title;
+            const notcieFullTitle = !item.notice_point_word ? item.title : item.notice_point_word + item.title;
             noticeList[idx] = {
                 id: item.id,
                 title: notcieFullTitle,
                 content: item.content,
-                created_at: (0, dayjs_1.default)(item.created_at).format('YYYY.MM.DD')
+                created_at: (0, dayjs_1.default)(item.created_at).format('YYYY.MM.DD'),
             };
         });
         yield noticeList.reduce((acc, curr, index) => __awaiter(void 0, void 0, void 0, function* () {
@@ -890,13 +886,7 @@ const createReport = (mumentId, reportCategory, etcContent, userId) => __awaiter
                 INSERT INTO report(user_id, reported_user_id, report_category_id, reason_etc, mument_id) 
                     VALUES(?, ?, ?, ?, ?);
             `;
-            yield connection.query(postReportQuery, [
-                userId,
-                reportedUser,
-                item,
-                etcContent,
-                mumentId
-            ]);
+            yield connection.query(postReportQuery, [userId, reportedUser, item, etcContent, mumentId]);
         });
         yield reportCategory.reduce((acc, curr, index) => __awaiter(void 0, void 0, void 0, function* () {
             return acc.then(() => postReport(curr, index));
