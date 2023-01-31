@@ -9,20 +9,32 @@ export interface SlackMdFormat {
     value: string;
 }
 
-// 마크다운
-export interface SlackMessage {
-    mrkdwn: boolean;
-    text: string;
-    attachments: SlackMdFormat[];
-}
-
 // 슬랙 메세지 포맷
 export interface SlackMessageFormat {
     title: string;
     text: string;
     fields?: SlackMdFormat[];
-    footer?: string;
 }
+
+// 슬랙 메시지 전체
+export interface SlackMessage {
+    mrkdwn: boolean;
+    text: string;
+    attachments: SlackMessageFormat[];
+}
+
+const slackErrorMessage = (errorStack: any) => {
+    return {
+        title: 'MUMENT ec2 서버 오류',
+        text: '서버 내부 오류입니다',
+        fields: [
+            {
+                title: 'Error Stack:',
+                value: `\`\`\`${errorStack}\`\`\``,
+            },
+        ],
+    };
+};
 
 // 슬랙 api url과 연결하는 함수
 const getChannels = () => {
@@ -41,7 +53,7 @@ const sendMessage = async (message: SlackMessageFormat) => {
     // 마크다운 적용
     const data: SlackMessage = {
         mrkdwn: true,
-        text: ' ',
+        text: '',
         attachments: [],
     };
 
@@ -50,6 +62,9 @@ const sendMessage = async (message: SlackMessageFormat) => {
         console.log('메세지 내용이 없습니다.');
         return;
     }
+    
+    data.attachments.push(message);
+
 
     axios({
         url: getChannels().production,
@@ -61,4 +76,4 @@ const sendMessage = async (message: SlackMessageFormat) => {
     });
 };
 
-export default sendMessage;
+export default { sendMessage, slackErrorMessage };

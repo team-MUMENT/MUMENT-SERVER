@@ -58,13 +58,8 @@ const queryValue = async (query: string, value: any): Promise<any[]> => {
     });
 };
 
-// 트랜잭션 필요 시
-const transaction =async (...args: any[]) => {
-    
-};
 
 export default {
     query,
     queryValue,
-    // transaction
 };

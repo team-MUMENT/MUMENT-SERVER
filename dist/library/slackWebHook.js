@@ -15,6 +15,18 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const axios_1 = __importDefault(require("axios"));
 const config_1 = __importDefault(require("../config"));
 const API_URL = config_1.default.webhookURI;
+const slackErrorMessage = (errorStack) => {
+    return {
+        title: 'MUMENT ec2 서버 오류',
+        text: '서버 내부 오류입니다',
+        fields: [
+            {
+                title: 'Error Stack:',
+                value: `\`\`\`${errorStack}\`\`\``,
+            },
+        ],
+    };
+};
 // 슬랙 api url과 연결하는 함수
 const getChannels = () => {
     return {
@@ -30,7 +42,7 @@ const sendMessage = (message) => __awaiter(void 0, void 0, void 0, function* () 
     // 마크다운 적용
     const data = {
         mrkdwn: true,
-        text: ' ',
+        text: '',
         attachments: [],
     };
     // title과 text가 없을 경우
@@ -38,6 +50,7 @@ const sendMessage = (message) => __awaiter(void 0, void 0, void 0, function* () 
         console.log('메세지 내용이 없습니다.');
         return;
     }
+    data.attachments.push(message);
     (0, axios_1.default)({
         url: getChannels().production,
         method: 'POST',
@@ -47,5 +60,5 @@ const sendMessage = (message) => __awaiter(void 0, void 0, void 0, function* () 
         data,
     });
 });
-exports.default = sendMessage;
+exports.default = { sendMessage, slackErrorMessage };
 //# sourceMappingURL=slackWebHook.js.map
