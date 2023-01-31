@@ -11,8 +11,8 @@ const dbConfig = {
     user: config_1.default.user,
     password: config_1.default.password,
     database: config_1.default.database,
-    connectionLimit: 150,
-    charset: 'utf8mb4',
+    connectionLimit: 300,
+    charset: 'utf8mb4'
 };
 console.log("create Pool");
 exports.default = promise_mysql_1.default.createPool(dbConfig);
