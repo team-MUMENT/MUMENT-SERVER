@@ -66,12 +66,8 @@ const queryValue = (query, value) => __awaiter(void 0, void 0, void 0, function*
         }
     }));
 });
-// 트랜잭션 필요 시
-const transaction = (...args) => __awaiter(void 0, void 0, void 0, function* () {
-});
 exports.default = {
     query,
     queryValue,
-    // transaction
 };
 //# sourceMappingURL=pool.js.map

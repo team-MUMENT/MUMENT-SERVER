@@ -4,7 +4,7 @@ import message from '../modules/responseMessage';
 import util from '../modules/util';
 import constant from '../modules/serviceReturnConstant';
 import { AuthService } from '../services';
-import sendMessage, { SlackMessageFormat } from '../library/slackWebHook';
+import slackWebHook, { SlackMessageFormat } from '../library/slackWebHook';
 import { AuthTokenResponseDto } from '../interfaces/auth/AuthTokenResponseDto';
 
 /**
@@ -42,20 +42,12 @@ const login = async (req: Request, res: Response) => {
             res.status(statusCode.OK).send(util.success(statusCode.OK, message.LOGIN_SUCCESS, data));
         }
         
-    } catch (error) {
+    } catch (error: any) {
         console.log(error);
 
-        const slackMessage: SlackMessageFormat = {
-            title: 'MUMENT ec2 서버 오류',
-            text: '서버 내부 오류입니다',
-            fields: [
-                {
-                    title: 'Error Stack:',
-                    value: `\`\`\`${error}\`\`\``,
-                },
-            ],
-        };
-        sendMessage(slackMessage);
+        const slackMessage: SlackMessageFormat = slackWebHook.slackErrorMessage(error.stack);
+        slackWebHook.sendMessage(slackMessage);
+        
         return res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
     }
 };
@@ -80,20 +72,12 @@ const getNewAccessToken = async (req: Request, res: Response) => {
             return res.status(statusCode.OK).send(util.success(statusCode.OK, message.RENEW_ACCESS_TOKEN, data));
         }
         
-    } catch (error) {
+    } catch (error: any) {
         console.log(error);
 
-        const slackMessage: SlackMessageFormat = {
-            title: 'MUMENT ec2 서버 오류',
-            text: '서버 내부 오류입니다',
-            fields: [
-                {
-                    title: 'Error Stack:',
-                    value: `\`\`\`${error}\`\`\``,
-                },
-            ],
-        };
-        sendMessage(slackMessage);
+        const slackMessage: SlackMessageFormat = slackWebHook.slackErrorMessage(error.stack);
+        slackWebHook.sendMessage(slackMessage);
+        
         return res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
     }
 }
