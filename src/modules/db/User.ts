@@ -39,6 +39,15 @@ const userInfo = async (userId: string) => {
     return user[0];
 }
 
+// userId로 탈퇴한 유저 포함 레코드 가져오기
+const userInfoIncludeLeave = async (userId: string) => {
+    const query = 'SELECT * FROM user WHERE id=?';
+    
+    const user: UserInfoRDB[] = await pools.queryValue(query, [userId]);
+
+    return user[0];
+}
+
 // 내가 작성한 뮤멘트 리스트 가져오기 - 최신순
 const myMumentList = async (userId: string) => {
     const mumentListQuery = `
@@ -114,6 +123,7 @@ const isBlockedUser = async (userId: string, mumentId: string): Promise<boolean>
 
 export default {
     userInfo,
+    userInfoIncludeLeave,
     myMumentList,
     myLikeMumentList,
     blockedUserList,
