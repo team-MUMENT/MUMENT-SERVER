@@ -912,12 +912,17 @@ const getLikeUserList = (mumentId, userId, limit, offset) => __awaiter(void 0, v
         if (!isExistMument)
             return serviceReturnConstant_1.default.NO_MUMENT;
         // 차단한 유저 리스트 조회
-        const blockUser = yield User_1.default.blockedUserList(userId);
-        const blockedUserList = [];
-        blockUser.forEach(element => {
-            blockedUserList.push(element.exist);
+        // 자신이 차단한, 자신을 차단한 유저 리스트
+        const blockUserList = [];
+        // 자신이 차단한 유저 반환
+        const blockUserResult = yield User_1.default.blockedUserList(userId);
+        blockUserResult.forEach(element => {
+            blockUserList.push(element.exist);
         });
-        const strBlockedUserList = '(' + blockedUserList.toString() + ')';
+        let strBlockUserList = '( 0 )';
+        if (blockUserResult.length != 0) {
+            strBlockUserList = '(' + blockUserList.toString() + ')';
+        }
         // 좋아요를 누른 유저 전부 가져오기
         const getLikeUserQuery = `
         SELECT user.id, user.profile_id, user.image
@@ -925,7 +930,7 @@ const getLikeUserList = (mumentId, userId, limit, offset) => __awaiter(void 0, v
         JOIN user
             ON mument.like.user_id = user.id
         WHERE mument.like.mument_id = ?
-            AND mument.like.user_id NOT IN ${strBlockedUserList}
+            AND mument.like.user_id NOT IN ${strBlockUserList}
             AND user.is_deleted = 0
         ORDER BY mument.like.created_at DESC
         LIMIT ? OFFSET ?;
