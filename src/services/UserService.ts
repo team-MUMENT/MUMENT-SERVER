@@ -142,6 +142,10 @@ const getLikeMumentList = async (userId: string, tagList: number[]): Promise<Use
         const blockedUserList = await userDB.blockedUserList(userId);
 
         const likeMumentListFunc = async (acc: any, item: MyMumentInfoRDB, idx: number) => {
+            //자신의 글은 띄우지 않음
+             if (item.user_id === Number(userId)) {
+                return acc;
+             }
             
             const isBlocked = blockedUserList.find(({ exist }) => exist == item.user_id);
             if (isBlocked !== undefined) {
@@ -204,7 +208,7 @@ const getLikeMumentList = async (userId: string, tagList: number[]): Promise<Use
                     return mument.allCardTag?.includes(tag);
                 });
             });
-    }
+        }
 
         return {
             muments: result,
