@@ -270,7 +270,7 @@ const getRandomMument = async (req: Request, res: Response) => {
         const data = await MumentService.getRandomMument();
 
         if (!data) {
-            res.status(statusCode.NO_CONTENT).send(util.success(statusCode.NO_CONTENT, message.RANDOM_TAG_FAIL));
+            return res.status(statusCode.NO_CONTENT).send(util.success(statusCode.NO_CONTENT, message.RANDOM_TAG_FAIL));
         }
 
         res.status(statusCode.OK).send(util.success(statusCode.OK, message.GET_RANDOM_MUMENT_SUCCESS, data));
@@ -294,7 +294,7 @@ const getTodayMument = async (req: Request, res: Response) => {
 
         // 조회는 성공했으나 결과값이 없을 경우
         if (data === constant.NO_HOME_CONTENT) {
-            res.status(statusCode.NO_CONTENT).send(util.success(statusCode.NO_CONTENT, message.GET_TODAY_MUMENT_SUCCESS));
+            return res.status(statusCode.NO_CONTENT).send(util.success(statusCode.NO_CONTENT, message.GET_TODAY_MUMENT_SUCCESS));
         }
 
         res.status(statusCode.OK).send(util.success(statusCode.OK, message.GET_TODAY_MUMENT_SUCCESS, data));
@@ -318,7 +318,7 @@ const getBanner = async (req: Request, res: Response) => {
 
         // 조회는 성공했으나, 결과값이 없는 경우
         if (data === constant.NO_HOME_CONTENT) {
-            res.status(statusCode.NO_CONTENT).send(util.success(statusCode.NO_CONTENT, message.GET_BANNER_SUCCESS));
+            return res.status(statusCode.NO_CONTENT).send(util.success(statusCode.NO_CONTENT, message.GET_BANNER_SUCCESS));
         } else {
             res.status(statusCode.OK).send(util.success(statusCode.OK, message.GET_BANNER_SUCCESS, data));
         }
@@ -341,7 +341,7 @@ const getAgainMument = async (req: Request, res: Response) => {
         const data = await MumentService.getAgainMument();
 
         if (data === constant.NO_HOME_CONTENT) {
-            res.status(statusCode.NO_CONTENT).send(util.success(statusCode.NO_CONTENT, message.GET_AGAIN_MUMENT_SUCCESS));
+            return res.status(statusCode.NO_CONTENT).send(util.success(statusCode.NO_CONTENT, message.GET_AGAIN_MUMENT_SUCCESS));
         }
 
         res.status(statusCode.OK).send(util.success(statusCode.OK, message.GET_AGAIN_MUMENT_SUCCESS, data));
