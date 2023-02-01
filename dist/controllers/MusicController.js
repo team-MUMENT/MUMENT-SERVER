@@ -28,15 +28,15 @@ const getMusicAndMyMument = (req, res) => __awaiter(void 0, void 0, void 0, func
     const { userId } = req.body;
     const error = (0, express_validator_1.validationResult)(req);
     if (!error.isEmpty()) {
-        res.status(statusCode_1.default.BAD_REQUEST).send(util_1.default.fail(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.WRONG_PARAMS));
+        return res.status(statusCode_1.default.BAD_REQUEST).send(util_1.default.fail(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.WRONG_PARAMS));
     }
     try {
         const data = yield services_1.MusicService.getMusicAndMyMument(musicId, userId);
         if (data === serviceReturnConstant_1.default.NO_MUSIC) {
-            res.status(statusCode_1.default.NOT_FOUND).send(util_1.default.fail(statusCode_1.default.NOT_FOUND, responseMessage_1.default.NO_MUSIC_ID));
+            return res.status(statusCode_1.default.NOT_FOUND).send(util_1.default.fail(statusCode_1.default.NOT_FOUND, responseMessage_1.default.NO_MUSIC_ID));
         }
         else {
-            res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.FIND_MUSIC_MYMUMENT_SUCCESS, data));
+            return res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.FIND_MUSIC_MYMUMENT_SUCCESS, data));
         }
     }
     catch (error) {
@@ -56,7 +56,7 @@ const getMumentList = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     const { default: orderOption, limit, offset } = req.query;
     const error = (0, express_validator_1.validationResult)(req);
     if (!error.isEmpty()) {
-        res.status(statusCode_1.default.BAD_REQUEST).send(util_1.default.fail(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.WRONG_PARAMS));
+        return res.status(statusCode_1.default.BAD_REQUEST).send(util_1.default.fail(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.WRONG_PARAMS));
     }
     let isLikeOrder = true;
     switch (orderOption) {
@@ -72,10 +72,10 @@ const getMumentList = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     try {
         const data = yield services_1.MusicService.getMumentList(musicId, userId, isLikeOrder, limit, offset);
         if (!data) { // 조회 성공했으나, 결과값 없을 때 204 리턴
-            res.status(statusCode_1.default.NO_CONTENT).send(util_1.default.success(statusCode_1.default.NO_CONTENT, responseMessage_1.default.READ_MUSIC_MUMENTLIST_SUCCESS));
+            return res.status(statusCode_1.default.NO_CONTENT).send(util_1.default.success(statusCode_1.default.NO_CONTENT, responseMessage_1.default.READ_MUSIC_MUMENTLIST_SUCCESS));
         }
         else if (data === serviceReturnConstant_1.default.NO_MUSIC) { // 존재하지 않는 음악 아이디일 때 400 리턴
-            res.status(statusCode_1.default.BAD_REQUEST).send(util_1.default.fail(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.NO_MUSIC_ID));
+            return res.status(statusCode_1.default.BAD_REQUEST).send(util_1.default.fail(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.NO_MUSIC_ID));
         }
         res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.READ_MUSIC_MUMENTLIST_SUCCESS, data));
     }
@@ -95,10 +95,10 @@ const getMusicListBySearch = (req, res) => __awaiter(void 0, void 0, void 0, fun
     try {
         const data = yield services_1.MusicService.getMusicListBySearch(keyword);
         if (data == serviceReturnConstant_1.default.APPLE_UNAUTHORIZED) {
-            res.status(statusCode_1.default.UNAUTHORIZED).send(util_1.default.fail(statusCode_1.default.UNAUTHORIZED, responseMessage_1.default.APPLE_TOKEN_UNAUTHORIZED));
+            return res.status(statusCode_1.default.UNAUTHORIZED).send(util_1.default.fail(statusCode_1.default.UNAUTHORIZED, responseMessage_1.default.APPLE_TOKEN_UNAUTHORIZED));
         }
         if (data == serviceReturnConstant_1.default.APPLE_INTERNAL_SERVER_ERROR) {
-            res.status(statusCode_1.default.BAD_REQUEST).send(util_1.default.fail(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.APPLE_SERVER_INTERNAL_ERROR));
+            return res.status(statusCode_1.default.BAD_REQUEST).send(util_1.default.fail(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.APPLE_SERVER_INTERNAL_ERROR));
         }
         res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.SEARCH_MUSIC_LIST_SUCCESS, data));
     }
