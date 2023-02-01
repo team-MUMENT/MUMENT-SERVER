@@ -78,13 +78,13 @@ const getMument = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const data = yield services_1.MumentService.getMument(mumentId, userId);
         if (!data || data === serviceReturnConstant_1.default.NO_MUMENT) {
-            res.status(statusCode_1.default.NOT_FOUND).send(util_1.default.fail(statusCode_1.default.NOT_FOUND, responseMessage_1.default.NOT_FOUND_ID));
+            return res.status(statusCode_1.default.NOT_FOUND).send(util_1.default.fail(statusCode_1.default.NOT_FOUND, responseMessage_1.default.NOT_FOUND_ID));
         }
         else if (data === serviceReturnConstant_1.default.PRIVATE_MUMENT) {
-            res.status(statusCode_1.default.BAD_REQUEST).send(util_1.default.fail(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.NOT_YOUR_MUMENT));
+            return res.status(statusCode_1.default.BAD_REQUEST).send(util_1.default.fail(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.NOT_YOUR_MUMENT));
         }
         else {
-            res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.READ_MUMENT_SUCEESS, data));
+            return res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.READ_MUMENT_SUCEESS, data));
         }
     }
     catch (error) {
@@ -102,7 +102,7 @@ const deleteMument = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     const { mumentId } = req.params;
     try {
         const data = yield services_1.MumentService.deleteMument(mumentId);
-        res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.DELETE_MUMENT_SUCCESS));
+        return res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.DELETE_MUMENT_SUCCESS));
     }
     catch (error) {
         console.log(error);
@@ -120,7 +120,7 @@ const getIsFirst = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     const userId = req.body.userId;
     try {
         const data = yield services_1.MumentService.getIsFirst(userId, musicId);
-        res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.READ_ISFIRST_SUCCESS, data));
+        return res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.READ_ISFIRST_SUCCESS, data));
     }
     catch (error) {
         console.log(error);
@@ -155,7 +155,7 @@ const getMumentHistory = (req, res) => __awaiter(void 0, void 0, void 0, functio
     ;
     try {
         const data = yield services_1.MumentService.getMumentHistory(userId, musicId, writerId, orderBy, limit, offset);
-        res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.READ_MUMENT_HISTORY_SUCCESS, data));
+        return res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.READ_MUMENT_HISTORY_SUCCESS, data));
     }
     catch (error) {
         console.log(error);
@@ -192,7 +192,7 @@ const createLike = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                 return res.status(statusCode_1.default.BAD_REQUEST).send(util_1.default.fail(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.BLOCKED_USER));
             }
         }
-        res.status(statusCode_1.default.CREATED).send(util_1.default.success(statusCode_1.default.CREATED, responseMessage_1.default.CREATE_LIKE_SUCCESS, data));
+        return res.status(statusCode_1.default.CREATED).send(util_1.default.success(statusCode_1.default.CREATED, responseMessage_1.default.CREATE_LIKE_SUCCESS, data));
     }
     catch (error) {
         console.log(error);
@@ -218,11 +218,11 @@ const deleteLike = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         switch (data) {
             case serviceReturnConstant_1.default.DELETE_FAIL: {
                 // 업데이트가 실패했을 때
-                res.status(statusCode_1.default.BAD_REQUEST).send(util_1.default.fail(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.DELETE_LIKE_FAIL));
+                return res.status(statusCode_1.default.BAD_REQUEST).send(util_1.default.fail(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.DELETE_LIKE_FAIL));
             }
             case serviceReturnConstant_1.default.NO_MUMENT: {
                 // 존재하지 않는 뮤멘트일 때
-                res.status(statusCode_1.default.BAD_REQUEST).send(util_1.default.fail(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.NO_MUMENT_ID));
+                return res.status(statusCode_1.default.BAD_REQUEST).send(util_1.default.fail(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.NO_MUMENT_ID));
             }
         }
         res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.DELETE_LIKE_SUCCESS, data));
@@ -244,7 +244,7 @@ const getRandomMument = (req, res) => __awaiter(void 0, void 0, void 0, function
         if (!data) {
             return res.status(statusCode_1.default.NO_CONTENT).send(util_1.default.success(statusCode_1.default.NO_CONTENT, responseMessage_1.default.RANDOM_TAG_FAIL));
         }
-        res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.GET_RANDOM_MUMENT_SUCCESS, data));
+        return res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.GET_RANDOM_MUMENT_SUCCESS, data));
     }
     catch (error) {
         console.log(error);
@@ -285,7 +285,7 @@ const getBanner = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             return res.status(statusCode_1.default.NO_CONTENT).send(util_1.default.success(statusCode_1.default.NO_CONTENT, responseMessage_1.default.GET_BANNER_SUCCESS));
         }
         else {
-            res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.GET_BANNER_SUCCESS, data));
+            return res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.GET_BANNER_SUCCESS, data));
         }
     }
     catch (error) {
@@ -341,7 +341,7 @@ const getNoticeDetail = (req, res) => __awaiter(void 0, void 0, void 0, function
 const getNoticeList = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const data = yield services_1.MumentService.getNoticeList();
-        res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.READ_NOTICE_LIST_SUCCESS, data));
+        return res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.READ_NOTICE_LIST_SUCCESS, data));
     }
     catch (error) {
         console.log(error);
