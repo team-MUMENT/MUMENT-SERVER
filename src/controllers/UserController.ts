@@ -66,8 +66,8 @@ const checkDuplicateName = async (req: Request, res: Response) => {
     try {
         const data = await UserService.checkDuplicateName(profileId);
 
-        if (data) res.status(statusCode.OK).send(util.success(statusCode.OK, message.DUPLICATE_PROFILEID));
-        else res.status(statusCode.NO_CONTENT).send(util.success(statusCode.NO_CONTENT, message.AVAILABLE_PROFILEID));
+        if (data) return res.status(statusCode.OK).send(util.success(statusCode.OK, message.DUPLICATE_PROFILEID));
+        else return res.status(statusCode.NO_CONTENT).send(util.success(statusCode.NO_CONTENT, message.AVAILABLE_PROFILEID));
     } catch (error: any) {
         console.log(error);
 
@@ -92,7 +92,7 @@ const getMyMumentList = async (req: Request, res: Response) => {
     try {
         const data = await UserService.getMyMumentList(userId, tagList);
 
-        res.status(statusCode.OK).send(util.success(statusCode.OK, message.READ_MY_MUMENT_LIST_SUCCESS, data));
+        return res.status(statusCode.OK).send(util.success(statusCode.OK, message.READ_MY_MUMENT_LIST_SUCCESS, data));
     } catch (error: any) {
         console.log(error);
 
@@ -117,7 +117,7 @@ const getLikeMumentList = async (req: Request, res: Response) => {
     try {
         const data = await UserService.getLikeMumentList(userId, tagList);
 
-        res.status(statusCode.OK).send(util.success(statusCode.OK, message.READ_LIKE_MUMENT_LIST_SUCCESS, data));
+        return res.status(statusCode.OK).send(util.success(statusCode.OK, message.READ_LIKE_MUMENT_LIST_SUCCESS, data));
     } catch (error: any) {
         console.log(error);
 

@@ -37,9 +37,9 @@ const login = async (req: Request, res: Response) => {
         }
 
         if ((data as AuthTokenResponseDto).type == 'signUp') {
-            res.status(statusCode.CREATED).send(util.success(statusCode.OK, message.SIGNUP_SUCCESS, data));
+            return res.status(statusCode.CREATED).send(util.success(statusCode.OK, message.SIGNUP_SUCCESS, data));
         } else if ((data as AuthTokenResponseDto).type == 'login') {
-            res.status(statusCode.OK).send(util.success(statusCode.OK, message.LOGIN_SUCCESS, data));
+            return res.status(statusCode.OK).send(util.success(statusCode.OK, message.LOGIN_SUCCESS, data));
         }
         
     } catch (error: any) {
