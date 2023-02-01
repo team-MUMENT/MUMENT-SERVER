@@ -69,9 +69,9 @@ const checkDuplicateName = (req, res) => __awaiter(void 0, void 0, void 0, funct
     try {
         const data = yield services_1.UserService.checkDuplicateName(profileId);
         if (data)
-            res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.DUPLICATE_PROFILEID));
+            return res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.DUPLICATE_PROFILEID));
         else
-            res.status(statusCode_1.default.NO_CONTENT).send(util_1.default.success(statusCode_1.default.NO_CONTENT, responseMessage_1.default.AVAILABLE_PROFILEID));
+            return res.status(statusCode_1.default.NO_CONTENT).send(util_1.default.success(statusCode_1.default.NO_CONTENT, responseMessage_1.default.AVAILABLE_PROFILEID));
     }
     catch (error) {
         console.log(error);
@@ -91,7 +91,7 @@ const getMyMumentList = (req, res) => __awaiter(void 0, void 0, void 0, function
     tagList = tagList.filter(tag => isNaN(tag) === false);
     try {
         const data = yield services_1.UserService.getMyMumentList(userId, tagList);
-        res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.READ_MY_MUMENT_LIST_SUCCESS, data));
+        return res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.READ_MY_MUMENT_LIST_SUCCESS, data));
     }
     catch (error) {
         console.log(error);
@@ -111,7 +111,7 @@ const getLikeMumentList = (req, res) => __awaiter(void 0, void 0, void 0, functi
     tagList = tagList.filter(tag => isNaN(tag) === false);
     try {
         const data = yield services_1.UserService.getLikeMumentList(userId, tagList);
-        res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.READ_LIKE_MUMENT_LIST_SUCCESS, data));
+        return res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.READ_LIKE_MUMENT_LIST_SUCCESS, data));
     }
     catch (error) {
         console.log(error);

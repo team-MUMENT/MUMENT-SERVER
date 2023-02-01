@@ -45,10 +45,10 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             }
         }
         if (data.type == 'signUp') {
-            res.status(statusCode_1.default.CREATED).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.SIGNUP_SUCCESS, data));
+            return res.status(statusCode_1.default.CREATED).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.SIGNUP_SUCCESS, data));
         }
         else if (data.type == 'login') {
-            res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.LOGIN_SUCCESS, data));
+            return res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.LOGIN_SUCCESS, data));
         }
     }
     catch (error) {
