@@ -329,8 +329,6 @@ const getMumentHistory = async (userId: string, musicId: string, writerId: strin
             `;
 
             getMumentListResult = await connection.query(getMumentListQuery, [userId, musicId, writerId, limit, offset]);
-            console.log(getMumentListQuery);
-            console.log(userId, musicId, writerId, limit, offset)
         }
 
 
