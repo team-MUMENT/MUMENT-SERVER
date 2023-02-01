@@ -448,8 +448,8 @@ const createLike = async (mumentId: string, userId: string): Promise<LikeCountRe
     const connection = await pool.getConnection();
 
     try {
-        const findMumentResult = await mumentDB.isExistMument(mumentId, connection);
-        if (findMumentResult === false) return constant.NO_MUMENT;
+        const findMumentResult = await mumentDB.isExistMumentInfo(mumentId, connection);
+        if (findMumentResult.isExist === false || !findMumentResult.mument) return constant.NO_MUMENT;
 
         await connection.beginTransaction();
 
@@ -490,39 +490,44 @@ const createLike = async (mumentId: string, userId: string): Promise<LikeCountRe
 
         if (likeResult.length === 0) return constant.CREATE_FAIL;
 
-        //좋아요 눌린 뮤멘트 작성자의 소식창에 좋아요 알림 삽입
-        const userData = await connection.query('SELECT profile_id FROM user WHERE id=?', [userId]);
-
-        await connection.query(`INSERT INTO news(type, user_id, like_profile_id, link_id, like_music_title) VALUES('like', ?, ?, ?, ?)`, [
-            likeResult[0].writer_id,
-            userData[0].profile_id,
-            mumentId,
-            likeResult[0].music_title,
-        ]);
-
-        await connection.commit();
-
         const data: LikeCountResponeDto = {
             mumentId: likeResult[0].mument_id,
             likeCount: likeResult[0].like_count,
         };
 
-        // 좋아요 눌린 뮤멘트 작성자에게 푸시알림 - 차단 유저에겐 가지 않음
-        const blockedUser = await connection.query('SELECT * FROM block WHERE user_id=? AND blocked_user_id=?', [likeResult[0].writer_id, userId]);
 
-        if (blockedUser.length === 0) {
-            const writerData = await connection.query('SELECT fcm_token FROM user WHERE id=?', [likeResult[0].writer_id]);
+        //좋아요 눌린 뮤멘트 작성자의 소식창에 좋아요 알림 삽입 - 자기 자신의 뮤멘트면 알림 x  (!넣는게 완성성)
+        if (Number(userId) !== findMumentResult.mument.user_id) {
+            const userData = await connection.query('SELECT profile_id FROM user WHERE id=?', [userId]);
 
-            const pushAlarmResult = await pushHandler.likePushAlarmHandler('좋아요', `${userData[0].profile_id}님이 ${likeResult[0].music_title}에 쓴 뮤멘트를 좋아합니다.`, writerData[0].fcm_token);
+            await connection.query(`INSERT INTO news(type, user_id, like_profile_id, link_id, like_music_title) VALUES('like', ?, ?, ?, ?)`, [
+                likeResult[0].writer_id,
+                userData[0].profile_id,
+                mumentId,
+                likeResult[0].music_title,
+            ]);
 
-            if (pushAlarmResult === constant.LIKE_PUSH_SUCCESS) {
-                Object.assign(data, { pushSuccess: true });
-            } else if (pushAlarmResult === constant.LIKE_PUSH_FAIL) {
-                Object.assign(data, { pushSuccess: false });
+            await connection.commit();
+
+
+            // 좋아요 눌린 뮤멘트 작성자에게 푸시알림 - 차단 유저껀 가지 않음
+            const blockedUser = await connection.query('SELECT * FROM block WHERE user_id=? AND blocked_user_id=?', [likeResult[0].writer_id, userId]);
+
+            if (blockedUser.length === 0) {
+                const writerData = await connection.query('SELECT fcm_token FROM user WHERE id=?', [likeResult[0].writer_id]);
+
+                const pushAlarmResult = await pushHandler.likePushAlarmHandler('좋아요', `${userData[0].profile_id}님이 ${likeResult[0].music_title}에 쓴 뮤멘트를 좋아합니다.`, writerData[0].fcm_token);
+
+                if (pushAlarmResult === constant.LIKE_PUSH_SUCCESS) {
+                    Object.assign(data, { pushSuccess: true });
+                } else if (pushAlarmResult === constant.LIKE_PUSH_FAIL) {
+                    Object.assign(data, { pushSuccess: false });
+                }
+
+                return data;
             }
-
-            return data;
         }
+        
         return Object.assign(data, { pushSuccess: false });
     } catch (error) {
         console.log(error);
@@ -1016,12 +1021,19 @@ const getLikeUserList = async (mumentId: string, userId: string, limit: any, off
         if (!isExistMument) return constant.NO_MUMENT;
 
         // 차단한 유저 리스트 조회
-        const blockUser = await userDB.blockedUserList(userId);
-        const blockedUserList: number[] = [];
-        blockUser.forEach(element => {
-            blockedUserList.push(element.exist);
+        // 자신이 차단한, 자신을 차단한 유저 리스트
+        const blockUserList: number[] = [];
+
+        // 자신이 차단한 유저 반환
+        const blockUserResult = await userDB.blockedUserList(userId);
+        blockUserResult.forEach(element => {
+            blockUserList.push(element.exist);
         });
-        const strBlockedUserList = '(' + blockedUserList.toString() + ')';
+        let strBlockUserList = '( 0 )';
+
+        if (blockUserResult.length != 0) {
+            strBlockUserList = '(' + blockUserList.toString() + ')';
+        }
 
         // 좋아요를 누른 유저 전부 가져오기
         const getLikeUserQuery = `
@@ -1030,7 +1042,7 @@ const getLikeUserList = async (mumentId: string, userId: string, limit: any, off
         JOIN user
             ON mument.like.user_id = user.id
         WHERE mument.like.mument_id = ?
-            AND mument.like.user_id NOT IN ${strBlockedUserList}
+            AND mument.like.user_id NOT IN ${strBlockUserList}
             AND user.is_deleted = 0
         ORDER BY mument.like.created_at DESC
         LIMIT ? OFFSET ?;
