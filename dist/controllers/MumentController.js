@@ -242,7 +242,7 @@ const getRandomMument = (req, res) => __awaiter(void 0, void 0, void 0, function
     try {
         const data = yield services_1.MumentService.getRandomMument();
         if (!data) {
-            res.status(statusCode_1.default.NO_CONTENT).send(util_1.default.success(statusCode_1.default.NO_CONTENT, responseMessage_1.default.RANDOM_TAG_FAIL));
+            return res.status(statusCode_1.default.NO_CONTENT).send(util_1.default.success(statusCode_1.default.NO_CONTENT, responseMessage_1.default.RANDOM_TAG_FAIL));
         }
         res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.GET_RANDOM_MUMENT_SUCCESS, data));
     }
@@ -262,7 +262,7 @@ const getTodayMument = (req, res) => __awaiter(void 0, void 0, void 0, function*
         const data = yield services_1.MumentService.getTodayMument();
         // 조회는 성공했으나 결과값이 없을 경우
         if (data === serviceReturnConstant_1.default.NO_HOME_CONTENT) {
-            res.status(statusCode_1.default.NO_CONTENT).send(util_1.default.success(statusCode_1.default.NO_CONTENT, responseMessage_1.default.GET_TODAY_MUMENT_SUCCESS));
+            return res.status(statusCode_1.default.NO_CONTENT).send(util_1.default.success(statusCode_1.default.NO_CONTENT, responseMessage_1.default.GET_TODAY_MUMENT_SUCCESS));
         }
         res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.GET_TODAY_MUMENT_SUCCESS, data));
     }
@@ -282,7 +282,7 @@ const getBanner = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const data = yield services_1.MumentService.getBanner();
         // 조회는 성공했으나, 결과값이 없는 경우
         if (data === serviceReturnConstant_1.default.NO_HOME_CONTENT) {
-            res.status(statusCode_1.default.NO_CONTENT).send(util_1.default.success(statusCode_1.default.NO_CONTENT, responseMessage_1.default.GET_BANNER_SUCCESS));
+            return res.status(statusCode_1.default.NO_CONTENT).send(util_1.default.success(statusCode_1.default.NO_CONTENT, responseMessage_1.default.GET_BANNER_SUCCESS));
         }
         else {
             res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.GET_BANNER_SUCCESS, data));
@@ -303,7 +303,7 @@ const getAgainMument = (req, res) => __awaiter(void 0, void 0, void 0, function*
     try {
         const data = yield services_1.MumentService.getAgainMument();
         if (data === serviceReturnConstant_1.default.NO_HOME_CONTENT) {
-            res.status(statusCode_1.default.NO_CONTENT).send(util_1.default.success(statusCode_1.default.NO_CONTENT, responseMessage_1.default.GET_AGAIN_MUMENT_SUCCESS));
+            return res.status(statusCode_1.default.NO_CONTENT).send(util_1.default.success(statusCode_1.default.NO_CONTENT, responseMessage_1.default.GET_AGAIN_MUMENT_SUCCESS));
         }
         res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.GET_AGAIN_MUMENT_SUCCESS, data));
     }

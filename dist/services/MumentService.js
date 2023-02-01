@@ -418,8 +418,8 @@ const createLike = (mumentId, userId) => __awaiter(void 0, void 0, void 0, funct
     const pool = yield db_1.default;
     const connection = yield pool.getConnection();
     try {
-        const findMumentResult = yield Mument_1.default.isExistMument(mumentId, connection);
-        if (findMumentResult === false)
+        const findMumentResult = yield Mument_1.default.isExistMumentInfo(mumentId, connection);
+        if (findMumentResult.isExist === false || !findMumentResult.mument)
             return serviceReturnConstant_1.default.NO_MUMENT;
         yield connection.beginTransaction();
         // 좋아요 등록
@@ -453,31 +453,33 @@ const createLike = (mumentId, userId) => __awaiter(void 0, void 0, void 0, funct
         const likeResult = yield connection.query(getLikeResultQuery, [mumentId, userId]);
         if (likeResult.length === 0)
             return serviceReturnConstant_1.default.CREATE_FAIL;
-        //좋아요 눌린 뮤멘트 작성자의 소식창에 좋아요 알림 삽입
-        const userData = yield connection.query('SELECT profile_id FROM user WHERE id=?', [userId]);
-        yield connection.query(`INSERT INTO news(type, user_id, like_profile_id, link_id, like_music_title) VALUES('like', ?, ?, ?, ?)`, [
-            likeResult[0].writer_id,
-            userData[0].profile_id,
-            mumentId,
-            likeResult[0].music_title,
-        ]);
-        yield connection.commit();
         const data = {
             mumentId: likeResult[0].mument_id,
             likeCount: likeResult[0].like_count,
         };
-        // 좋아요 눌린 뮤멘트 작성자에게 푸시알림 - 차단 유저에겐 가지 않음
-        const blockedUser = yield connection.query('SELECT * FROM block WHERE user_id=? AND blocked_user_id=?', [likeResult[0].writer_id, userId]);
-        if (blockedUser.length === 0) {
-            const writerData = yield connection.query('SELECT fcm_token FROM user WHERE id=?', [likeResult[0].writer_id]);
-            const pushAlarmResult = yield pushHandler_1.default.likePushAlarmHandler('좋아요', `${userData[0].profile_id}님이 ${likeResult[0].music_title}에 쓴 뮤멘트를 좋아합니다.`, writerData[0].fcm_token);
-            if (pushAlarmResult === serviceReturnConstant_1.default.LIKE_PUSH_SUCCESS) {
-                Object.assign(data, { pushSuccess: true });
+        //좋아요 눌린 뮤멘트 작성자의 소식창에 좋아요 알림 삽입 - 자기 자신의 뮤멘트면 알림 x  (!넣는게 완성성)
+        if (Number(userId) !== findMumentResult.mument.user_id) {
+            const userData = yield connection.query('SELECT profile_id FROM user WHERE id=?', [userId]);
+            yield connection.query(`INSERT INTO news(type, user_id, like_profile_id, link_id, like_music_title) VALUES('like', ?, ?, ?, ?)`, [
+                likeResult[0].writer_id,
+                userData[0].profile_id,
+                mumentId,
+                likeResult[0].music_title,
+            ]);
+            yield connection.commit();
+            // 좋아요 눌린 뮤멘트 작성자에게 푸시알림 - 차단 유저껀 가지 않음
+            const blockedUser = yield connection.query('SELECT * FROM block WHERE user_id=? AND blocked_user_id=?', [likeResult[0].writer_id, userId]);
+            if (blockedUser.length === 0) {
+                const writerData = yield connection.query('SELECT fcm_token FROM user WHERE id=?', [likeResult[0].writer_id]);
+                const pushAlarmResult = yield pushHandler_1.default.likePushAlarmHandler('좋아요', `${userData[0].profile_id}님이 ${likeResult[0].music_title}에 쓴 뮤멘트를 좋아합니다.`, writerData[0].fcm_token);
+                if (pushAlarmResult === serviceReturnConstant_1.default.LIKE_PUSH_SUCCESS) {
+                    Object.assign(data, { pushSuccess: true });
+                }
+                else if (pushAlarmResult === serviceReturnConstant_1.default.LIKE_PUSH_FAIL) {
+                    Object.assign(data, { pushSuccess: false });
+                }
+                return data;
             }
-            else if (pushAlarmResult === serviceReturnConstant_1.default.LIKE_PUSH_FAIL) {
-                Object.assign(data, { pushSuccess: false });
-            }
-            return data;
         }
         return Object.assign(data, { pushSuccess: false });
     }
