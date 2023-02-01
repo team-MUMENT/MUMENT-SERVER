@@ -79,11 +79,11 @@ const getMument = async (req: Request, res: Response) => {
         const data = await MumentService.getMument(mumentId, userId);
 
         if (!data || data === constant.NO_MUMENT) {
-            res.status(statusCode.NOT_FOUND).send(util.fail(statusCode.NOT_FOUND, message.NOT_FOUND_ID));
+            return res.status(statusCode.NOT_FOUND).send(util.fail(statusCode.NOT_FOUND, message.NOT_FOUND_ID));
         } else if (data === constant.PRIVATE_MUMENT) {
-            res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.NOT_YOUR_MUMENT));
+            return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.NOT_YOUR_MUMENT));
         } else {
-            res.status(statusCode.OK).send(util.success(statusCode.OK, message.READ_MUMENT_SUCEESS, data));
+            return res.status(statusCode.OK).send(util.success(statusCode.OK, message.READ_MUMENT_SUCEESS, data));
         }
     } catch (error: any) {
         console.log(error);
@@ -105,7 +105,7 @@ const deleteMument = async (req: Request, res: Response) => {
     try {
         const data = await MumentService.deleteMument(mumentId);
 
-        res.status(statusCode.OK).send(util.success(statusCode.OK, message.DELETE_MUMENT_SUCCESS));
+        return res.status(statusCode.OK).send(util.success(statusCode.OK, message.DELETE_MUMENT_SUCCESS));
     } catch (error: any) {
         console.log(error);
 
@@ -127,7 +127,7 @@ const getIsFirst = async (req: Request, res: Response) => {
     try {
         const data = await MumentService.getIsFirst(userId, musicId);
 
-        res.status(statusCode.OK).send(util.success(statusCode.OK, message.READ_ISFIRST_SUCCESS, data));
+        return res.status(statusCode.OK).send(util.success(statusCode.OK, message.READ_ISFIRST_SUCCESS, data));
     } catch (error: any) {
         console.log(error);
 
@@ -168,7 +168,7 @@ const getMumentHistory = async (req: Request, res: Response) => {
     try {
         const data = await MumentService.getMumentHistory(userId, musicId, writerId, orderBy, limit, offset);
 
-        res.status(statusCode.OK).send(util.success(statusCode.OK, message.READ_MUMENT_HISTORY_SUCCESS, data));
+        return res.status(statusCode.OK).send(util.success(statusCode.OK, message.READ_MUMENT_HISTORY_SUCCESS, data));
     } catch (error: any) {
         console.log(error);
 
@@ -211,7 +211,7 @@ const createLike = async (req: Request, res: Response) => {
             }
         }
 
-        res.status(statusCode.CREATED).send(util.success(statusCode.CREATED, message.CREATE_LIKE_SUCCESS, data));
+        return res.status(statusCode.CREATED).send(util.success(statusCode.CREATED, message.CREATE_LIKE_SUCCESS, data));
     } catch (error: any) {
         console.log(error);
 
@@ -242,11 +242,11 @@ const deleteLike = async (req: Request, res: Response) => {
         switch (data) {
             case constant.DELETE_FAIL: {
                 // 업데이트가 실패했을 때
-                res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.DELETE_LIKE_FAIL));
+                return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.DELETE_LIKE_FAIL));
             }
             case constant.NO_MUMENT: {
                 // 존재하지 않는 뮤멘트일 때
-                res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.NO_MUMENT_ID));
+                return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.NO_MUMENT_ID));
             }
         }
 
@@ -273,7 +273,7 @@ const getRandomMument = async (req: Request, res: Response) => {
             return res.status(statusCode.NO_CONTENT).send(util.success(statusCode.NO_CONTENT, message.RANDOM_TAG_FAIL));
         }
 
-        res.status(statusCode.OK).send(util.success(statusCode.OK, message.GET_RANDOM_MUMENT_SUCCESS, data));
+        return res.status(statusCode.OK).send(util.success(statusCode.OK, message.GET_RANDOM_MUMENT_SUCCESS, data));
     } catch (error: any) {
         console.log(error);
 
@@ -320,7 +320,7 @@ const getBanner = async (req: Request, res: Response) => {
         if (data === constant.NO_HOME_CONTENT) {
             return res.status(statusCode.NO_CONTENT).send(util.success(statusCode.NO_CONTENT, message.GET_BANNER_SUCCESS));
         } else {
-            res.status(statusCode.OK).send(util.success(statusCode.OK, message.GET_BANNER_SUCCESS, data));
+            return res.status(statusCode.OK).send(util.success(statusCode.OK, message.GET_BANNER_SUCCESS, data));
         }
     } catch (error: any) {
         console.log(error);
@@ -389,7 +389,7 @@ const getNoticeList = async (req: Request, res: Response) => {
     try {
         const data = await MumentService.getNoticeList();
 
-        res.status(statusCode.OK).send(util.success(statusCode.OK, message.READ_NOTICE_LIST_SUCCESS, data));
+        return res.status(statusCode.OK).send(util.success(statusCode.OK, message.READ_NOTICE_LIST_SUCCESS, data));
 
     } catch (error: any) {
         console.log(error);
