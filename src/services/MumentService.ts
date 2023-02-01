@@ -316,11 +316,6 @@ const getMumentHistory = async (userId: string, musicId: string, writerId: strin
             `;
 
             getMumentListResult = await connection.query(getMumentListQuery, [userId, musicId, writerId, limit, offset]);
-<<<<<<< HEAD
-=======
-            console.log(getMumentListQuery);
-            console.log(userId, musicId, writerId, limit, offset);
->>>>>>> 2f5246050cb442a88c5401851d4a358f42ed70a8
         }
 
         // 해당 유저가 작성한 뮤멘트가 없을 경우 리턴
