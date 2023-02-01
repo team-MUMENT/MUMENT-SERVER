@@ -126,6 +126,10 @@ const getLikeMumentList = (userId, tagList) => __awaiter(void 0, void 0, void 0,
         // 사용자가 차단한 유저 배열
         const blockedUserList = yield User_1.default.blockedUserList(userId);
         const likeMumentListFunc = (acc, item, idx) => __awaiter(void 0, void 0, void 0, function* () {
+            //자신의 글은 띄우지 않음
+            if (item.user_id === Number(userId)) {
+                return acc;
+            }
             const isBlocked = blockedUserList.find(({ exist }) => exist == item.user_id);
             if (isBlocked !== undefined) {
                 //차단된 유저의 뮤멘트라면 reduce가 다음 코드 실행안함
