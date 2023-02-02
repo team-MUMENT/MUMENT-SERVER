@@ -35,6 +35,7 @@ const message = {
     READ_UNREAD_NEWS_IS_EXIST_SUCCESS: '새로 추가된 알림이 있는지 조회 성공',
     COMPLETE_PROFILE_SET: '프로필 설정 완료된 유저입니다',
     BLOCKED_USER: '차단된 유저입니다',
+    READ_USER_SUCCESS: '유저 정보 조회 성공',
     // mument
     NO_MUMENT_ID: '해당 아이디의 뮤멘트가 존재하지 않습니다',
     CREATE_MUMENT_SUCCESS: '뮤멘트 기록하기 성공',

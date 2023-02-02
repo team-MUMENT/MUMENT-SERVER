@@ -47,5 +47,7 @@ router.delete('/', auth_1.default, controllers_1.UserController.deleteUser);
 router.get('/profile/check', auth_1.default, controllers_1.UserController.checkProfileSet);
 // 공지사항 등록 - 서버, 기획에서만 사용
 router.post('/notice', controllers_1.UserController.postNotice);
+// 유저 정보 조회
+router.get('/profile', auth_1.default, controllers_1.UserController.getUser);
 exports.default = router;
 //# sourceMappingURL=UserRouter.js.map
