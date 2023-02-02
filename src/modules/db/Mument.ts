@@ -69,12 +69,19 @@ const likeCount = async (mumentId: string) => {
 };
 
 
-// 사용자의 뮤멘트 히스토리 개수 count
-const mumentHistoryCount = async (musicId: string, userId: string) => {
-    // 삭제되지않고 & 비밀글이 아닌 뮤멘트 개수
-    const query = 'SELECT COUNT(*) as exist FROM mument WHERE music_id=? AND user_id=? AND NOT is_deleted=1 AND NOT is_private=1;';
+const mumentHistoryCount = async (musicId: string, writerId: string, userId: string) => {
+    let historyQuery;
 
-    const historyCount: NumberBaseResponseDto[] = await pools.queryValue(query, [musicId, userId]);
+    if (writerId != userId) {
+        // 타인의 뮤멘트 히스토리 - 비밀글 제외하고 count
+        historyQuery = 'SELECT COUNT(*) as exist FROM mument WHERE music_id=? AND user_id=? AND is_deleted=0 AND is_private=0;';
+    } else {
+        // 자신의 뮤멘트 히스토리 - 비밀글 포함 count
+        historyQuery = 'SELECT COUNT(*) as exist FROM mument WHERE music_id=? AND user_id=? AND is_deleted=0;';
+    }
+    
+
+    const historyCount: NumberBaseResponseDto[] = await pools.queryValue(historyQuery, [musicId, writerId]);
 
     return historyCount[0].exist;
 };

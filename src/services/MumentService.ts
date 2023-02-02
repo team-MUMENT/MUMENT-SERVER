@@ -145,12 +145,12 @@ const getMument = async (mumentId: string, userId: string): Promise<MumentRespon
         const isLiked = await mumentDB.isLiked(mumentId, userId);
 
 
-        // 사용자 정보 가져오기
+        // 사용자 정보 가져오기 - 탈퇴한 사용자 포함해서 프로필 정보 가져옴
         const user = await userDB.userInfoIncludeLeave(mument.user_id.toString());
 
 
-        // 뮤멘트 히스토리 개수 - 뮤멘트의 작성자가 해당 곡에 쓴 뮤멘트 개수 : 조건 isDeleted와 isPrivate가 false인 뮤멘트 개수
-        const historyCount = await mumentDB.mumentHistoryCount(mument.music_id.toString(), mument.user_id.toString());
+        // 뮤멘트 히스토리 개수 - 뮤멘트의 작성자가 해당 곡에 쓴 뮤멘트 개수
+        const historyCount = await mumentDB.mumentHistoryCount(mument.music_id.toString(), mument.user_id.toString(), userId);
 
         // 작성 시간
         const createdTime = dayjs(mument.created_at).format('YYYY.MM.DD h:mm A');
