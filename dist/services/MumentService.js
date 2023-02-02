@@ -126,8 +126,6 @@ const getMument = (mumentId, userId) => __awaiter(void 0, void 0, void 0, functi
         const historyCount = yield Mument_1.default.mumentHistoryCount(mument.music_id.toString(), mument.user_id.toString());
         // 작성 시간
         const createdTime = (0, dayjs_1.default)(mument.created_at).format('YYYY.MM.DD h:mm A');
-        // 좋아요 개수
-        const likeCount = yield Mument_1.default.likeCount(mumentId);
         // 뮤멘트의 태그 검색해서 impressionTag, feelingTag 리스트로 반환
         const tagList = yield Mument_1.default.mumentTagListGet(mumentId);
         const impressionTag = tagList.impressionTag;
@@ -142,10 +140,11 @@ const getMument = (mumentId, userId) => __awaiter(void 0, void 0, void 0, functi
             impressionTag: impressionTag,
             feelingTag: feelingTag,
             content: !mument.content ? null : mument.content,
-            likeCount: likeCount,
+            likeCount: mument.like_count,
             isLiked: Boolean(isLiked),
             createdAt: createdTime,
             count: historyCount,
+            isPrivate: Boolean(mument.is_private),
         };
         yield connection.commit(); // 모두 성공시 커밋(데이터 적용)
         return data;
