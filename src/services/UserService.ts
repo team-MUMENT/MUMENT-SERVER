@@ -814,7 +814,7 @@ const getUser = async (userId: string): Promise<UserResponseDto | number> => {
         if (!user) return constant.NO_USER;
 
         const data: UserResponseDto = {
-            id: user.id.toString(),
+            id: user.id,
             profileId: user.profile_id,
             image: user.image,
         }
