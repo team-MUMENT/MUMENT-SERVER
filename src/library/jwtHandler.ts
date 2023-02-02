@@ -45,12 +45,9 @@ const verify = (token: string) => {
     try {
         const decoded = jwt.verify(token, config.jwtSecret);
 
-        // 프로필 설정이 완료되지 않은 토큰일 때
-        if (decoded.profileId === null) return constant.NOT_PROFILE_SET_TOKEN;
-
         return decoded;
     } catch (err: any) {
-        if (err.name == TokenExpiredError) {
+        if (err.name == 'TokenExpiredError') {
             // 토큰 만료
             console.log(err.message);
             return constant.TOKEN_EXPIRED;

@@ -70,7 +70,7 @@ const getMyMumentList = async (userId: string, tagList: number[]): Promise<UserM
                         name: user.profile_id as string
                     },
                     music: {
-                        _id: item.music_id,
+                        _id: item.music_id.toString(),
                         name: item.name,
                         artist: item.artist,
                         image: item.music_image
@@ -141,8 +141,7 @@ const getLikeMumentList = async (userId: string, tagList: number[]): Promise<Use
         // 사용자가 차단한 유저 배열
         const blockedUserList = await userDB.blockedUserList(userId);
 
-        const likeMumentListFunc = async (acc: any, item: MyMumentInfoRDB, idx: number) => {
-            
+        const likeMumentListFunc = async (acc: any, item: MyMumentInfoRDB, idx: number) => {     
             const isBlocked = blockedUserList.find(({ exist }) => exist == item.user_id);
             if (isBlocked !== undefined) {
                 //차단된 유저의 뮤멘트라면 reduce가 다음 코드 실행안함
@@ -166,7 +165,7 @@ const getLikeMumentList = async (userId: string, tagList: number[]): Promise<Use
                         name: item.profile_id as string
                     },
                     music: {
-                        _id: item.music_id,
+                        _id: item.music_id.toString(),
                         name: item.name,
                         artist: item.artist,
                         image: item.music_image
@@ -204,7 +203,7 @@ const getLikeMumentList = async (userId: string, tagList: number[]): Promise<Use
                     return mument.allCardTag?.includes(tag);
                 });
             });
-    }
+        }
 
         return {
             muments: result,
@@ -319,6 +318,9 @@ const getBlockedUserList = async (userId: number): Promise<UserResponseDto[] | n
     }
 };
 
+/**
+ *  프로필 설정 (소셜 로그인 후) & 프로필 수정
+ */
 const putProfile = async (userId: number, profileId: string, image: string | null): Promise<UserProfileSetResponseDto | number> => {
     const pool: any = await poolPromise;
     const connection = await pool.getConnection();
@@ -385,6 +387,10 @@ const putProfile = async (userId: number, profileId: string, image: string | nul
     }
 }
 
+
+/**
+ *  프로필 아이디 중복 체크
+ */
 const checkDuplicateName = async (profileId: string): Promise<boolean> => {
     try {
         const checkQuery = `
@@ -410,6 +416,10 @@ const checkDuplicateName = async (profileId: string): Promise<boolean> => {
     }
 }
 
+
+/**
+ * 유저 탈퇴 (사유 등록)
+ */
 const postLeaveCategory = async (userId: number, leaveCategoryId: string, reasonEtc: string | null): Promise<Number | UserLeaveResponseDto> => {
     const pool: any = await poolPromise;
     const connection = await pool.getConnection();
@@ -469,6 +479,9 @@ const postLeaveCategory = async (userId: number, leaveCategoryId: string, reason
     }
 };
 
+/** 
+ * 유저 탈퇴
+*/
 const deleteUser = async (userId: number): Promise<Number | UserDeleteResponseDto> => {
     const pool: any = await poolPromise;
     const connection = await pool.getConnection();
@@ -503,10 +516,12 @@ const deleteUser = async (userId: number): Promise<Number | UserDeleteResponseDt
 
         await connection.commit();
 
+        const isDeleted = user.isDeleted? true : false;
+
         const data: UserDeleteResponseDto = {
             id: user.id,
             profileId: user.profile_id,
-            isDeleted: user.is_deleted,
+            isDeleted: isDeleted,
             updatedAt: user.updated_at,
         }
 
@@ -679,6 +694,7 @@ const getNewsList = async (userId: number): Promise<NewsResponseDto[]> => {
                     isRead: Boolean(item.is_read),
                     createdAt: dayjs(item.created_at).format('MM/DD HH:mm'),
                     linkId: item.link_id,
+                    noticePoint: item.notice_point_word,
                     noticeTitle: item.notice_title,
                     likeProfileId: item.like_profile_id,
                     likeMusicTitle: item.like_music_title
@@ -703,7 +719,7 @@ const getNewsList = async (userId: number): Promise<NewsResponseDto[]> => {
 /**
  * 공지사항 등록 - 기획, 서버에서만 사용
  */
-const postNotice = async (title: string, content:string): Promise<NoticePushResponseDto | number> => {
+const postNotice = async (point: string | null, title: string, content:string, noticeCategory: number): Promise<NoticePushResponseDto | number> => {
     const pool: any = await poolPromise;
     const connection = await pool.getConnection();
 
@@ -711,7 +727,9 @@ const postNotice = async (title: string, content:string): Promise<NoticePushResp
         connection.beginTransaction(); //롤백을 위해 필요함
 
         // 공지사항 추가
-        const createdNotice = await connection.query('INSERT INTO notice(title, content) VALUES(?, ?)', [title, content]);
+        const createdNotice = await connection.query(
+            'INSERT INTO notice(category, title, content, notice_point_word) VALUES(?, ?, ?, ?)', 
+            [noticeCategory, title, content, point]);
         if (createdNotice?.affectedRows === 0) return constant.CREATE_NOTICE_FAIL;
 
 
@@ -719,8 +737,9 @@ const postNotice = async (title: string, content:string): Promise<NoticePushResp
         const createdNoticeRow: NoticeInfoRDB[] = await connection.query(
             'SELECT * FROM notice WHERE id=?', [createdNotice.insertId]
         );
-        const noticeTitle = createdNoticeRow[0].title;
+        const noticeTitle = (!createdNoticeRow[0].notice_point_word) ? createdNoticeRow[0].title: createdNoticeRow[0].notice_point_word + createdNoticeRow[0].title;;
         const noticeId = createdNoticeRow[0].id;
+        const noticePointWord = createdNoticeRow[0].notice_point_word;
         let fcmTokenList: string[] = [];
 
 
@@ -729,7 +748,8 @@ const postNotice = async (title: string, content:string): Promise<NoticePushResp
 
         const insertNewsToAllActiveUser = async (item: UserInfoRDB, idx: number) => {
             await connection.query(
-                `INSERT INTO news(type, user_id, notice_title, link_id) VALUES('notice', ?, ?, ?)`, [item.id, noticeTitle, noticeId]
+                `INSERT INTO news(type, user_id, notice_title, link_id, notice_point_word) VALUES('notice', ?, ?, ?, ?)`, 
+                [item.id, createdNoticeRow[0].title, noticeId, noticePointWord]
             );
 
             if (item.fcm_token && item.fcm_token.length > 0) {
@@ -747,13 +767,12 @@ const postNotice = async (title: string, content:string): Promise<NoticePushResp
 
         // 새로운 공지사항 활성 유저에게 푸시알림
         const pushAlarmResult = await pushHandler.noticePushAlarmHandler('공지', noticeTitle, fcmTokenList);
-        if (Array.isArray(pushAlarmResult)) {
+        if (pushAlarmResult === constant.NOTICE_PUSH_SUCCESS) {
             return {
                 pushSuccess: true,
-                noticeId: createdNoticeRow[0].id,
-                pushFailFcmToken: pushAlarmResult
+                noticeId: createdNoticeRow[0].id
             };
-        } 
+        }
         
         return {
             pushSuccess: false,
@@ -769,6 +788,24 @@ const postNotice = async (title: string, content:string): Promise<NoticePushResp
     }
 };
 
+
+/**
+ * 프로필 설정이 완료되었는지 확인
+ */
+const checkProfileSet = async (userId: string): Promise<boolean> => {
+    try {
+        // userId로 유저 정보 가져오기
+        const user = await userDB.userInfo(userId);
+
+        // 프로필 설정이 완료되지 않았으면 false 리턴
+        if (!user.profile_id) return false;
+
+        return true;
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+};
 
 export default {
     getMyMumentList,
@@ -786,4 +823,5 @@ export default {
     deleteNews,
     getNewsList,
     postNotice,
+    checkProfileSet,
 };

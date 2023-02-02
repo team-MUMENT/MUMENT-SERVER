@@ -37,21 +37,25 @@ const login = (provider, authenticationCode, fcm_token) => __awaiter(void 0, voi
             /**
              * 카카오 로그인/회원가입
              */
-            // authentication code로 카카오 토큰 발급 받아오기
-            const kakaoToken = yield kakaoAuth_1.default.getKakaoToken(authenticationCode);
-            if (typeof kakaoToken === 'number')
-                return serviceReturnConstant_1.default.INVALID_AUTHENTICATION_CODE; // 카카오 토큰 조회 실패시 반환
+            const kakaoToken = authenticationCode;
             // 카카오 토큰으로 프로필 조회
-            const kakaoProfile = kakaoAuth_1.default.getKakaoProfile(kakaoToken);
-            if (typeof kakaoToken === 'number')
-                return serviceReturnConstant_1.default.INVALID_AUTHENTICATION_CODE; // 카카오 프로필 조회 실패시 반환
-            // 해당 유저가 이미 가입한 유저인지 확인 - authentication_code 사용
+            const kakaoProfile = yield kakaoAuth_1.default.getKakaoProfile(kakaoToken);
+            if (kakaoProfile === serviceReturnConstant_1.default.INVALID_AUTHENTICATION_CODE || kakaoProfile === undefined) {
+                //프로필 조회 실패 시
+                return serviceReturnConstant_1.default.INVALID_AUTHENTICATION_CODE;
+            }
+            // 유저를 식별할 수 있는 id값
+            let kakaoId;
+            if (kakaoProfile.id !== undefined) {
+                kakaoId = kakaoProfile.id;
+            }
+            // 해당 유저가 이미 가입한 유저인지 확인 - kakao refresh token 사용
             const findUserQuery = `
                 SELECT *
                 FROM user
                 WHERE provider = ? AND authentication_code = ? AND is_deleted = 0;
             `;
-            const findUserResult = yield connection.query(findUserQuery, ['kakao', authenticationCode]);
+            const findUserResult = yield connection.query(findUserQuery, ['kakao', kakaoId]);
             user = findUserResult;
             // 회원가입이 필요한 유저인 경우
             if (findUserResult.length === 0) {
@@ -63,13 +67,13 @@ const login = (provider, authenticationCode, fcm_token) => __awaiter(void 0, voi
                 `;
                 yield connection.query(insertUserQuery, [
                     'kakao',
-                    authenticationCode,
-                    kakaoProfile.account_email,
-                    kakaoProfile.gender,
-                    kakaoProfile.age_range,
+                    kakaoId,
+                    Boolean(kakaoProfile.kakao_account.has_email) ? kakaoProfile.kakao_account.email : null,
+                    Boolean(kakaoProfile.kakao_account.has_gender) ? kakaoProfile.kakao_account.gender : null,
+                    Boolean(kakaoProfile.kakao_account.has_age_range) ? kakaoProfile.kakao_account.age_range : null,
                 ]);
                 // 유저 insert 결과 조회
-                const findUserAfterInsertResult = yield connection.query(findUserQuery, ['kakao', authenticationCode]);
+                const findUserAfterInsertResult = yield connection.query(findUserQuery, ['kakao', kakaoId]);
                 if (findUserAfterInsertResult.length === 0)
                     return serviceReturnConstant_1.default.NO_USER;
                 user = findUserAfterInsertResult[0];
@@ -138,7 +142,7 @@ const login = (provider, authenticationCode, fcm_token) => __awaiter(void 0, voi
         yield connection.commit();
         // 새로 발급한 jwt token과 유저 id, 로그인/회원가입 타입 return
         const data = {
-            _id: user.id.toString(),
+            _id: user.id,
             type: type,
             accessToken,
             refreshToken,
@@ -190,7 +194,7 @@ const getNewAccessToken = (userId, refreshToken) => __awaiter(void 0, void 0, vo
         // 리턴할 refresh token
         const returnRefreshToken = newRefreshToken ? newRefreshToken : refreshToken;
         const data = {
-            _id: user.id.toString(),
+            _id: user.id,
             type,
             accessToken,
             refreshToken: returnRefreshToken

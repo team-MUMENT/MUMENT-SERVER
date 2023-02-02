@@ -38,6 +38,12 @@ const userInfo = (userId) => __awaiter(void 0, void 0, void 0, function* () {
     const user = yield pool_1.default.queryValue(query, [userId]);
     return user[0];
 });
+// userId로 탈퇴한 유저 포함 레코드 가져오기
+const userInfoIncludeLeave = (userId) => __awaiter(void 0, void 0, void 0, function* () {
+    const query = 'SELECT * FROM user WHERE id=?';
+    const user = yield pool_1.default.queryValue(query, [userId]);
+    return user[0];
+});
 // 내가 작성한 뮤멘트 리스트 가져오기 - 최신순
 const myMumentList = (userId) => __awaiter(void 0, void 0, void 0, function* () {
     const mumentListQuery = `
@@ -67,7 +73,7 @@ const myLikeMumentList = (userId) => __awaiter(void 0, void 0, void 0, function*
             JOIN music ON mument.music_id = music.id
             LEFT JOIN mument_tag ON mument.id = mument_tag.mument_id
             JOIN user ON mument.user_id = user.id
-            WHERE mument.like.user_id=${userId} AND mument.is_deleted=0 AND mument.is_private=0
+            WHERE mument.like.user_id=${userId} AND mument.is_deleted=0 AND mument.is_private=0 AND user.is_deleted=0
             ORDER BY mument.created_at DESC;`;
     const myMumentList = yield pool_1.default.query(mumentListQuery);
     return myMumentList;
@@ -99,6 +105,7 @@ const isBlockedUser = (userId, mumentId) => __awaiter(void 0, void 0, void 0, fu
 });
 exports.default = {
     userInfo,
+    userInfoIncludeLeave,
     myMumentList,
     myLikeMumentList,
     blockedUserList,

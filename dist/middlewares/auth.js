@@ -49,9 +49,6 @@ exports.default = (req, res, next) => __awaiter(void 0, void 0, void 0, function
                 case serviceReturnConstant_1.default.TOKEN_UNKNOWN_ERROR: {
                     return res.status(statusCode_1.default.UNAUTHORIZED).send(util_1.default.fail(statusCode_1.default.UNAUTHORIZED, responseMessage_1.default.TOKEN_UNKNOWN_ERROR));
                 }
-                case serviceReturnConstant_1.default.NOT_PROFILE_SET_TOKEN: {
-                    return res.status(statusCode_1.default.BAD_REQUEST).send(util_1.default.fail(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.PROFILE_SET_REQUIRED));
-                }
             }
         }
         else {
@@ -66,18 +63,9 @@ exports.default = (req, res, next) => __awaiter(void 0, void 0, void 0, function
     }
     catch (error) {
         console.log(error);
-        const slackMessage = {
-            title: 'MUMENT ec2 서버 오류',
-            text: '서버 내부 오류입니다',
-            fields: [
-                {
-                    title: 'Error Stack:',
-                    value: `\`\`\`${error}\`\`\``,
-                },
-            ],
-        };
-        (0, slackWebHook_1.default)(slackMessage);
-        res.status(statusCode_1.default.INTERNAL_SERVER_ERROR).send(util_1.default.fail(statusCode_1.default.INTERNAL_SERVER_ERROR, responseMessage_1.default.INTERNAL_SERVER_ERROR));
+        const slackMessage = slackWebHook_1.default.slackErrorMessage(error.stack);
+        slackWebHook_1.default.sendMessage(slackMessage);
+        return res.status(statusCode_1.default.INTERNAL_SERVER_ERROR).send(util_1.default.fail(statusCode_1.default.INTERNAL_SERVER_ERROR, responseMessage_1.default.INTERNAL_SERVER_ERROR));
     }
 });
 //# sourceMappingURL=auth.js.map

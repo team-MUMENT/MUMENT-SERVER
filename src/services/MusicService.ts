@@ -1,7 +1,6 @@
 import dayjs from 'dayjs';
 import axios from 'axios';
 import constant from '../modules/serviceReturnConstant';
-import pools from '../modules/pool';
 import poolPromise from '../loaders/db';
 
 import userDB from '../modules/db/User';
@@ -14,6 +13,7 @@ import { MusicResponseDto } from '../interfaces/music/MusicResponseDto';
 import musicDB from '../modules/db/Music';
 
 import cardTagList from '../modules/cardTagList';
+import config from '../config';
 
 const qs = require('querystring');
 require('dotenv').config();
@@ -54,7 +54,7 @@ const getMusicAndMyMument = async (musicId: string, userId: string): Promise<Mus
         if (latestMument.length === 0) {
             const data: MusicMyMumentResponseDto = {
                 music: {
-                    _id: music[0].id,
+                    _id: music[0].id.toString(),
                     name: music[0].name,
                     artist: music[0].artist,
                     image: music[0].image,
@@ -101,7 +101,7 @@ const getMusicAndMyMument = async (musicId: string, userId: string): Promise<Mus
         `;
 
         const isLikedResult = await connection.query(getIsLikedQuery, [latestMument[0].id, userId]);
-        const isLiked: boolean = isLikedResult[0].is_liked;
+        const isLiked: boolean = Boolean(isLikedResult[0].is_liked);
 
 
         // 날짜 가공
@@ -109,20 +109,22 @@ const getMusicAndMyMument = async (musicId: string, userId: string): Promise<Mus
 
         const myMument: MumentCardViewInterface = {
             _id: latestMument[0].id,
-            musicId: latestMument[0].music_id,
+            music: {
+                _id: latestMument[0].music_id.toString(),
+            },
             user: {
                 _id: latestMument[0].user_id,
                 name: latestMument[0].user_name,
                 image: latestMument[0].user_image,
             },
-            isFirst: latestMument[0].is_first,
+            isFirst: Boolean(latestMument[0].is_first),
             impressionTag,
             feelingTag,
             cardTag: mumentCardTag,
             content: latestMument[0].content,
-            isPrivate: latestMument[0].is_private,
+            isPrivate: Boolean(latestMument[0].is_private),
             likeCount: latestMument[0].like_count,
-            isDeleted: latestMument[0].is_deleted,
+            isDeleted: Boolean(latestMument[0].is_deleted),
             createdAt: latestMument[0].created_at,
             updatedAt: latestMument[0].updated_at,
             date: mumentDate,
@@ -131,7 +133,7 @@ const getMusicAndMyMument = async (musicId: string, userId: string): Promise<Mus
 
         const data: MusicMyMumentResponseDto = {
             music: {
-                _id: music[0].id,
+                _id: music[0].id.toString(),
                 name: music[0].name,
                 artist: music[0].artist,
                 image: music[0].image,
@@ -169,19 +171,11 @@ const getMumentList = async (musicId: string, userId: string, isLikeOrder: boole
             blockUserList.push(element.exist);
         });
 
-        // 자신을 차단한 유저 반환
-        const getBlockMeUserQuery = `
-        SELECT user_id
-        FROM block
-        WHERE blocked_user_id = ?
-        `;
+        let strBlockUserList = '( 0 )';
 
-        const blockMeUser: {user_id: number}[] = await connection.query(getBlockMeUserQuery, [userId]);
-        blockMeUser.forEach(element => {
-            blockUserList.push(element.user_id);
-        })
-
-        const strBlockUserList = '(' + blockUserList.toString() + ')';
+        if (blockUserResult.length != 0) {
+            strBlockUserList = '(' + blockUserList.toString() + ')';
+        }
 
         let originalMumentList = [];
 
@@ -296,24 +290,24 @@ const getMumentList = async (musicId: string, userId: string, isLikeOrder: boole
         for (const mument of originalMumentList) {
             mumentList.push({
                 _id: mument.id,
-                musicId: mument.music_id,
+                musicId: mument.music_id.toString(),
                 user: {
                     _id: mument.user_id,
                     name: mument.user_name,
                     image: mument.user_image,
                 },
-                isFirst: mument.is_first,
+                isFirst: Boolean(mument.is_first),
                 impressionTag: tagList[tagList.findIndex(o => o.id == mument.id)].impressionTag,
                 feelingTag: tagList[tagList.findIndex(o => o.id == mument.id)].feelingTag,
                 cardTag: tagList[tagList.findIndex(o => o.id == mument.id)].cardTag,
                 content: mument.content,
-                isPrivate: mument.is_private,
+                isPrivate: Boolean(mument.is_private),
                 likeCount: mument.like_count,
-                isDeleted: mument.is_deleted,
+                isDeleted: Boolean(mument.is_deleted),
                 createdAt: mument.created_at,
                 updatedAt: mument.updated_at,
                 date: createDate(mument.created_at),
-                isLiked: isLikedList[isLikedList.findIndex(o => o.id == mument.id)].isLiked,
+                isLiked: Boolean(isLikedList[isLikedList.findIndex(o => o.id == mument.id)].isLiked),
             });
         };
 
@@ -335,24 +329,26 @@ const getMumentList = async (musicId: string, userId: string, isLikeOrder: boole
  */
 const getMusicListBySearch = async (keyword: string): Promise<MusicResponseDto[] | number | void> => {
     try {        
-        const token = 'Bearer ' + process.env.APPLE_DEVELOPER_TOKEN as string;
+        const token = `Bearer ${config.appleDeveloperToken as string}`;
+
         let musiclist: MusicResponseDto[] = [];
 
         const appleResponse = async (searchKeyword: string) => {
-            await axios.get('https://api.music.apple.com/v1/catalog/kr/search?types=songs&limit=25&term=' 
+    
+            await axios.get('https://api.music.apple.com/v1/catalog/kr/search?types=songs&limit=20&term=' 
                 + encodeURI(searchKeyword), {
                     headers: {
                       'Content-Type': 'application/x-www-form-urlencoded',
                       'Authorization': token
-                    },
+                    }
                 }
             )
-            .then(function (response) {
+            .then(async function (response) {
                 /* apple api에서 받을 수 있는 3개 status code 대응 - 200, 401, 500*/
                 // 200 - success
                 const appleMusicList = response.data.results.songs.data;
 
-                musiclist =  appleMusicList.map((music: any) => {
+                musiclist =  await appleMusicList.map((music: any) => {
                     let imageUrl = music.attributes.artwork.url;
                     imageUrl = imageUrl.replace('{w}x{h}', '400x400'); //앨범 이미지 크기 400으로 지정
 
@@ -366,7 +362,7 @@ const getMusicListBySearch = async (keyword: string): Promise<MusicResponseDto[]
                 });
                 return musiclist;
             })
-            .catch(function (error) {
+            .catch(async function (error) {
                 // 401 - A response indicating an incorrect Authorization header
                 if (error.response.status == 401) return constant.APPLE_UNAUTHORIZED;
 
@@ -386,6 +382,7 @@ const getMusicListBySearch = async (keyword: string): Promise<MusicResponseDto[]
         throw error;
     }
 };
+
 export default {
     getMusicAndMyMument,
     getMumentList,
