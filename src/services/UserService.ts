@@ -141,12 +141,7 @@ const getLikeMumentList = async (userId: string, tagList: number[]): Promise<Use
         // 사용자가 차단한 유저 배열
         const blockedUserList = await userDB.blockedUserList(userId);
 
-        const likeMumentListFunc = async (acc: any, item: MyMumentInfoRDB, idx: number) => {
-            //자신의 글은 띄우지 않음
-             if (item.user_id === Number(userId)) {
-                return acc;
-             }
-            
+        const likeMumentListFunc = async (acc: any, item: MyMumentInfoRDB, idx: number) => {     
             const isBlocked = blockedUserList.find(({ exist }) => exist == item.user_id);
             if (isBlocked !== undefined) {
                 //차단된 유저의 뮤멘트라면 reduce가 다음 코드 실행안함
