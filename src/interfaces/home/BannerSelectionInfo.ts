@@ -5,8 +5,6 @@ export interface BannerSelectionInfo {
         artist: string;
         image: string;
     };
-    impressionTag: number;
-    feelingTag: number;
     tagTitle: string;
     displayDate: Date;
 }

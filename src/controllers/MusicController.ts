@@ -4,7 +4,7 @@ import message from '../modules/responseMessage';
 import util from '../modules/util';
 import { validationResult } from 'express-validator';
 import { MusicService } from '../services';
-import sendMessage, { SlackMessageFormat } from '../library/slackWebHook';
+import slackWebHook, { SlackMessageFormat } from '../library/slackWebHook';
 import constant from '../modules/serviceReturnConstant';
 
 /**
@@ -17,33 +17,24 @@ const getMusicAndMyMument = async (req: Request, res: Response) => {
     const error = validationResult(req);
 
     if (!error.isEmpty()) {
-        res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.WRONG_PARAMS));
+        return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.WRONG_PARAMS));
     }
 
     try {
         const data = await MusicService.getMusicAndMyMument(musicId, userId);
 
         if (data === constant.NO_MUSIC) {
-            res.status(statusCode.NOT_FOUND).send(util.fail(statusCode.NOT_FOUND, message.NO_MUSIC_ID));
+            return res.status(statusCode.NOT_FOUND).send(util.fail(statusCode.NOT_FOUND, message.NO_MUSIC_ID));
         } else {
-            res.status(statusCode.OK).send(util.success(statusCode.OK, message.FIND_MUSIC_MYMUMENT_SUCCESS, data));
+            return res.status(statusCode.OK).send(util.success(statusCode.OK, message.FIND_MUSIC_MYMUMENT_SUCCESS, data));
         }
-    } catch (error) {
+    } catch (error: any) {
         console.log(error);
 
-        const slackMessage: SlackMessageFormat = {
-            title: 'MUMENT ec2 서버 오류',
-            text: '서버 내부 오류입니다',
-            fields: [
-                {
-                    title: 'Error Stack:',
-                    value: `\`\`\`${error}\`\`\``,
-                },
-            ],
-        };
-        sendMessage(slackMessage);
-
-        res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.SERVICE_UNAVAILABLE, message.INTERNAL_SERVER_ERROR));
+        const slackMessage: SlackMessageFormat = slackWebHook.slackErrorMessage(error.stack);
+        slackWebHook.sendMessage(slackMessage);
+        
+        return res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
     }
 };
 
@@ -58,7 +49,7 @@ const getMumentList = async (req: Request, res: Response) => {
 
     const error = validationResult(req);
     if (!error.isEmpty()) {
-        res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.WRONG_PARAMS));
+        return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.WRONG_PARAMS));
     }
 
     let isLikeOrder: boolean = true;
@@ -78,28 +69,19 @@ const getMumentList = async (req: Request, res: Response) => {
 
         
         if (!data) {// 조회 성공했으나, 결과값 없을 때 204 리턴
-            res.status(statusCode.NO_CONTENT).send(util.success(statusCode.NO_CONTENT, message.READ_MUSIC_MUMENTLIST_SUCCESS));
+            return res.status(statusCode.NO_CONTENT).send(util.success(statusCode.NO_CONTENT, message.READ_MUSIC_MUMENTLIST_SUCCESS));
         } else if (data === constant.NO_MUSIC) { // 존재하지 않는 음악 아이디일 때 400 리턴
-            res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.NO_MUSIC_ID));
+            return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.NO_MUSIC_ID));
         }
 
         res.status(statusCode.OK).send(util.success(statusCode.OK, message.READ_MUSIC_MUMENTLIST_SUCCESS, data));
-    } catch (error) {
+    } catch (error: any) {
         console.log(error);
 
-        const slackMessage: SlackMessageFormat = {
-            title: 'MUMENT ec2 서버 오류',
-            text: '서버 내부 오류입니다',
-            fields: [
-                {
-                    title: 'Error Stack:',
-                    value: `\`\`\`${error}\`\`\``,
-                },
-            ],
-        };
-        sendMessage(slackMessage);
-
-        res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
+        const slackMessage: SlackMessageFormat = slackWebHook.slackErrorMessage(error.stack);
+        slackWebHook.sendMessage(slackMessage);
+        
+        return res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
     }
 };
 
@@ -114,30 +96,21 @@ const getMusicListBySearch = async (req: Request, res: Response) => {
         const data = await MusicService.getMusicListBySearch(keyword as string);
 
         if (data == constant.APPLE_UNAUTHORIZED) {
-            res.status(statusCode.UNAUTHORIZED).send(util.fail(statusCode.UNAUTHORIZED, message.APPLE_TOKEN_UNAUTHORIZED));
+            return res.status(statusCode.UNAUTHORIZED).send(util.fail(statusCode.UNAUTHORIZED, message.APPLE_TOKEN_UNAUTHORIZED));
         }
 
         if (data == constant.APPLE_INTERNAL_SERVER_ERROR) {
-            res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.APPLE_SERVER_INTERNAL_ERROR));
+            return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.APPLE_SERVER_INTERNAL_ERROR));
         }
 
         res.status(statusCode.OK).send(util.success(statusCode.OK, message.SEARCH_MUSIC_LIST_SUCCESS, data));
-    } catch (error) {
+    } catch (error: any) {
         console.log(error);
 
-        const slackMessage: SlackMessageFormat = {
-            title: 'MUMENT ec2 서버 오류',
-            text: '서버 내부 오류입니다',
-            fields: [
-                {
-                    title: 'Error Stack:',
-                    value: `\`\`\`${error}\`\`\``,
-                },
-            ],
-        };
-        sendMessage(slackMessage);
-
-        res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
+        const slackMessage: SlackMessageFormat = slackWebHook.slackErrorMessage(error.stack);
+        slackWebHook.sendMessage(slackMessage);
+        
+        return res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
     }
 };
 

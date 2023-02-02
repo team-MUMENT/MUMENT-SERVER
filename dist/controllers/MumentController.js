@@ -38,18 +38,9 @@ const createMument = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     }
     catch (error) {
         console.log(error);
-        const slackMessage = {
-            title: 'MUMENT ec2 서버 오류',
-            text: '서버 내부 오류입니다',
-            fields: [
-                {
-                    title: 'Error Stack:',
-                    value: `\`\`\`${error}\`\`\``,
-                },
-            ],
-        };
-        (0, slackWebHook_1.default)(slackMessage);
-        res.status(statusCode_1.default.INTERNAL_SERVER_ERROR).send(util_1.default.fail(statusCode_1.default.INTERNAL_SERVER_ERROR, responseMessage_1.default.INTERNAL_SERVER_ERROR));
+        const slackMessage = slackWebHook_1.default.slackErrorMessage(error.stack);
+        slackWebHook_1.default.sendMessage(slackMessage);
+        return res.status(statusCode_1.default.INTERNAL_SERVER_ERROR).send(util_1.default.fail(statusCode_1.default.INTERNAL_SERVER_ERROR, responseMessage_1.default.INTERNAL_SERVER_ERROR));
     }
 });
 /**
@@ -72,18 +63,9 @@ const updateMument = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     }
     catch (error) {
         console.log(error);
-        const slackMessage = {
-            title: 'MUMENT ec2 서버 오류',
-            text: '서버 내부 오류입니다',
-            fields: [
-                {
-                    title: 'Error Stack:',
-                    value: `\`\`\`${error}\`\`\``,
-                },
-            ],
-        };
-        (0, slackWebHook_1.default)(slackMessage);
-        res.status(statusCode_1.default.INTERNAL_SERVER_ERROR).send(util_1.default.fail(statusCode_1.default.INTERNAL_SERVER_ERROR, responseMessage_1.default.INTERNAL_SERVER_ERROR));
+        const slackMessage = slackWebHook_1.default.slackErrorMessage(error.stack);
+        slackWebHook_1.default.sendMessage(slackMessage);
+        return res.status(statusCode_1.default.INTERNAL_SERVER_ERROR).send(util_1.default.fail(statusCode_1.default.INTERNAL_SERVER_ERROR, responseMessage_1.default.INTERNAL_SERVER_ERROR));
     }
 });
 /**
@@ -96,29 +78,20 @@ const getMument = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const data = yield services_1.MumentService.getMument(mumentId, userId);
         if (!data || data === serviceReturnConstant_1.default.NO_MUMENT) {
-            res.status(statusCode_1.default.NOT_FOUND).send(util_1.default.fail(statusCode_1.default.NOT_FOUND, responseMessage_1.default.NOT_FOUND_ID));
+            return res.status(statusCode_1.default.NOT_FOUND).send(util_1.default.fail(statusCode_1.default.NOT_FOUND, responseMessage_1.default.NOT_FOUND_ID));
         }
         else if (data === serviceReturnConstant_1.default.PRIVATE_MUMENT) {
-            res.status(statusCode_1.default.BAD_REQUEST).send(util_1.default.fail(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.NOT_YOUR_MUMENT));
+            return res.status(statusCode_1.default.BAD_REQUEST).send(util_1.default.fail(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.NOT_YOUR_MUMENT));
         }
         else {
-            res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.READ_MUMENT_SUCEESS, data));
+            return res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.READ_MUMENT_SUCEESS, data));
         }
     }
     catch (error) {
         console.log(error);
-        const slackMessage = {
-            title: 'MUMENT ec2 서버 오류',
-            text: '서버 내부 오류입니다',
-            fields: [
-                {
-                    title: 'Error Stack:',
-                    value: `\`\`\`${error}\`\`\``,
-                },
-            ],
-        };
-        (0, slackWebHook_1.default)(slackMessage);
-        res.status(statusCode_1.default.INTERNAL_SERVER_ERROR).send(util_1.default.fail(statusCode_1.default.INTERNAL_SERVER_ERROR, responseMessage_1.default.INTERNAL_SERVER_ERROR));
+        const slackMessage = slackWebHook_1.default.slackErrorMessage(error.stack);
+        slackWebHook_1.default.sendMessage(slackMessage);
+        return res.status(statusCode_1.default.INTERNAL_SERVER_ERROR).send(util_1.default.fail(statusCode_1.default.INTERNAL_SERVER_ERROR, responseMessage_1.default.INTERNAL_SERVER_ERROR));
     }
 });
 /**
@@ -129,22 +102,13 @@ const deleteMument = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     const { mumentId } = req.params;
     try {
         const data = yield services_1.MumentService.deleteMument(mumentId);
-        res.status(statusCode_1.default.NO_CONTENT).send(util_1.default.success(statusCode_1.default.NO_CONTENT, responseMessage_1.default.DELETE_MUMENT_SUCCESS));
+        return res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.DELETE_MUMENT_SUCCESS));
     }
     catch (error) {
         console.log(error);
-        const slackMessage = {
-            title: 'MUMENT ec2 서버 오류',
-            text: '서버 내부 오류입니다',
-            fields: [
-                {
-                    title: 'Error Stack:',
-                    value: `\`\`\`${error}\`\`\``,
-                },
-            ],
-        };
-        (0, slackWebHook_1.default)(slackMessage);
-        res.status(statusCode_1.default.INTERNAL_SERVER_ERROR).send(util_1.default.fail(statusCode_1.default.INTERNAL_SERVER_ERROR, responseMessage_1.default.INTERNAL_SERVER_ERROR));
+        const slackMessage = slackWebHook_1.default.slackErrorMessage(error.stack);
+        slackWebHook_1.default.sendMessage(slackMessage);
+        return res.status(statusCode_1.default.INTERNAL_SERVER_ERROR).send(util_1.default.fail(statusCode_1.default.INTERNAL_SERVER_ERROR, responseMessage_1.default.INTERNAL_SERVER_ERROR));
     }
 });
 /**
@@ -156,22 +120,13 @@ const getIsFirst = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     const userId = req.body.userId;
     try {
         const data = yield services_1.MumentService.getIsFirst(userId, musicId);
-        res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.READ_ISFIRST_SUCCESS, data));
+        return res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.READ_ISFIRST_SUCCESS, data));
     }
     catch (error) {
         console.log(error);
-        const slackMessage = {
-            title: 'MUMENT ec2 서버 오류',
-            text: '서버 내부 오류입니다',
-            fields: [
-                {
-                    title: 'Error Stack:',
-                    value: `\`\`\`${error}\`\`\``,
-                },
-            ],
-        };
-        (0, slackWebHook_1.default)(slackMessage);
-        res.status(statusCode_1.default.INTERNAL_SERVER_ERROR).send(util_1.default.fail(statusCode_1.default.INTERNAL_SERVER_ERROR, responseMessage_1.default.INTERNAL_SERVER_ERROR));
+        const slackMessage = slackWebHook_1.default.slackErrorMessage(error.stack);
+        slackWebHook_1.default.sendMessage(slackMessage);
+        return res.status(statusCode_1.default.INTERNAL_SERVER_ERROR).send(util_1.default.fail(statusCode_1.default.INTERNAL_SERVER_ERROR, responseMessage_1.default.INTERNAL_SERVER_ERROR));
     }
 });
 /**
@@ -179,7 +134,7 @@ const getIsFirst = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
  * @DESC get mument history
  */
 const getMumentHistory = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { userId: writerId, musicId } = req.params;
+    const { musicId, userId: writerId } = req.params;
     const userId = req.body.userId;
     const { default: orderOption, limit, offset } = req.query;
     const error = (0, express_validator_1.validationResult)(req);
@@ -200,30 +155,13 @@ const getMumentHistory = (req, res) => __awaiter(void 0, void 0, void 0, functio
     ;
     try {
         const data = yield services_1.MumentService.getMumentHistory(userId, musicId, writerId, orderBy, limit, offset);
-        if (data === serviceReturnConstant_1.default.NO_MUSIC) {
-            // 곡 검색 결과가 없을 경우
-            return res.status(statusCode_1.default.NOT_FOUND).send(util_1.default.fail(statusCode_1.default.NOT_FOUND, responseMessage_1.default.NOT_FOUND));
-        }
-        else if (data === serviceReturnConstant_1.default.BLOCKED_USER) {
-            // 차단된 유저는 히스토리 조회 불가
-            return res.status(statusCode_1.default.BAD_REQUEST).send(util_1.default.fail(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.BLOCKED_USER));
-        }
-        res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.READ_MUMENT_HISTORY_SUCCESS, data));
+        return res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.READ_MUMENT_HISTORY_SUCCESS, data));
     }
     catch (error) {
         console.log(error);
-        const slackMessage = {
-            title: 'MUMENT ec2 서버 오류',
-            text: '서버 내부 오류입니다',
-            fields: [
-                {
-                    title: 'Error Stack:',
-                    value: `\`\`\`${error}\`\`\``,
-                },
-            ],
-        };
-        (0, slackWebHook_1.default)(slackMessage);
-        res.status(statusCode_1.default.INTERNAL_SERVER_ERROR).send(util_1.default.fail(statusCode_1.default.INTERNAL_SERVER_ERROR, responseMessage_1.default.INTERNAL_SERVER_ERROR));
+        const slackMessage = slackWebHook_1.default.slackErrorMessage(error.stack);
+        slackWebHook_1.default.sendMessage(slackMessage);
+        return res.status(statusCode_1.default.INTERNAL_SERVER_ERROR).send(util_1.default.fail(statusCode_1.default.INTERNAL_SERVER_ERROR, responseMessage_1.default.INTERNAL_SERVER_ERROR));
     }
 });
 /**
@@ -254,22 +192,13 @@ const createLike = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                 return res.status(statusCode_1.default.BAD_REQUEST).send(util_1.default.fail(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.BLOCKED_USER));
             }
         }
-        res.status(statusCode_1.default.CREATED).send(util_1.default.success(statusCode_1.default.CREATED, responseMessage_1.default.CREATE_LIKE_SUCCESS, data));
+        return res.status(statusCode_1.default.CREATED).send(util_1.default.success(statusCode_1.default.CREATED, responseMessage_1.default.CREATE_LIKE_SUCCESS, data));
     }
     catch (error) {
         console.log(error);
-        const slackMessage = {
-            title: 'MUMENT ec2 서버 오류',
-            text: '서버 내부 오류입니다',
-            fields: [
-                {
-                    title: 'Error Stack:',
-                    value: `\`\`\`${error}\`\`\``,
-                },
-            ],
-        };
-        (0, slackWebHook_1.default)(slackMessage);
-        res.status(statusCode_1.default.INTERNAL_SERVER_ERROR).send(util_1.default.fail(statusCode_1.default.INTERNAL_SERVER_ERROR, responseMessage_1.default.INTERNAL_SERVER_ERROR));
+        const slackMessage = slackWebHook_1.default.slackErrorMessage(error.stack);
+        slackWebHook_1.default.sendMessage(slackMessage);
+        return res.status(statusCode_1.default.INTERNAL_SERVER_ERROR).send(util_1.default.fail(statusCode_1.default.INTERNAL_SERVER_ERROR, responseMessage_1.default.INTERNAL_SERVER_ERROR));
     }
 });
 /**
@@ -289,29 +218,20 @@ const deleteLike = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         switch (data) {
             case serviceReturnConstant_1.default.DELETE_FAIL: {
                 // 업데이트가 실패했을 때
-                res.status(statusCode_1.default.BAD_REQUEST).send(util_1.default.fail(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.DELETE_LIKE_FAIL));
+                return res.status(statusCode_1.default.BAD_REQUEST).send(util_1.default.fail(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.DELETE_LIKE_FAIL));
             }
             case serviceReturnConstant_1.default.NO_MUMENT: {
                 // 존재하지 않는 뮤멘트일 때
-                res.status(statusCode_1.default.BAD_REQUEST).send(util_1.default.fail(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.NO_MUMENT_ID));
+                return res.status(statusCode_1.default.BAD_REQUEST).send(util_1.default.fail(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.NO_MUMENT_ID));
             }
         }
         res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.DELETE_LIKE_SUCCESS, data));
     }
     catch (error) {
         console.log(error);
-        const slackMessage = {
-            title: 'MUMENT ec2 서버 오류',
-            text: '서버 내부 오류입니다',
-            fields: [
-                {
-                    title: 'Error Stack:',
-                    value: `\`\`\`${error}\`\`\``,
-                },
-            ],
-        };
-        (0, slackWebHook_1.default)(slackMessage);
-        res.status(statusCode_1.default.INTERNAL_SERVER_ERROR).send(util_1.default.fail(statusCode_1.default.INTERNAL_SERVER_ERROR, responseMessage_1.default.INTERNAL_SERVER_ERROR));
+        const slackMessage = slackWebHook_1.default.slackErrorMessage(error.stack);
+        slackWebHook_1.default.sendMessage(slackMessage);
+        return res.status(statusCode_1.default.INTERNAL_SERVER_ERROR).send(util_1.default.fail(statusCode_1.default.INTERNAL_SERVER_ERROR, responseMessage_1.default.INTERNAL_SERVER_ERROR));
     }
 });
 /**
@@ -322,24 +242,15 @@ const getRandomMument = (req, res) => __awaiter(void 0, void 0, void 0, function
     try {
         const data = yield services_1.MumentService.getRandomMument();
         if (!data) {
-            res.status(statusCode_1.default.INTERNAL_SERVER_ERROR).send(util_1.default.fail(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.RANDOM_TAG_FAIL));
+            return res.status(statusCode_1.default.NO_CONTENT).send(util_1.default.success(statusCode_1.default.NO_CONTENT, responseMessage_1.default.RANDOM_TAG_FAIL));
         }
-        res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.GET_RANDOM_MUMENT_SUCCESS, data));
+        return res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.GET_RANDOM_MUMENT_SUCCESS, data));
     }
     catch (error) {
         console.log(error);
-        const slackMessage = {
-            title: 'MUMENT ec2 서버 오류',
-            text: '서버 내부 오류입니다',
-            fields: [
-                {
-                    title: 'Error Stack:',
-                    value: `\`\`\`${error}\`\`\``,
-                },
-            ],
-        };
-        (0, slackWebHook_1.default)(slackMessage);
-        res.status(statusCode_1.default.INTERNAL_SERVER_ERROR).send(util_1.default.fail(statusCode_1.default.INTERNAL_SERVER_ERROR, responseMessage_1.default.INTERNAL_SERVER_ERROR));
+        const slackMessage = slackWebHook_1.default.slackErrorMessage(error.stack);
+        slackWebHook_1.default.sendMessage(slackMessage);
+        return res.status(statusCode_1.default.INTERNAL_SERVER_ERROR).send(util_1.default.fail(statusCode_1.default.INTERNAL_SERVER_ERROR, responseMessage_1.default.INTERNAL_SERVER_ERROR));
     }
 });
 /**
@@ -351,24 +262,15 @@ const getTodayMument = (req, res) => __awaiter(void 0, void 0, void 0, function*
         const data = yield services_1.MumentService.getTodayMument();
         // 조회는 성공했으나 결과값이 없을 경우
         if (data === serviceReturnConstant_1.default.NO_HOME_CONTENT) {
-            res.status(statusCode_1.default.NO_CONTENT).send();
+            return res.status(statusCode_1.default.NO_CONTENT).send(util_1.default.success(statusCode_1.default.NO_CONTENT, responseMessage_1.default.GET_TODAY_MUMENT_SUCCESS));
         }
         res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.GET_TODAY_MUMENT_SUCCESS, data));
     }
     catch (error) {
-        console.log;
-        const slackMessage = {
-            title: 'MUMENT ec2 서버 오류',
-            text: '서버 내부 오류입니다',
-            fields: [
-                {
-                    title: 'Error Stack:',
-                    value: `\`\`\`${error}\`\`\``,
-                },
-            ],
-        };
-        (0, slackWebHook_1.default)(slackMessage);
-        res.status(statusCode_1.default.INTERNAL_SERVER_ERROR).send(util_1.default.fail(statusCode_1.default.INTERNAL_SERVER_ERROR, responseMessage_1.default.INTERNAL_SERVER_ERROR));
+        console.log(error);
+        const slackMessage = slackWebHook_1.default.slackErrorMessage(error.stack);
+        slackWebHook_1.default.sendMessage(slackMessage);
+        return res.status(statusCode_1.default.INTERNAL_SERVER_ERROR).send(util_1.default.fail(statusCode_1.default.INTERNAL_SERVER_ERROR, responseMessage_1.default.INTERNAL_SERVER_ERROR));
     }
 });
 /**
@@ -380,26 +282,17 @@ const getBanner = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const data = yield services_1.MumentService.getBanner();
         // 조회는 성공했으나, 결과값이 없는 경우
         if (data === serviceReturnConstant_1.default.NO_HOME_CONTENT) {
-            res.status(statusCode_1.default.NO_CONTENT).send(util_1.default.success(statusCode_1.default.NO_CONTENT, responseMessage_1.default.GET_BANNER_SUCCESS));
+            return res.status(statusCode_1.default.NO_CONTENT).send(util_1.default.success(statusCode_1.default.NO_CONTENT, responseMessage_1.default.GET_BANNER_SUCCESS));
         }
         else {
-            res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.GET_BANNER_SUCCESS, data));
+            return res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.GET_BANNER_SUCCESS, data));
         }
     }
     catch (error) {
         console.log(error);
-        const slackMessage = {
-            title: 'MUMENT ec2 서버 오류',
-            text: '서버 내부 오류입니다',
-            fields: [
-                {
-                    title: 'Error Stack:',
-                    value: `\`\`\`${error}\`\`\``,
-                },
-            ],
-        };
-        (0, slackWebHook_1.default)(slackMessage);
-        res.status(statusCode_1.default.INTERNAL_SERVER_ERROR).send(util_1.default.fail(statusCode_1.default.INTERNAL_SERVER_ERROR, responseMessage_1.default.INTERNAL_SERVER_ERROR));
+        const slackMessage = slackWebHook_1.default.slackErrorMessage(error.stack);
+        slackWebHook_1.default.sendMessage(slackMessage);
+        return res.status(statusCode_1.default.INTERNAL_SERVER_ERROR).send(util_1.default.fail(statusCode_1.default.INTERNAL_SERVER_ERROR, responseMessage_1.default.INTERNAL_SERVER_ERROR));
     }
 });
 /**
@@ -410,24 +303,15 @@ const getAgainMument = (req, res) => __awaiter(void 0, void 0, void 0, function*
     try {
         const data = yield services_1.MumentService.getAgainMument();
         if (data === serviceReturnConstant_1.default.NO_HOME_CONTENT) {
-            res.status(statusCode_1.default.NO_CONTENT).send(util_1.default.success(statusCode_1.default.NO_CONTENT, responseMessage_1.default.GET_AGAIN_MUMENT_SUCCESS));
+            return res.status(statusCode_1.default.NO_CONTENT).send(util_1.default.success(statusCode_1.default.NO_CONTENT, responseMessage_1.default.GET_AGAIN_MUMENT_SUCCESS));
         }
         res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.GET_AGAIN_MUMENT_SUCCESS, data));
     }
     catch (error) {
         console.log(error);
-        const slackMessage = {
-            title: 'MUMENT ec2 서버 오류',
-            text: '서버 내부 오류입니다',
-            fields: [
-                {
-                    title: 'Error Stack:',
-                    value: `\`\`\`${error}\`\`\``,
-                },
-            ],
-        };
-        (0, slackWebHook_1.default)(slackMessage);
-        res.status(statusCode_1.default.INTERNAL_SERVER_ERROR).send(util_1.default.fail(statusCode_1.default.INTERNAL_SERVER_ERROR, responseMessage_1.default.INTERNAL_SERVER_ERROR));
+        const slackMessage = slackWebHook_1.default.slackErrorMessage(error.stack);
+        slackWebHook_1.default.sendMessage(slackMessage);
+        return res.status(statusCode_1.default.INTERNAL_SERVER_ERROR).send(util_1.default.fail(statusCode_1.default.INTERNAL_SERVER_ERROR, responseMessage_1.default.INTERNAL_SERVER_ERROR));
     }
 });
 /**
@@ -445,18 +329,9 @@ const getNoticeDetail = (req, res) => __awaiter(void 0, void 0, void 0, function
     }
     catch (error) {
         console.log(error);
-        const slackMessage = {
-            title: 'MUMENT ec2 서버 오류',
-            text: '서버 내부 오류입니다',
-            fields: [
-                {
-                    title: 'Error Stack:',
-                    value: `\`\`\`${error}\`\`\``,
-                },
-            ],
-        };
-        (0, slackWebHook_1.default)(slackMessage);
-        res.status(statusCode_1.default.INTERNAL_SERVER_ERROR).send(util_1.default.fail(statusCode_1.default.INTERNAL_SERVER_ERROR, responseMessage_1.default.INTERNAL_SERVER_ERROR));
+        const slackMessage = slackWebHook_1.default.slackErrorMessage(error.stack);
+        slackWebHook_1.default.sendMessage(slackMessage);
+        return res.status(statusCode_1.default.INTERNAL_SERVER_ERROR).send(util_1.default.fail(statusCode_1.default.INTERNAL_SERVER_ERROR, responseMessage_1.default.INTERNAL_SERVER_ERROR));
     }
 });
 /**
@@ -466,22 +341,13 @@ const getNoticeDetail = (req, res) => __awaiter(void 0, void 0, void 0, function
 const getNoticeList = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const data = yield services_1.MumentService.getNoticeList();
-        res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.READ_NOTICE_LIST_SUCCESS, data));
+        return res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.READ_NOTICE_LIST_SUCCESS, data));
     }
     catch (error) {
         console.log(error);
-        const slackMessage = {
-            title: 'MUMENT ec2 서버 오류',
-            text: '서버 내부 오류입니다',
-            fields: [
-                {
-                    title: 'Error Stack:',
-                    value: `\`\`\`${error}\`\`\``,
-                },
-            ],
-        };
-        (0, slackWebHook_1.default)(slackMessage);
-        res.status(statusCode_1.default.INTERNAL_SERVER_ERROR).send(util_1.default.fail(statusCode_1.default.INTERNAL_SERVER_ERROR, responseMessage_1.default.INTERNAL_SERVER_ERROR));
+        const slackMessage = slackWebHook_1.default.slackErrorMessage(error.stack);
+        slackWebHook_1.default.sendMessage(slackMessage);
+        return res.status(statusCode_1.default.INTERNAL_SERVER_ERROR).send(util_1.default.fail(statusCode_1.default.INTERNAL_SERVER_ERROR, responseMessage_1.default.INTERNAL_SERVER_ERROR));
     }
 });
 /**
@@ -505,18 +371,9 @@ const createReport = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     }
     catch (error) {
         console.log(error);
-        const slackMessage = {
-            title: 'MUMENT ec2 서버 오류',
-            text: '서버 내부 오류입니다',
-            fields: [
-                {
-                    title: 'Error Stack:',
-                    value: `\`\`\`${error}\`\`\``,
-                },
-            ],
-        };
-        (0, slackWebHook_1.default)(slackMessage);
-        res.status(statusCode_1.default.INTERNAL_SERVER_ERROR).send(util_1.default.fail(statusCode_1.default.INTERNAL_SERVER_ERROR, responseMessage_1.default.INTERNAL_SERVER_ERROR));
+        const slackMessage = slackWebHook_1.default.slackErrorMessage(error.stack);
+        slackWebHook_1.default.sendMessage(slackMessage);
+        return res.status(statusCode_1.default.INTERNAL_SERVER_ERROR).send(util_1.default.fail(statusCode_1.default.INTERNAL_SERVER_ERROR, responseMessage_1.default.INTERNAL_SERVER_ERROR));
     }
 });
 /**
@@ -543,18 +400,9 @@ const getLikeUserList = (req, res) => __awaiter(void 0, void 0, void 0, function
     }
     catch (error) {
         console.log(error);
-        const slackMessage = {
-            title: 'MUMENT ec2 서버 오류',
-            text: '서버 내부 오류입니다',
-            fields: [
-                {
-                    title: 'Error Stack:',
-                    value: `\`\`\`${error}\`\`\``,
-                },
-            ],
-        };
-        (0, slackWebHook_1.default)(slackMessage);
-        res.status(statusCode_1.default.INTERNAL_SERVER_ERROR).send(util_1.default.fail(statusCode_1.default.INTERNAL_SERVER_ERROR, responseMessage_1.default.INTERNAL_SERVER_ERROR));
+        const slackMessage = slackWebHook_1.default.slackErrorMessage(error.stack);
+        slackWebHook_1.default.sendMessage(slackMessage);
+        return res.status(statusCode_1.default.INTERNAL_SERVER_ERROR).send(util_1.default.fail(statusCode_1.default.INTERNAL_SERVER_ERROR, responseMessage_1.default.INTERNAL_SERVER_ERROR));
     }
 });
 exports.default = {

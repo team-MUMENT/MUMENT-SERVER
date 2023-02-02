@@ -39,13 +39,10 @@ const refreshSign = (user) => {
 const verify = (token) => {
     try {
         const decoded = jwt.verify(token, config_1.default.jwtSecret);
-        // 프로필 설정이 완료되지 않은 토큰일 때
-        if (decoded.profileId === null)
-            return serviceReturnConstant_1.default.NOT_PROFILE_SET_TOKEN;
         return decoded;
     }
     catch (err) {
-        if (err.name == jsonwebtoken_1.TokenExpiredError) {
+        if (err.name == 'TokenExpiredError') {
             // 토큰 만료
             console.log(err.message);
             return serviceReturnConstant_1.default.TOKEN_EXPIRED;

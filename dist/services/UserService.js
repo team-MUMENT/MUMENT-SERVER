@@ -61,7 +61,7 @@ const getMyMumentList = (userId, tagList) => __awaiter(void 0, void 0, void 0, f
                         name: user.profile_id
                     },
                     music: {
-                        _id: item.music_id,
+                        _id: item.music_id.toString(),
                         name: item.name,
                         artist: item.artist,
                         image: item.music_image
@@ -146,7 +146,7 @@ const getLikeMumentList = (userId, tagList) => __awaiter(void 0, void 0, void 0,
                         name: item.profile_id
                     },
                     music: {
-                        _id: item.music_id,
+                        _id: item.music_id.toString(),
                         name: item.name,
                         artist: item.artist,
                         image: item.music_image
@@ -282,6 +282,9 @@ const getBlockedUserList = (userId) => __awaiter(void 0, void 0, void 0, functio
         throw error;
     }
 });
+/**
+ *  프로필 설정 (소셜 로그인 후) & 프로필 수정
+ */
 const putProfile = (userId, profileId, image) => __awaiter(void 0, void 0, void 0, function* () {
     const pool = yield db_1.default;
     const connection = yield pool.getConnection();
@@ -336,6 +339,9 @@ const putProfile = (userId, profileId, image) => __awaiter(void 0, void 0, void 
         connection.release();
     }
 });
+/**
+ *  프로필 아이디 중복 체크
+ */
 const checkDuplicateName = (profileId) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const checkQuery = `
@@ -356,6 +362,9 @@ const checkDuplicateName = (profileId) => __awaiter(void 0, void 0, void 0, func
         throw error;
     }
 });
+/**
+ * 유저 탈퇴 (사유 등록)
+ */
 const postLeaveCategory = (userId, leaveCategoryId, reasonEtc) => __awaiter(void 0, void 0, void 0, function* () {
     const pool = yield db_1.default;
     const connection = yield pool.getConnection();
@@ -406,6 +415,9 @@ const postLeaveCategory = (userId, leaveCategoryId, reasonEtc) => __awaiter(void
         connection.release();
     }
 });
+/**
+ * 유저 탈퇴
+*/
 const deleteUser = (userId) => __awaiter(void 0, void 0, void 0, function* () {
     const pool = yield db_1.default;
     const connection = yield pool.getConnection();
@@ -434,10 +446,11 @@ const deleteUser = (userId) => __awaiter(void 0, void 0, void 0, function* () {
         if (!user.is_deleted)
             return serviceReturnConstant_1.default.DELETE_FAIL;
         yield connection.commit();
+        const isDeleted = user.isDeleted ? true : false;
         const data = {
             id: user.id,
             profileId: user.profile_id,
-            isDeleted: user.is_deleted,
+            isDeleted: isDeleted,
             updatedAt: user.updated_at,
         };
         return data;
@@ -598,6 +611,7 @@ const getNewsList = (userId) => __awaiter(void 0, void 0, void 0, function* () {
                     isRead: Boolean(item.is_read),
                     createdAt: (0, dayjs_1.default)(item.created_at).format('MM/DD HH:mm'),
                     linkId: item.link_id,
+                    noticePoint: item.notice_point_word,
                     noticeTitle: item.notice_title,
                     likeProfileId: item.like_profile_id,
                     likeMusicTitle: item.like_music_title
@@ -620,24 +634,26 @@ const getNewsList = (userId) => __awaiter(void 0, void 0, void 0, function* () {
 /**
  * 공지사항 등록 - 기획, 서버에서만 사용
  */
-const postNotice = (title, content) => __awaiter(void 0, void 0, void 0, function* () {
+const postNotice = (point, title, content, noticeCategory) => __awaiter(void 0, void 0, void 0, function* () {
     const pool = yield db_1.default;
     const connection = yield pool.getConnection();
     try {
         connection.beginTransaction(); //롤백을 위해 필요함
         // 공지사항 추가
-        const createdNotice = yield connection.query('INSERT INTO notice(title, content) VALUES(?, ?)', [title, content]);
+        const createdNotice = yield connection.query('INSERT INTO notice(category, title, content, notice_point_word) VALUES(?, ?, ?, ?)', [noticeCategory, title, content, point]);
         if ((createdNotice === null || createdNotice === void 0 ? void 0 : createdNotice.affectedRows) === 0)
             return serviceReturnConstant_1.default.CREATE_NOTICE_FAIL;
         // 공지사항 row 조회
         const createdNoticeRow = yield connection.query('SELECT * FROM notice WHERE id=?', [createdNotice.insertId]);
-        const noticeTitle = createdNoticeRow[0].title;
+        const noticeTitle = (!createdNoticeRow[0].notice_point_word) ? createdNoticeRow[0].title : createdNoticeRow[0].notice_point_word + createdNoticeRow[0].title;
+        ;
         const noticeId = createdNoticeRow[0].id;
+        const noticePointWord = createdNoticeRow[0].notice_point_word;
         let fcmTokenList = [];
         // 모든 활성 유저의 소식창에 공지사항 알림 추가        
         const allActiveUser = yield connection.query('SELECT * FROM user WHERE is_deleted=0');
         const insertNewsToAllActiveUser = (item, idx) => __awaiter(void 0, void 0, void 0, function* () {
-            yield connection.query(`INSERT INTO news(type, user_id, notice_title, link_id) VALUES('notice', ?, ?, ?)`, [item.id, noticeTitle, noticeId]);
+            yield connection.query(`INSERT INTO news(type, user_id, notice_title, link_id, notice_point_word) VALUES('notice', ?, ?, ?, ?)`, [item.id, createdNoticeRow[0].title, noticeId, noticePointWord]);
             if (item.fcm_token && item.fcm_token.length > 0) {
                 fcmTokenList.push(item.fcm_token);
             }
@@ -648,11 +664,10 @@ const postNotice = (title, content) => __awaiter(void 0, void 0, void 0, functio
         yield connection.commit();
         // 새로운 공지사항 활성 유저에게 푸시알림
         const pushAlarmResult = yield pushHandler_1.default.noticePushAlarmHandler('공지', noticeTitle, fcmTokenList);
-        if (Array.isArray(pushAlarmResult)) {
+        if (pushAlarmResult === serviceReturnConstant_1.default.NOTICE_PUSH_SUCCESS) {
             return {
                 pushSuccess: true,
-                noticeId: createdNoticeRow[0].id,
-                pushFailFcmToken: pushAlarmResult
+                noticeId: createdNoticeRow[0].id
             };
         }
         return {
@@ -667,6 +682,23 @@ const postNotice = (title, content) => __awaiter(void 0, void 0, void 0, functio
     }
     finally {
         connection.release(); // pool connection 회수
+    }
+});
+/**
+ * 프로필 설정이 완료되었는지 확인
+ */
+const checkProfileSet = (userId) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        // userId로 유저 정보 가져오기
+        const user = yield User_1.default.userInfo(userId);
+        // 프로필 설정이 완료되지 않았으면 false 리턴
+        if (!user.profile_id)
+            return false;
+        return true;
+    }
+    catch (error) {
+        console.log(error);
+        throw error;
     }
 });
 exports.default = {
@@ -685,5 +717,6 @@ exports.default = {
     deleteNews,
     getNewsList,
     postNotice,
+    checkProfileSet,
 };
 //# sourceMappingURL=UserService.js.map

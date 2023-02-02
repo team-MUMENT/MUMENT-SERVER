@@ -19,6 +19,7 @@ const db_1 = __importDefault(require("../loaders/db"));
 const User_1 = __importDefault(require("../modules/db/User"));
 const Music_1 = __importDefault(require("../modules/db/Music"));
 const cardTagList_1 = __importDefault(require("../modules/cardTagList"));
+const config_1 = __importDefault(require("../config"));
 const qs = require('querystring');
 require('dotenv').config();
 /**
@@ -51,7 +52,7 @@ const getMusicAndMyMument = (musicId, userId) => __awaiter(void 0, void 0, void 
         if (latestMument.length === 0) {
             const data = {
                 music: {
-                    _id: music[0].id,
+                    _id: music[0].id.toString(),
                     name: music[0].name,
                     artist: music[0].artist,
                     image: music[0].image,
@@ -92,25 +93,27 @@ const getMusicAndMyMument = (musicId, userId) => __awaiter(void 0, void 0, void 
         ) as is_liked;
         `;
         const isLikedResult = yield connection.query(getIsLikedQuery, [latestMument[0].id, userId]);
-        const isLiked = isLikedResult[0].is_liked;
+        const isLiked = Boolean(isLikedResult[0].is_liked);
         // 날짜 가공
         const mumentDate = (0, dayjs_1.default)(latestMument[0].createdAt).format('D MMM, YYYY');
         const myMument = {
             _id: latestMument[0].id,
-            musicId: latestMument[0].music_id,
+            music: {
+                _id: latestMument[0].music_id.toString(),
+            },
             user: {
                 _id: latestMument[0].user_id,
                 name: latestMument[0].user_name,
                 image: latestMument[0].user_image,
             },
-            isFirst: latestMument[0].is_first,
+            isFirst: Boolean(latestMument[0].is_first),
             impressionTag,
             feelingTag,
             cardTag: mumentCardTag,
             content: latestMument[0].content,
-            isPrivate: latestMument[0].is_private,
+            isPrivate: Boolean(latestMument[0].is_private),
             likeCount: latestMument[0].like_count,
-            isDeleted: latestMument[0].is_deleted,
+            isDeleted: Boolean(latestMument[0].is_deleted),
             createdAt: latestMument[0].created_at,
             updatedAt: latestMument[0].updated_at,
             date: mumentDate,
@@ -118,7 +121,7 @@ const getMusicAndMyMument = (musicId, userId) => __awaiter(void 0, void 0, void 
         };
         const data = {
             music: {
-                _id: music[0].id,
+                _id: music[0].id.toString(),
                 name: music[0].name,
                 artist: music[0].artist,
                 image: music[0].image,
@@ -152,17 +155,10 @@ const getMumentList = (musicId, userId, isLikeOrder, limit, offset) => __awaiter
         blockUserResult.forEach(element => {
             blockUserList.push(element.exist);
         });
-        // 자신을 차단한 유저 반환
-        const getBlockMeUserQuery = `
-        SELECT user_id
-        FROM block
-        WHERE blocked_user_id = ?
-        `;
-        const blockMeUser = yield connection.query(getBlockMeUserQuery, [userId]);
-        blockMeUser.forEach(element => {
-            blockUserList.push(element.user_id);
-        });
-        const strBlockUserList = '(' + blockUserList.toString() + ')';
+        let strBlockUserList = '( 0 )';
+        if (blockUserResult.length != 0) {
+            strBlockUserList = '(' + blockUserList.toString() + ')';
+        }
         let originalMumentList = [];
         switch (isLikeOrder) {
             case true: { // 좋아요순 정렬
@@ -261,24 +257,24 @@ const getMumentList = (musicId, userId, isLikeOrder, limit, offset) => __awaiter
         for (const mument of originalMumentList) {
             mumentList.push({
                 _id: mument.id,
-                musicId: mument.music_id,
+                musicId: mument.music_id.toString(),
                 user: {
                     _id: mument.user_id,
                     name: mument.user_name,
                     image: mument.user_image,
                 },
-                isFirst: mument.is_first,
+                isFirst: Boolean(mument.is_first),
                 impressionTag: tagList[tagList.findIndex(o => o.id == mument.id)].impressionTag,
                 feelingTag: tagList[tagList.findIndex(o => o.id == mument.id)].feelingTag,
                 cardTag: tagList[tagList.findIndex(o => o.id == mument.id)].cardTag,
                 content: mument.content,
-                isPrivate: mument.is_private,
+                isPrivate: Boolean(mument.is_private),
                 likeCount: mument.like_count,
-                isDeleted: mument.is_deleted,
+                isDeleted: Boolean(mument.is_deleted),
                 createdAt: mument.created_at,
                 updatedAt: mument.updated_at,
                 date: createDate(mument.created_at),
-                isLiked: isLikedList[isLikedList.findIndex(o => o.id == mument.id)].isLiked,
+                isLiked: Boolean(isLikedList[isLikedList.findIndex(o => o.id == mument.id)].isLiked),
             });
         }
         ;
@@ -300,41 +296,45 @@ const getMumentList = (musicId, userId, isLikeOrder, limit, offset) => __awaiter
  */
 const getMusicListBySearch = (keyword) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const token = 'Bearer ' + process.env.APPLE_DEVELOPER_TOKEN;
+        const token = `Bearer ${config_1.default.appleDeveloperToken}`;
         let musiclist = [];
         const appleResponse = (searchKeyword) => __awaiter(void 0, void 0, void 0, function* () {
-            yield axios_1.default.get('https://api.music.apple.com/v1/catalog/kr/search?types=songs&limit=25&term='
+            yield axios_1.default.get('https://api.music.apple.com/v1/catalog/kr/search?types=songs&limit=20&term='
                 + encodeURI(searchKeyword), {
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                     'Authorization': token
-                },
+                }
             })
                 .then(function (response) {
-                /* apple api에서 받을 수 있는 3개 status code 대응 - 200, 401, 500*/
-                // 200 - success
-                const appleMusicList = response.data.results.songs.data;
-                musiclist = appleMusicList.map((music) => {
-                    let imageUrl = music.attributes.artwork.url;
-                    imageUrl = imageUrl.replace('{w}x{h}', '400x400'); //앨범 이미지 크기 400으로 지정
-                    const m = {
-                        '_id': music.id,
-                        'name': music.attributes.name,
-                        'artist': music.attributes.artistName,
-                        'image': imageUrl
-                    };
-                    return m;
+                return __awaiter(this, void 0, void 0, function* () {
+                    /* apple api에서 받을 수 있는 3개 status code 대응 - 200, 401, 500*/
+                    // 200 - success
+                    const appleMusicList = response.data.results.songs.data;
+                    musiclist = yield appleMusicList.map((music) => {
+                        let imageUrl = music.attributes.artwork.url;
+                        imageUrl = imageUrl.replace('{w}x{h}', '400x400'); //앨범 이미지 크기 400으로 지정
+                        const m = {
+                            '_id': music.id,
+                            'name': music.attributes.name,
+                            'artist': music.attributes.artistName,
+                            'image': imageUrl
+                        };
+                        return m;
+                    });
+                    return musiclist;
                 });
-                return musiclist;
             })
                 .catch(function (error) {
-                // 401 - A response indicating an incorrect Authorization header
-                if (error.response.status == 401)
-                    return serviceReturnConstant_1.default.APPLE_UNAUTHORIZED;
-                // 500 - indicating an error occurred on the apple music server
-                if (error.response.status == 500)
-                    return serviceReturnConstant_1.default.APPLE_INTERNAL_SERVER_ERROR;
-                console.log(error);
+                return __awaiter(this, void 0, void 0, function* () {
+                    // 401 - A response indicating an incorrect Authorization header
+                    if (error.response.status == 401)
+                        return serviceReturnConstant_1.default.APPLE_UNAUTHORIZED;
+                    // 500 - indicating an error occurred on the apple music server
+                    if (error.response.status == 500)
+                        return serviceReturnConstant_1.default.APPLE_INTERNAL_SERVER_ERROR;
+                    console.log(error);
+                });
             });
             return musiclist;
         });

@@ -3,9 +3,8 @@ import statusCode from '../modules/statusCode';
 import message from '../modules/responseMessage';
 import util from '../modules/util';
 import constant from '../modules/serviceReturnConstant';
-import { validationResult } from 'express-validator';
 import { AuthService } from '../services';
-import sendMessage, { SlackMessageFormat } from '../library/slackWebHook';
+import slackWebHook, { SlackMessageFormat } from '../library/slackWebHook';
 import { AuthTokenResponseDto } from '../interfaces/auth/AuthTokenResponseDto';
 
 /**
@@ -24,7 +23,7 @@ const login = async (req: Request, res: Response) => {
                 return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.NO_AUTHENTICATION_CODE));
             }
             case constant.INVALID_AUTHENTICATION_CODE: {
-                // 공통 - authentication code로 카카오/애플 api 요청이 불가한 경우
+                // 공통 - authentication code로 애플 api 요청이 불가한 경우 & 카카오 토큰으로 프로필 조회에 실패한 경우
                 return res.status(statusCode.UNAUTHORIZED).send(util.fail(statusCode.UNAUTHORIZED, message.INVALID_AUTHENTICATION_CODE));
             }
             case constant.NO_IDENTITY_TOKEN_SUB: {
@@ -38,25 +37,17 @@ const login = async (req: Request, res: Response) => {
         }
 
         if ((data as AuthTokenResponseDto).type == 'signUp') {
-            res.status(statusCode.CREATED).send(util.success(statusCode.OK, message.SIGNUP_SUCCESS, data));
+            return res.status(statusCode.CREATED).send(util.success(statusCode.OK, message.SIGNUP_SUCCESS, data));
         } else if ((data as AuthTokenResponseDto).type == 'login') {
-            res.status(statusCode.OK).send(util.success(statusCode.OK, message.LOGIN_SUCCESS, data));
+            return res.status(statusCode.OK).send(util.success(statusCode.OK, message.LOGIN_SUCCESS, data));
         }
         
-    } catch (error) {
+    } catch (error: any) {
         console.log(error);
 
-        const slackMessage: SlackMessageFormat = {
-            title: 'MUMENT ec2 서버 오류',
-            text: '서버 내부 오류입니다',
-            fields: [
-                {
-                    title: 'Error Stack:',
-                    value: `\`\`\`${error}\`\`\``,
-                },
-            ],
-        };
-        sendMessage(slackMessage);
+        const slackMessage: SlackMessageFormat = slackWebHook.slackErrorMessage(error.stack);
+        slackWebHook.sendMessage(slackMessage);
+        
         return res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
     }
 };
@@ -81,20 +72,12 @@ const getNewAccessToken = async (req: Request, res: Response) => {
             return res.status(statusCode.OK).send(util.success(statusCode.OK, message.RENEW_ACCESS_TOKEN, data));
         }
         
-    } catch (error) {
+    } catch (error: any) {
         console.log(error);
 
-        const slackMessage: SlackMessageFormat = {
-            title: 'MUMENT ec2 서버 오류',
-            text: '서버 내부 오류입니다',
-            fields: [
-                {
-                    title: 'Error Stack:',
-                    value: `\`\`\`${error}\`\`\``,
-                },
-            ],
-        };
-        sendMessage(slackMessage);
+        const slackMessage: SlackMessageFormat = slackWebHook.slackErrorMessage(error.stack);
+        slackWebHook.sendMessage(slackMessage);
+        
         return res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
     }
 }
