@@ -155,8 +155,6 @@ const getMument = async (mumentId: string, userId: string): Promise<MumentRespon
         // 작성 시간
         const createdTime = dayjs(mument.created_at).format('YYYY.MM.DD h:mm A');
 
-        // 좋아요 개수
-        const likeCount = await mumentDB.likeCount(mumentId);
 
         // 뮤멘트의 태그 검색해서 impressionTag, feelingTag 리스트로 반환
         const tagList = await mumentDB.mumentTagListGet(mumentId);
@@ -173,10 +171,11 @@ const getMument = async (mumentId: string, userId: string): Promise<MumentRespon
             impressionTag: impressionTag,
             feelingTag: feelingTag,
             content: !mument.content ? null : mument.content,
-            likeCount: likeCount,
+            likeCount: mument.like_count,
             isLiked: Boolean(isLiked),
             createdAt: createdTime,
             count: historyCount,
+            isPrivate: Boolean(mument.is_private),
         };
 
         await connection.commit(); // 모두 성공시 커밋(데이터 적용)
