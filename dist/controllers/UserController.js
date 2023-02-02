@@ -375,6 +375,25 @@ const postNotice = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         return res.status(statusCode_1.default.INTERNAL_SERVER_ERROR).send(util_1.default.fail(statusCode_1.default.INTERNAL_SERVER_ERROR, responseMessage_1.default.INTERNAL_SERVER_ERROR));
     }
 });
+/**
+ * @ROUTE GET /user
+ * @DESC 유저 정보를 가져옵니다.
+ */
+const getUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userId = req.body.userId;
+    try {
+        const data = yield services_1.UserService.getUser(userId);
+        if (data === serviceReturnConstant_1.default.NO_USER)
+            return res.status(statusCode_1.default.NO_CONTENT).send(util_1.default.success(statusCode_1.default.NO_CONTENT, responseMessage_1.default.NO_USER_ID));
+        return res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.READ_USER_SUCCESS, data));
+    }
+    catch (error) {
+        console.log(error);
+        const slackMessage = slackWebHook_1.default.slackErrorMessage(error.stack);
+        slackWebHook_1.default.sendMessage(slackMessage);
+        return res.status(statusCode_1.default.INTERNAL_SERVER_ERROR).send(util_1.default.fail(statusCode_1.default.INTERNAL_SERVER_ERROR, responseMessage_1.default.INTERNAL_SERVER_ERROR));
+    }
+});
 exports.default = {
     getMyMumentList,
     getLikeMumentList,
@@ -392,5 +411,6 @@ exports.default = {
     getNewsList,
     checkProfileSet,
     postNotice,
+    getUser,
 };
 //# sourceMappingURL=UserController.js.map

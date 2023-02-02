@@ -437,6 +437,28 @@ const postNotice = async (req: Request, res: Response) => {
     }
 };
 
+/**
+ * @ROUTE GET /user
+ * @DESC 유저 정보를 가져옵니다.
+ */
+const getUser = async (req: Request, res: Response) => {
+    const userId = req.body.userId;
+
+    try {
+        const data = await UserService.getUser(userId);
+        if (data === constant.NO_USER) return res.status(statusCode.NO_CONTENT).send(util.success(statusCode.NO_CONTENT, message.NO_USER_ID));
+
+        return res.status(statusCode.OK).send(util.success(statusCode.OK, message.READ_USER_SUCCESS, data));
+    } catch (error: any) {
+        console.log(error);
+
+        const slackMessage: SlackMessageFormat = slackWebHook.slackErrorMessage(error.stack);
+        slackWebHook.sendMessage(slackMessage);
+        
+        return res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
+    }
+}
+
 
 export default {
     getMyMumentList,
@@ -455,4 +477,5 @@ export default {
     getNewsList,
     checkProfileSet,
     postNotice,
+    getUser,
 };
