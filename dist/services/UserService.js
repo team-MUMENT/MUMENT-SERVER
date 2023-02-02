@@ -707,7 +707,7 @@ const getUser = (userId) => __awaiter(void 0, void 0, void 0, function* () {
         if (!user)
             return serviceReturnConstant_1.default.NO_USER;
         const data = {
-            id: user.id.toString(),
+            id: user.id,
             profileId: user.profile_id,
             image: user.image,
         };
