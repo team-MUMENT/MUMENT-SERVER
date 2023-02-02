@@ -450,10 +450,11 @@ const deleteUser = (userId) => __awaiter(void 0, void 0, void 0, function* () {
         if (!user.is_deleted)
             return serviceReturnConstant_1.default.DELETE_FAIL;
         yield connection.commit();
+        const isDeleted = user.isDeleted ? true : false;
         const data = {
             id: user.id,
             profileId: user.profile_id,
-            isDeleted: user.is_deleted,
+            isDeleted: isDeleted,
             updatedAt: user.updated_at,
         };
         return data;
