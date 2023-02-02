@@ -1,5 +1,5 @@
 export interface UserResponseDto {
     id: string;
-    profileId: string;
+    profileId?: string;
     image?: string;
 }
