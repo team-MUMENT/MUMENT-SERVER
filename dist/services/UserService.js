@@ -701,6 +701,23 @@ const checkProfileSet = (userId) => __awaiter(void 0, void 0, void 0, function* 
         throw error;
     }
 });
+const getUser = (userId) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const user = yield User_1.default.userInfo(userId);
+        if (!user)
+            return serviceReturnConstant_1.default.NO_USER;
+        const data = {
+            id: user.id.toString(),
+            profileId: user.profile_id,
+            image: user.image,
+        };
+        return data;
+    }
+    catch (error) {
+        console.log(error);
+        throw error;
+    }
+});
 exports.default = {
     getMyMumentList,
     getLikeMumentList,
@@ -718,5 +735,6 @@ exports.default = {
     getNewsList,
     postNotice,
     checkProfileSet,
+    getUser,
 };
 //# sourceMappingURL=UserService.js.map

@@ -807,6 +807,25 @@ const checkProfileSet = async (userId: string): Promise<boolean> => {
     }
 };
 
+const getUser = async (userId: string): Promise<UserResponseDto | number> => {
+    try {
+        const user = await userDB.userInfo(userId);
+
+        if (!user) return constant.NO_USER;
+
+        const data: UserResponseDto = {
+            id: user.id,
+            profileId: user.profile_id,
+            image: user.image,
+        }
+
+        return data;
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+}
+
 export default {
     getMyMumentList,
     getLikeMumentList,
@@ -824,4 +843,5 @@ export default {
     getNewsList,
     postNotice,
     checkProfileSet,
+    getUser,
 };

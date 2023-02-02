@@ -61,4 +61,7 @@ router.get('/profile/check', auth, UserController.checkProfileSet);
 // 공지사항 등록 - 서버, 기획에서만 사용
 router.post('/notice', UserController.postNotice);
 
+// 유저 정보 조회
+router.get('/profile', auth, UserController.getUser);
+
 export default router;
