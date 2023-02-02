@@ -521,10 +521,12 @@ const deleteUser = async (userId: number): Promise<Number | UserDeleteResponseDt
 
         await connection.commit();
 
+        const isDeleted = user.isDeleted? true : false;
+
         const data: UserDeleteResponseDto = {
             id: user.id,
             profileId: user.profile_id,
-            isDeleted: user.is_deleted,
+            isDeleted: isDeleted,
             updatedAt: user.updated_at,
         }
 
