@@ -43,7 +43,7 @@ router.get('/random', MumentController.getRandomMument);
 router.get('/today', MumentController.getTodayMument);
 
 // 배너
-router.get('/banner', MumentController.getBanner);
+router.get('/banner', auth, MumentController.getBanner);
 
 // 다시 들은 뮤멘트
 router.get('/again', MumentController.getAgainMument);

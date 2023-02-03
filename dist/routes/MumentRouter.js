@@ -37,7 +37,7 @@ router.get('/random', controllers_1.MumentController.getRandomMument);
 // 오늘의 뮤멘트
 router.get('/today', controllers_1.MumentController.getTodayMument);
 // 배너
-router.get('/banner', controllers_1.MumentController.getBanner);
+router.get('/banner', auth_1.default, controllers_1.MumentController.getBanner);
 // 다시 들은 뮤멘트
 router.get('/again', controllers_1.MumentController.getAgainMument);
 // 공시자항 리스트
