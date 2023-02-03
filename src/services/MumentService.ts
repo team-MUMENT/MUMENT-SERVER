@@ -662,12 +662,14 @@ const getRandomMument = async (): Promise<RandomMumentResponseDto> => {
 
         const mumentList: RandomMumentInterface[] = [];
 
-        randomMumentList.forEach(element => {
+        for await (let element of randomMumentList) {
             mumentList.push({
                 _id: element.id,
                 music: {
+                    _id: element.music_id,
                     name: element.music_name,
                     artist: element.artist,
+                    image: element.image,
                 },
                 user: {
                     name: element.user_name,
@@ -676,7 +678,7 @@ const getRandomMument = async (): Promise<RandomMumentResponseDto> => {
                 content: element.content,
                 createdAt: element.created_at,
             });
-        });
+        }
 
         const data: RandomMumentResponseDto = {
             title: tagTitle,
