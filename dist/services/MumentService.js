@@ -609,7 +609,7 @@ const getRandomMument = () => __awaiter(void 0, void 0, void 0, function* () {
                 mumentList.push({
                     _id: element.id,
                     music: {
-                        _id: element.music_id,
+                        _id: element.music_id.toString(),
                         name: element.music_name,
                         artist: element.artist,
                         image: element.music_image,
