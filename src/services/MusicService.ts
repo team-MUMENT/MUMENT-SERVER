@@ -331,7 +331,7 @@ const getMusicListBySearch = async (keyword: string): Promise<MusicResponseDto[]
     try {        
         const token = `Bearer ${config.appleDeveloperToken as string}`;
 
-        let musiclist: MusicResponseDto[] = [];
+        let musicList: MusicResponseDto[] = [];
 
         const appleResponse = async (searchKeyword: string) => {
     
@@ -343,36 +343,40 @@ const getMusicListBySearch = async (keyword: string): Promise<MusicResponseDto[]
                     }
                 }
             )
-            .then(async function (response) {
-                /* apple api에서 받을 수 있는 3개 status code 대응 - 200, 401, 500*/
-                // 200 - success
-                const appleMusicList = response.data.results.songs.data;
+            .then(async function (response: any) {
+                /* apple api에서 받을 수 있는 3개 status code 대응 - 200, 401, 500*/       
 
-                musiclist =  await appleMusicList.map((music: any) => {
-                    let imageUrl = music.attributes.artwork.url;
-                    imageUrl = imageUrl.replace('{w}x{h}', '400x400'); //앨범 이미지 크기 400으로 지정
+                if (response.data.results.hasOwnProperty('songs')) {
+                    // 401 - A response indicating an incorrect Authorization header
+                    if (response.status == 401) return constant.APPLE_UNAUTHORIZED;
 
-                    const m: MusicResponseDto = {
-                        '_id': music.id,
-                        'name': music.attributes.name,
-                        'artist': music.attributes.artistName,
-                        'image': imageUrl
-                    };
-                    return m;
-                });
-                return musiclist;
+                    // 500 - indicating an error occurred on the apple music server
+                    if (response.status == 500) return constant.APPLE_INTERNAL_SERVER_ERROR;
+
+                    const appleMusicList = response.data.results.songs.data; 
+
+                    musicList =  await appleMusicList.map((music: any) => {
+                        let imageUrl = music.attributes.artwork.url;
+                        imageUrl = imageUrl.replace('{w}x{h}', '400x400'); //앨범 이미지 크기 400으로 지정
+
+                        const result: MusicResponseDto = {
+                            '_id': music.id,
+                            'name': music.attributes.name,
+                            'artist': music.attributes.artistName,
+                            'image': imageUrl
+                        };
+                        return result;
+                    });
+                }
+                
+                return musicList;
             })
             .catch(async function (error) {
-                // 401 - A response indicating an incorrect Authorization header
-                if (error.response.status == 401) return constant.APPLE_UNAUTHORIZED;
-
-                // 500 - indicating an error occurred on the apple music server
-                if (error.response.status == 500) return constant.APPLE_INTERNAL_SERVER_ERROR;
-
-                console.log(error);
+                console.log('곡검색 애플 error', error);
+                return constant.APPLE_INTERNAL_SERVER_ERROR;
             });
 
-            return musiclist;
+            return musicList;
         };
         const data = await appleResponse(keyword);
 
