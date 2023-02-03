@@ -667,7 +667,7 @@ const getRandomMument = async (): Promise<RandomMumentResponseDto> => {
             mumentList.push({
                 _id: element.id,
                 music: {
-                    _id: element.music_id,
+                    _id: element.music_id.toString(),
                     name: element.music_name,
                     artist: element.artist,
                     image: element.music_image,
