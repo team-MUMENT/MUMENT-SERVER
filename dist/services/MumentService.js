@@ -550,6 +550,7 @@ const deleteLike = (mumentId, userId) => __awaiter(void 0, void 0, void 0, funct
 });
 // 랜덤 태그, 뮤멘트 조회
 const getRandomMument = () => __awaiter(void 0, void 0, void 0, function* () {
+    var e_4, _d;
     try {
         // 난수 생성 함수
         const createRandomNum = (min, max) => {
@@ -561,7 +562,8 @@ const getRandomMument = () => __awaiter(void 0, void 0, void 0, function* () {
         let tagTitle = '';
         // 랜덤 뮤멘트를 가져오는 쿼리
         const getRandomMumentQuery = `
-        SELECT m.id, music.name as music_name, music.artist, m.content, user.profile_id as user_name, user.image as user_image, m.created_at
+        SELECT m.id, music.id as music_id, music.name as music_name, music.artist, music.image as music_image, 
+        m.content, user.profile_id as user_name, user.image as user_image, m.created_at
         FROM home_random as hr
         JOIN mument as m
             ON m.id = hr.mument_id
@@ -601,21 +603,33 @@ const getRandomMument = () => __awaiter(void 0, void 0, void 0, function* () {
             randomMumentList = yield pool_1.default.queryValue(getRandomMumentQuery, [detailTag]);
         }
         const mumentList = [];
-        randomMumentList.forEach(element => {
-            mumentList.push({
-                _id: element.id,
-                music: {
-                    name: element.music_name,
-                    artist: element.artist,
-                },
-                user: {
-                    name: element.user_name,
-                    image: element.user_image,
-                },
-                content: element.content,
-                createdAt: element.created_at,
-            });
-        });
+        try {
+            for (var randomMumentList_1 = __asyncValues(randomMumentList), randomMumentList_1_1; randomMumentList_1_1 = yield randomMumentList_1.next(), !randomMumentList_1_1.done;) {
+                let element = randomMumentList_1_1.value;
+                mumentList.push({
+                    _id: element.id,
+                    music: {
+                        _id: element.music_id,
+                        name: element.music_name,
+                        artist: element.artist,
+                        image: element.music_image,
+                    },
+                    user: {
+                        name: element.user_name,
+                        image: element.user_image,
+                    },
+                    content: element.content,
+                    createdAt: element.created_at,
+                });
+            }
+        }
+        catch (e_4_1) { e_4 = { error: e_4_1 }; }
+        finally {
+            try {
+                if (randomMumentList_1_1 && !randomMumentList_1_1.done && (_d = randomMumentList_1.return)) yield _d.call(randomMumentList_1);
+            }
+            finally { if (e_4) throw e_4.error; }
+        }
         const data = {
             title: tagTitle,
             mumentList: mumentList,
@@ -869,7 +883,7 @@ const getNoticeList = () => __awaiter(void 0, void 0, void 0, function* () {
 });
 // 뮤멘트 신고하기
 const createReport = (mumentId, reportCategory, etcContent, userId) => __awaiter(void 0, void 0, void 0, function* () {
-    var _d;
+    var _e;
     const pool = yield db_1.default;
     const connection = yield pool.getConnection();
     try {
@@ -879,7 +893,7 @@ const createReport = (mumentId, reportCategory, etcContent, userId) => __awaiter
         let reportedUser;
         if (!reportedMument.isExist)
             return serviceReturnConstant_1.default.NO_MUMENT;
-        reportedUser = (_d = reportedMument.mument) === null || _d === void 0 ? void 0 : _d.user_id;
+        reportedUser = (_e = reportedMument.mument) === null || _e === void 0 ? void 0 : _e.user_id;
         // 신고 사유 배열에 대해 모두 POST
         const postReport = (item, idx) => __awaiter(void 0, void 0, void 0, function* () {
             const postReportQuery = `
