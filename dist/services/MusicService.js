@@ -95,7 +95,7 @@ const getMusicAndMyMument = (musicId, userId) => __awaiter(void 0, void 0, void 
         const isLikedResult = yield connection.query(getIsLikedQuery, [latestMument[0].id, userId]);
         const isLiked = Boolean(isLikedResult[0].is_liked);
         // 날짜 가공
-        const mumentDate = (0, dayjs_1.default)(latestMument[0].createdAt).format('D MMM, YYYY');
+        const mumentDate = (0, dayjs_1.default)(latestMument[0].created_at).format('D MMM, YYYY');
         const myMument = {
             _id: latestMument[0].id,
             music: {
@@ -232,10 +232,10 @@ const getMumentList = (musicId, userId, isLikeOrder, limit, offset) => __awaiter
             isLikedList.push({ id: element, isLiked: false });
         });
         const getisLikedQuery = `
-        SELECT mument_id, EXISTS(
+        SELECT mument_id as mid, EXISTS(
             SELECT *
             FROM mument.like
-            WHERE mument_id IN ${strMumentIdList}
+            WHERE mument_id = mid
                 AND user_id = ?
         ) as is_liked
         FROM mument.like
