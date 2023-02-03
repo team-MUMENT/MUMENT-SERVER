@@ -278,8 +278,9 @@ const getTodayMument = (req, res) => __awaiter(void 0, void 0, void 0, function*
  * @DESC get banner music and tag title list
  */
 const getBanner = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userId = req.body.userId;
     try {
-        const data = yield services_1.MumentService.getBanner();
+        const data = yield services_1.MumentService.getBanner(userId);
         // 조회는 성공했으나, 결과값이 없는 경우
         if (data === serviceReturnConstant_1.default.NO_HOME_CONTENT) {
             return res.status(statusCode_1.default.NO_CONTENT).send(util_1.default.success(statusCode_1.default.NO_CONTENT, responseMessage_1.default.GET_BANNER_SUCCESS));
