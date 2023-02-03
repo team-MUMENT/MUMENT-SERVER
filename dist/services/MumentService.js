@@ -729,7 +729,7 @@ const getTodayMument = () => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 // 배너
-const getBanner = () => __awaiter(void 0, void 0, void 0, function* () {
+const getBanner = (userId) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         dayjs_1.default.extend(utc_1.default);
         // 날짜 비교를 위해 이번주 월요일 자정 날짜 받아오기
@@ -761,6 +761,7 @@ const getBanner = () => __awaiter(void 0, void 0, void 0, function* () {
         });
         const data = {
             todayDate: todayDate,
+            userId: userId,
             bannerList: bannerList,
         };
         return data;

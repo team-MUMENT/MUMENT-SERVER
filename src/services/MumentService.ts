@@ -1,6 +1,5 @@
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
-import timezone from 'dayjs/plugin/timezone';
 import constant from '../modules/serviceReturnConstant';
 import pools from '../modules/pool';
 import poolPromise from '../loaders/db';
@@ -29,7 +28,6 @@ import { ExistMumentDto } from '../interfaces/mument/ExistMumentRDBDto';
 import { MumentInfoRDB } from '../interfaces/mument/MumentInfoRDB';
 import cardTagList from '../modules/cardTagList';
 import { NoticeInfoRDB } from '../interfaces/mument/NoticeInfoRDB';
-import { NumberBaseResponseDto } from '../interfaces/common/NumberBaseResponseDto';
 import pushHandler from '../library/pushHandler';
 import { RandomMumentInterface } from '../interfaces/home/RandomMumentInterface';
 import { BannerSelectionInfo } from '../interfaces/home/BannerSelectionInfo';
@@ -808,7 +806,7 @@ const getTodayMument = async (): Promise<TodayMumentResponseDto | number> => {
 };
 
 // 배너
-const getBanner = async (): Promise<TodayBannerResponseDto | number> => {
+const getBanner = async (userId: number): Promise<TodayBannerResponseDto | number> => {
     try {
         dayjs.extend(utc);
 
@@ -848,6 +846,7 @@ const getBanner = async (): Promise<TodayBannerResponseDto | number> => {
 
         const data: TodayBannerResponseDto = {
             todayDate: todayDate,
+            userId: userId,
             bannerList: bannerList,
         };
 
