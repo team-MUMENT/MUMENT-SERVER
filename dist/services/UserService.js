@@ -473,13 +473,22 @@ const getIsReportRestrictedUser = (userId) => __awaiter(void 0, void 0, void 0, 
     try {
         const selectReportRestrictionQuery = 'SELECT * FROM report_restriction WHERE user_id=?';
         const restriction = yield connection.query(selectReportRestrictionQuery, [userId]);
-        if (restriction.length === 0)
-            return { restricted: false };
+        if (restriction.length === 0) {
+            return {
+                restricted: false,
+                reason: null,
+                musicArtist: null,
+                musicTitle: null,
+                endDate: null,
+                period: null
+            };
+        }
         /**
-         * 현재 날짜 < 제재 마감일 이라면
+         * 현재 날짜 <= 제재 마감일 이라면
          *  */
         const curr = new Date();
-        if ((0, dayjs_1.default)(curr).isBefore(restriction[0].restrict_end_date)) {
+        const dayDiff = (0, dayjs_1.default)(curr).diff(restriction[0].restrict_end_date, 'day', true);
+        if (dayDiff < 1) {
             return {
                 restricted: true,
                 reason: restriction[0].reason,
@@ -489,7 +498,14 @@ const getIsReportRestrictedUser = (userId) => __awaiter(void 0, void 0, void 0, 
                 period: restriction[0].restrict_period
             };
         }
-        return { restricted: false };
+        return {
+            restricted: false,
+            reason: null,
+            musicArtist: null,
+            musicTitle: null,
+            endDate: null,
+            period: null
+        };
     }
     catch (error) {
         console.log(error);
