@@ -105,7 +105,7 @@ const getMusicAndMyMument = async (musicId: string, userId: string): Promise<Mus
 
 
         // 날짜 가공
-        const mumentDate = dayjs(latestMument[0].createdAt).format('D MMM, YYYY');
+        const mumentDate = dayjs(latestMument[0].created_at).format('D MMM, YYYY');
 
         const myMument: MumentCardViewInterface = {
             _id: latestMument[0].id,
@@ -261,10 +261,10 @@ const getMumentList = async (musicId: string, userId: string, isLikeOrder: boole
         });
 
         const getisLikedQuery = `
-        SELECT mument_id, EXISTS(
+        SELECT mument_id as mid, EXISTS(
             SELECT *
             FROM mument.like
-            WHERE mument_id IN ${strMumentIdList}
+            WHERE mument_id = mid
                 AND user_id = ?
         ) as is_liked
         FROM mument.like
