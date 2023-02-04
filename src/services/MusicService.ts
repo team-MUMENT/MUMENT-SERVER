@@ -287,7 +287,7 @@ const getMumentList = async (musicId: string, userId: string, isLikeOrder: boole
 
         const mumentList: MumentCardViewInterface[] = [];
 
-        for (const mument of originalMumentList) {
+        for await (const mument of originalMumentList) {
             mumentList.push({
                 _id: mument.id,
                 musicId: mument.music_id.toString(),
