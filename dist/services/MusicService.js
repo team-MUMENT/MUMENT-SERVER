@@ -25,16 +25,16 @@ require('dotenv').config();
 /**
  * 곡 상세보기 - 음악, 나의 뮤멘트 조회
  */
-const getMusicAndMyMument = (musicId, userId) => __awaiter(void 0, void 0, void 0, function* () {
+const getMusicAndMyMument = (musicId, userId, musicCreateDto) => __awaiter(void 0, void 0, void 0, function* () {
     const pool = yield db_1.default;
     const connection = yield pool.getConnection();
     try {
-        // 곡 조회
+        // 우리 DB에 음악 존재안하면 새로 삽입
+        yield Music_1.default.SearchAndCreateMusic(musicCreateDto, connection);
+        // 우리 DB에서 검색
         const music = yield connection.query(Music_1.default.SearchMusic(musicId));
-        // 음악 조회 결과가 없을 때 404 에러
-        if (music.length === 0) {
+        if (music.length === 0)
             return serviceReturnConstant_1.default.NO_MUSIC;
-        }
         // 가장 최근에 작성한 뮤멘트 조회
         const getLatestMumentQuery = `
         SELECT mument.*, user.profile_id as user_name, user.image as user_image

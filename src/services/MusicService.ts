@@ -14,6 +14,7 @@ import musicDB from '../modules/db/Music';
 
 import cardTagList from '../modules/cardTagList';
 import config from '../config';
+import { MusicCreateDto } from '../interfaces/music/MusicCreateDto';
 
 const qs = require('querystring');
 require('dotenv').config();
@@ -22,18 +23,17 @@ require('dotenv').config();
 /**
  * 곡 상세보기 - 음악, 나의 뮤멘트 조회
  */
-const getMusicAndMyMument = async (musicId: string, userId: string): Promise<MusicMyMumentResponseDto | number> => {
+const getMusicAndMyMument = async (musicId: string, userId: string, musicCreateDto: MusicCreateDto): Promise<MusicMyMumentResponseDto | number> => {
     const pool: any = await poolPromise;
     const connection = await pool.getConnection();
 
     try {
-        // 곡 조회
-        const music = await connection.query(musicDB.SearchMusic(musicId));
+        // 우리 DB에 음악 존재안하면 새로 삽입
+        await musicDB.SearchAndCreateMusic(musicCreateDto, connection);
 
-        // 음악 조회 결과가 없을 때 404 에러
-        if (music.length === 0) {
-            return constant.NO_MUSIC;
-        }
+        // 우리 DB에서 검색
+        const music = await connection.query(musicDB.SearchMusic(musicId));
+        if (music.length === 0) return constant.NO_MUSIC;
 
         // 가장 최근에 작성한 뮤멘트 조회
         const getLatestMumentQuery = `
