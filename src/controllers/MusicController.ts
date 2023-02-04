@@ -6,6 +6,7 @@ import { validationResult } from 'express-validator';
 import { MusicService } from '../services';
 import slackWebHook, { SlackMessageFormat } from '../library/slackWebHook';
 import constant from '../modules/serviceReturnConstant';
+import { MusicCreateDto } from '../interfaces/music/MusicCreateDto';
 
 /**
  * @ROUTE GET /:musicId/
@@ -13,7 +14,9 @@ import constant from '../modules/serviceReturnConstant';
  */
 const getMusicAndMyMument = async (req: Request, res: Response) => {
     const { musicId } = req.params;
-    const { userId } = req.body;
+    const userId = req.body.userId;
+    const musicCreateDto: MusicCreateDto = req.body;
+
     const error = validationResult(req);
 
     if (!error.isEmpty()) {
@@ -21,7 +24,7 @@ const getMusicAndMyMument = async (req: Request, res: Response) => {
     }
 
     try {
-        const data = await MusicService.getMusicAndMyMument(musicId, userId);
+        const data = await MusicService.getMusicAndMyMument(musicId, userId, musicCreateDto);
 
         if (data === constant.NO_MUSIC) {
             return res.status(statusCode.NOT_FOUND).send(util.fail(statusCode.NOT_FOUND, message.NO_MUSIC_ID));
