@@ -8,12 +8,12 @@ const router: Router = Router();
 
 // 프로필 설정
 router.put('/profile', upload.single('image'), [
-    body('profileId').notEmpty().isString(),
+    body('userName').notEmpty().isString(),
 ], auth, UserController.putProfile);
 
 // 닉네임 중복 확인
 router.get('/profile/check/:profileId', [
-    param('profileId').isString(),
+    param('userName').isString(),
 ], auth, UserController.checkDuplicateName);
 
 // 보관함 나의 뮤멘트 조회
