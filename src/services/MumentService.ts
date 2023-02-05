@@ -1092,7 +1092,7 @@ const getLikeUserList = async (mumentId: string, userId: string, limit: any, off
         getLikeUser.reduce((ac: any[], cur: any) => {
             data.push({
                 id: cur.id,
-                profileId: cur.profile_id,
+                userName: cur.profile_id,
                 image: cur.image,
             });
         }, getLikeUser);
