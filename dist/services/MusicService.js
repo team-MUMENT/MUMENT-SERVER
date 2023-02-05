@@ -149,7 +149,7 @@ const getMusicAndMyMument = (musicId, userId, musicCreateDto) => __awaiter(void 
  * 곡 상세보기 - 모든 뮤멘트 조회
  */
 const getMumentList = (musicId, userId, isLikeOrder, limit, offset) => __awaiter(void 0, void 0, void 0, function* () {
-    var e_1, _a;
+    var e_1, _a, e_2, _b;
     const pool = yield db_1.default;
     const connection = yield pool.getConnection();
     try {
@@ -236,11 +236,21 @@ const getMumentList = (musicId, userId, isLikeOrder, limit, offset) => __awaiter
         ;
         // 뮤멘트 id와 isLiked를 담을 리스트 생성
         const isLikedList = [];
-        mumentIdList.forEach((element) => {
-            isLikedList.push({ id: element, isLiked: false });
-        });
+        try {
+            for (var mumentIdList_1 = __asyncValues(mumentIdList), mumentIdList_1_1; mumentIdList_1_1 = yield mumentIdList_1.next(), !mumentIdList_1_1.done;) {
+                let element = mumentIdList_1_1.value;
+                isLikedList.push({ id: element, isLiked: false });
+            }
+        }
+        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+        finally {
+            try {
+                if (mumentIdList_1_1 && !mumentIdList_1_1.done && (_a = mumentIdList_1.return)) yield _a.call(mumentIdList_1);
+            }
+            finally { if (e_1) throw e_1.error; }
+        }
         const getisLikedQuery = `
-        SELECT mument_id as mid, EXISTS(
+        SELECT mument_id as id, EXISTS(
             SELECT *
             FROM mument.like
             WHERE mument_id = mid
@@ -288,12 +298,12 @@ const getMumentList = (musicId, userId, isLikeOrder, limit, offset) => __awaiter
                 });
             }
         }
-        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+        catch (e_2_1) { e_2 = { error: e_2_1 }; }
         finally {
             try {
-                if (originalMumentList_1_1 && !originalMumentList_1_1.done && (_a = originalMumentList_1.return)) yield _a.call(originalMumentList_1);
+                if (originalMumentList_1_1 && !originalMumentList_1_1.done && (_b = originalMumentList_1.return)) yield _b.call(originalMumentList_1);
             }
-            finally { if (e_1) throw e_1.error; }
+            finally { if (e_2) throw e_2.error; }
         }
         ;
         const data = {
