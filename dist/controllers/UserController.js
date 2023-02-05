@@ -25,7 +25,7 @@ const express_validator_1 = require("express-validator");
  */
 const putProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = req.body.userId;
-    const { profileId } = req.body;
+    const { userName } = req.body;
     const image = req.file;
     const error = (0, express_validator_1.validationResult)(req);
     if (!error.isEmpty()) {
@@ -35,10 +35,10 @@ const putProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         let data;
         if (image) {
             const { location } = image;
-            data = yield services_1.UserService.putProfile(userId, profileId, location);
+            data = yield services_1.UserService.putProfile(userId, userName, location);
         }
         else {
-            data = yield services_1.UserService.putProfile(userId, profileId, null);
+            data = yield services_1.UserService.putProfile(userId, userName, null);
         }
         if (data === serviceReturnConstant_1.default.UPDATE_FAIL) {
             return res.status(statusCode_1.default.BAD_REQUEST).send(util_1.default.fail(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.UPDATE_PROFILE_FAIL));
@@ -60,14 +60,14 @@ const putProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
  * @DESC 설정하려는 프로필아이디 (이름)이 중복되었는지 확인합니다.
  */
 const checkDuplicateName = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { profileId } = req.params;
+    const { userName } = req.params;
     const userId = req.body.userId;
     const error = (0, express_validator_1.validationResult)(req);
     if (!error.isEmpty()) {
         return res.status(statusCode_1.default.BAD_REQUEST).send(util_1.default.fail(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.WRONG_PARAMS));
     }
     try {
-        const data = yield services_1.UserService.checkDuplicateName(profileId);
+        const data = yield services_1.UserService.checkDuplicateName(userName);
         if (data)
             return res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.DUPLICATE_PROFILEID));
         else
