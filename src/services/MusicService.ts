@@ -184,6 +184,7 @@ const getMumentList = async (musicId: string, userId: string, isLikeOrder: boole
 
         let originalMumentList: MumentAndUserInfoRDB[] = [];
 
+
         switch (isLikeOrder) {
             case true: { // 좋아요순 정렬
                 const getMumentListQuery = `
