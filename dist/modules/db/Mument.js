@@ -27,6 +27,17 @@ const mumentTagCreate = (impressionTag, feelingTag, connection, mumentId) => __a
         ]);
     }
 });
+//뮤멘트 id리스트에 해당하는 뮤멘트들의 태그 모두 가져와서 반환
+const getAllTag = (strMumentIdList, connection) => __awaiter(void 0, void 0, void 0, function* () {
+    const getAllTagQuery = `
+        SELECT mument_id, tag_id
+        FROM mument_tag
+        WHERE mument_id IN ${strMumentIdList} AND is_deleted = 0
+        ORDER BY mument_id, updated_at ASC;
+    `;
+    const getAllTagResult = yield connection.query(getAllTagQuery);
+    return getAllTagResult;
+});
 // 존재하는 뮤멘트 id인지 판단
 const isExistMument = (mumentId, connection) => __awaiter(void 0, void 0, void 0, function* () {
     const query = 'SELECT * FROM mument WHERE id=? AND NOT is_deleted=1;'; //삭제되지 않은 뮤멘트여야 함
@@ -87,6 +98,7 @@ const mumentTagListGet = (mumentId) => __awaiter(void 0, void 0, void 0, functio
 });
 exports.default = {
     mumentTagCreate,
+    getAllTag,
     isExistMument,
     isExistMumentInfo,
     isLiked,

@@ -30,6 +30,7 @@ const Music_1 = __importDefault(require("../modules/db/Music"));
 const tagTitle_1 = require("../modules/tagTitle");
 const cardTagList_1 = __importDefault(require("../modules/cardTagList"));
 const pushHandler_1 = __importDefault(require("../library/pushHandler"));
+const common_1 = __importDefault(require("../modules/common"));
 /**
  * 뮤멘트 기록하기
  */
@@ -285,57 +286,39 @@ const getMumentHistory = (userId, musicId, writerId, orderBy, limit, offset) => 
             return data;
         }
         // 태그 조회를 위해 뮤멘트 아이디만 빼오고, 스트링으로 만들어주기
-        const mumentIdList = yield getMumentListResult.map((x) => x.id);
+        const mumentIdList = yield common_1.default.mumentIdFilter(getMumentListResult);
+        let tagList = yield common_1.default.insertMumentIdIntoTagList(mumentIdList);
+        // 해당 뮤멘트들의 태그 모두 가져오기
         const strMumentIdList = '(' + mumentIdList.join(', ') + ')';
-        const tagList = [];
+        const getAllTagResult = yield Mument_1.default.getAllTag(strMumentIdList, connection);
+        // impression tag, feeling tag 분류하기
+        yield cardTagList_1.default.allTagResultTagClassification(getAllTagResult, tagList);
         try {
-            for (var mumentIdList_1 = __asyncValues(mumentIdList), mumentIdList_1_1; mumentIdList_1_1 = yield mumentIdList_1.next(), !mumentIdList_1_1.done;) {
-                let element = mumentIdList_1_1.value;
-                tagList.push({ id: element, impressionTag: [], feelingTag: [], cardTag: [] });
+            for (var tagList_1 = __asyncValues(tagList), tagList_1_1; tagList_1_1 = yield tagList_1.next(), !tagList_1_1.done;) {
+                const object = tagList_1_1.value;
+                const allTagList = object.impressionTag.concat(object.feelingTag);
+                object.cardTag = yield cardTagList_1.default.cardTag(allTagList);
             }
         }
         catch (e_1_1) { e_1 = { error: e_1_1 }; }
         finally {
             try {
-                if (mumentIdList_1_1 && !mumentIdList_1_1.done && (_a = mumentIdList_1.return)) yield _a.call(mumentIdList_1);
+                if (tagList_1_1 && !tagList_1_1.done && (_a = tagList_1.return)) yield _a.call(tagList_1);
             }
             finally { if (e_1) throw e_1.error; }
-        }
-        // 해당 뮤멘트들의 태그 모두 가져오기
-        const getAllTagQuery = `
-        SELECT mument_id, tag_id
-        FROM mument_tag
-        WHERE mument_id IN ${strMumentIdList}
-            AND is_deleted = 0
-        ORDER BY mument_id, updated_at ASC;
-        `;
-        const getAllTagList = yield connection.query(getAllTagQuery);
-        // impression tag, feeling tag 분류하기
-        yield getAllTagList.reduce((ac, cur) => {
-            const mumentIdx = tagList.findIndex(o => o.id === cur.mument_id);
-            if (cur.tag_id < 200) {
-                tagList[mumentIdx].impressionTag.push(cur.tag_id);
-            }
-            else if (cur.tag_id < 300) {
-                tagList[mumentIdx].feelingTag.push(cur.tag_id);
-            }
-        }, getAllTagList);
-        for (const object of tagList) {
-            const allTagList = object.impressionTag.concat(object.feelingTag);
-            object.cardTag = yield cardTagList_1.default.cardTag(allTagList);
         }
         // id와 좋아요 여부 담은 리스트 생성
         const isLikedList = [];
         try {
-            for (var mumentIdList_2 = __asyncValues(mumentIdList), mumentIdList_2_1; mumentIdList_2_1 = yield mumentIdList_2.next(), !mumentIdList_2_1.done;) {
-                let element = mumentIdList_2_1.value;
+            for (var mumentIdList_1 = __asyncValues(mumentIdList), mumentIdList_1_1; mumentIdList_1_1 = yield mumentIdList_1.next(), !mumentIdList_1_1.done;) {
+                let element = mumentIdList_1_1.value;
                 isLikedList.push({ id: element, isLiked: false });
             }
         }
         catch (e_2_1) { e_2 = { error: e_2_1 }; }
         finally {
             try {
-                if (mumentIdList_2_1 && !mumentIdList_2_1.done && (_b = mumentIdList_2.return)) yield _b.call(mumentIdList_2);
+                if (mumentIdList_1_1 && !mumentIdList_1_1.done && (_b = mumentIdList_1.return)) yield _b.call(mumentIdList_1);
             }
             finally { if (e_2) throw e_2.error; }
         }
@@ -350,12 +333,12 @@ const getMumentHistory = (userId, musicId, writerId, orderBy, limit, offset) => 
         FROM mument.like
         WHERE mument_id IN ${strMumentIdList};
         `;
-        const isLikedResult = yield connection.query(getIsLikedQuery, [userId]);
+        const LikedResult = yield connection.query(getIsLikedQuery, [userId]);
         // 쿼리 결과에 있을 시에만 isLiked를 true로 바꿈
-        yield isLikedResult.reduce((ac, cur) => __awaiter(void 0, void 0, void 0, function* () {
+        yield LikedResult.reduce((ac, cur) => __awaiter(void 0, void 0, void 0, function* () {
             const mumentIdx = isLikedList.findIndex(o => o.id === cur.mument_id);
             isLikedList[mumentIdx].isLiked = true;
-        }), isLikedResult);
+        }), LikedResult);
         // string으로 날짜 생성해주는 함수
         const createDate = (createdAt) => {
             const date = (0, dayjs_1.default)(createdAt).format('D MMM, YYYY');

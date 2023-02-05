@@ -82,8 +82,8 @@ const getMumentList = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     }
     catch (error) {
         console.log(error);
-        const slackMessage = slackWebHook_1.default.slackErrorMessage(error.stack);
-        slackWebHook_1.default.sendMessage(slackMessage);
+        // const slackMessage: SlackMessageFormat = slackWebHook.slackErrorMessage(error.stack);
+        // slackWebHook.sendMessage(slackMessage);
         return res.status(statusCode_1.default.INTERNAL_SERVER_ERROR).send(util_1.default.fail(statusCode_1.default.INTERNAL_SERVER_ERROR, responseMessage_1.default.INTERNAL_SERVER_ERROR));
     }
 });
