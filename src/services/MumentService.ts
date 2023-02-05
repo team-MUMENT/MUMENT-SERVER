@@ -382,7 +382,7 @@ const getMumentHistory = async (userId: string, musicId: string, writerId: strin
         const isLikedResult = await connection.query(getIsLikedQuery, [userId]);
 
         // 쿼리 결과에 있을 시에만 isLiked를 true로 바꿈
-        await isLikedResult.reduce((ac: any[], cur: any) => {
+        await isLikedResult.reduce(async (ac: any[], cur: any) => {
             const mumentIdx = isLikedList.findIndex(o => o.id === cur.mument_id);
             isLikedList[mumentIdx].isLiked = true;
         }, isLikedResult);
@@ -1028,14 +1028,15 @@ const getLikeUserList = async (mumentId: string, userId: string, limit: any, off
         if (!isExistMument) return constant.NO_MUMENT;
 
         // 차단한 유저 리스트 조회
-        // 자신이 차단한, 자신을 차단한 유저 리스트
         const blockUserList: number[] = [];
 
         // 자신이 차단한 유저 반환
         const blockUserResult = await userDB.blockedUserList(userId);
-        blockUserResult.forEach(element => {
+
+        for await (let element of blockUserResult) {
             blockUserList.push(element.exist);
-        });
+        }
+
         let strBlockUserList = '( 0 )';
 
         if (blockUserResult.length != 0) {
