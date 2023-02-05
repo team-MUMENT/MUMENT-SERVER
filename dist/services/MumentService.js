@@ -352,10 +352,10 @@ const getMumentHistory = (userId, musicId, writerId, orderBy, limit, offset) => 
         `;
         const isLikedResult = yield connection.query(getIsLikedQuery, [userId]);
         // 쿼리 결과에 있을 시에만 isLiked를 true로 바꿈
-        yield isLikedResult.reduce((ac, cur) => {
+        yield isLikedResult.reduce((ac, cur) => __awaiter(void 0, void 0, void 0, function* () {
             const mumentIdx = isLikedList.findIndex(o => o.id === cur.mument_id);
             isLikedList[mumentIdx].isLiked = true;
-        }, isLikedResult);
+        }), isLikedResult);
         // string으로 날짜 생성해주는 함수
         const createDate = (createdAt) => {
             const date = (0, dayjs_1.default)(createdAt).format('D MMM, YYYY');
@@ -413,7 +413,7 @@ const getMumentHistory = (userId, musicId, writerId, orderBy, limit, offset) => 
  */
 const createLike = (mumentId, userId) => __awaiter(void 0, void 0, void 0, function* () {
     const pool = yield db_1.default;
-    const connection = yield pool.getConnection();
+    let connection = yield pool.getConnection();
     try {
         const findMumentResult = yield Mument_1.default.isExistMumentInfo(mumentId, connection);
         if (findMumentResult.isExist === false || !findMumentResult.mument)
@@ -454,6 +454,9 @@ const createLike = (mumentId, userId) => __awaiter(void 0, void 0, void 0, funct
             mumentId: likeResult[0].mument_id,
             likeCount: likeResult[0].like_count,
         };
+        yield connection.commit();
+        // 커넥션 쪼개기
+        connection = yield pool.getConnection();
         //좋아요 눌린 뮤멘트 작성자의 소식창에 좋아요 알림 삽입 - 자기 자신의 뮤멘트면 알림 x  (!넣는게 완성성)
         if (Number(userId) !== findMumentResult.mument.user_id) {
             const userData = yield connection.query('SELECT profile_id FROM user WHERE id=?', [userId]);
@@ -464,6 +467,8 @@ const createLike = (mumentId, userId) => __awaiter(void 0, void 0, void 0, funct
                 likeResult[0].music_title,
             ]);
             yield connection.commit();
+            // 커넥션 쪼개기
+            connection = yield pool.getConnection();
             // 좋아요 눌린 뮤멘트 작성자에게 푸시알림 - 차단 유저껀 가지 않음
             const blockedUser = yield connection.query('SELECT * FROM block WHERE user_id=? AND blocked_user_id=?', [likeResult[0].writer_id, userId]);
             if (blockedUser.length === 0) {
@@ -477,7 +482,9 @@ const createLike = (mumentId, userId) => __awaiter(void 0, void 0, void 0, funct
                 }
                 return data;
             }
+            yield connection.commit();
         }
+        yield connection.commit();
         return Object.assign(data, { pushSuccess: false });
     }
     catch (error) {
@@ -918,6 +925,7 @@ const createReport = (mumentId, reportCategory, etcContent, userId) => __awaiter
 });
 // 좋아요 누른 사용자 조회
 const getLikeUserList = (mumentId, userId, limit, offset) => __awaiter(void 0, void 0, void 0, function* () {
+    var e_5, _f;
     const pool = yield db_1.default;
     const connection = yield pool.getConnection();
     try {
@@ -926,13 +934,22 @@ const getLikeUserList = (mumentId, userId, limit, offset) => __awaiter(void 0, v
         if (!isExistMument)
             return serviceReturnConstant_1.default.NO_MUMENT;
         // 차단한 유저 리스트 조회
-        // 자신이 차단한, 자신을 차단한 유저 리스트
         const blockUserList = [];
         // 자신이 차단한 유저 반환
         const blockUserResult = yield User_1.default.blockedUserList(userId);
-        blockUserResult.forEach(element => {
-            blockUserList.push(element.exist);
-        });
+        try {
+            for (var blockUserResult_1 = __asyncValues(blockUserResult), blockUserResult_1_1; blockUserResult_1_1 = yield blockUserResult_1.next(), !blockUserResult_1_1.done;) {
+                let element = blockUserResult_1_1.value;
+                blockUserList.push(element.exist);
+            }
+        }
+        catch (e_5_1) { e_5 = { error: e_5_1 }; }
+        finally {
+            try {
+                if (blockUserResult_1_1 && !blockUserResult_1_1.done && (_f = blockUserResult_1.return)) yield _f.call(blockUserResult_1);
+            }
+            finally { if (e_5) throw e_5.error; }
+        }
         let strBlockUserList = '( 0 )';
         if (blockUserResult.length != 0) {
             strBlockUserList = '(' + blockUserList.toString() + ')';

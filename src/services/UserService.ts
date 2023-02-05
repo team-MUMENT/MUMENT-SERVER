@@ -28,6 +28,8 @@ import { NoticeInfoRDB } from '../interfaces/mument/NoticeInfoRDB';
 import pushHandler from '../library/pushHandler';
 import { NoticePushResponseDto } from '../interfaces/user/NoticePushResponseDto';
 import { BooleanBaseResponseDto } from '../interfaces/common/BooleanBaseResponseDto';
+import { LoginWebviewLinkDto, MypageWebviewLinkDto } from '../interfaces/user/WebviewLinkDto';
+import WebViewLinkDummy from '../modules/db/WebViewLink';
 
 
 /**
@@ -824,6 +826,9 @@ const checkProfileSet = async (userId: string): Promise<boolean> => {
     }
 };
 
+/**
+ * 유저 프로필 정보 조회
+ */
 const getUser = async (userId: string): Promise<UserResponseDto | number> => {
     try {
         const user = await userDB.userInfo(userId);
@@ -841,7 +846,36 @@ const getUser = async (userId: string): Promise<UserResponseDto | number> => {
         console.log(error);
         throw error;
     }
-}
+};
+
+/** 
+ * 웹뷰 링크 조회
+*/
+const getWebviewLink = async (page: string): Promise<LoginWebviewLinkDto | MypageWebviewLinkDto | number> => {
+    try {
+        if (page === 'mypage') {
+             // [마이페이지] 웹뷰 조회
+            return {
+                faq: WebViewLinkDummy.faq,
+                contact: WebViewLinkDummy.contact,
+                appInfo: WebViewLinkDummy.appInfo,
+                introduction: WebViewLinkDummy.introduction
+            };
+        } else if (page === 'login') {
+            // [로그인] 웹뷰 조회
+            return {
+                tos: WebViewLinkDummy.tos,
+                privacy: WebViewLinkDummy.privacy
+            };
+        } else {
+            return constant.WRONG_QUERYSTRING;
+        }
+        
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+};
 
 export default {
     getMyMumentList,
@@ -861,4 +895,5 @@ export default {
     postNotice,
     checkProfileSet,
     getUser,
+    getWebviewLink,
 };

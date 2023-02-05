@@ -382,7 +382,7 @@ const getMumentHistory = async (userId: string, musicId: string, writerId: strin
         const isLikedResult = await connection.query(getIsLikedQuery, [userId]);
 
         // 쿼리 결과에 있을 시에만 isLiked를 true로 바꿈
-        await isLikedResult.reduce((ac: any[], cur: any) => {
+        await isLikedResult.reduce(async (ac: any[], cur: any) => {
             const mumentIdx = isLikedList.findIndex(o => o.id === cur.mument_id);
             isLikedList[mumentIdx].isLiked = true;
         }, isLikedResult);
@@ -437,7 +437,7 @@ const getMumentHistory = async (userId: string, musicId: string, writerId: strin
  */
 const createLike = async (mumentId: string, userId: string): Promise<LikeCountResponeDto | null | number> => {
     const pool: any = await poolPromise;
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     try {
         const findMumentResult = await mumentDB.isExistMumentInfo(mumentId, connection);
@@ -487,6 +487,12 @@ const createLike = async (mumentId: string, userId: string): Promise<LikeCountRe
             likeCount: likeResult[0].like_count,
         };
 
+        await connection.commit();
+
+
+        // 커넥션 쪼개기
+        connection = await pool.getConnection();
+
 
         //좋아요 눌린 뮤멘트 작성자의 소식창에 좋아요 알림 삽입 - 자기 자신의 뮤멘트면 알림 x  (!넣는게 완성성)
         if (Number(userId) !== findMumentResult.mument.user_id) {
@@ -501,6 +507,9 @@ const createLike = async (mumentId: string, userId: string): Promise<LikeCountRe
 
             await connection.commit();
 
+
+            // 커넥션 쪼개기
+            connection = await pool.getConnection();
 
             // 좋아요 눌린 뮤멘트 작성자에게 푸시알림 - 차단 유저껀 가지 않음
             const blockedUser = await connection.query('SELECT * FROM block WHERE user_id=? AND blocked_user_id=?', [likeResult[0].writer_id, userId]);
@@ -518,7 +527,9 @@ const createLike = async (mumentId: string, userId: string): Promise<LikeCountRe
 
                 return data;
             }
+            await connection.commit();
         }
+        await connection.commit();
         
         return Object.assign(data, { pushSuccess: false });
     } catch (error) {
@@ -1017,14 +1028,15 @@ const getLikeUserList = async (mumentId: string, userId: string, limit: any, off
         if (!isExistMument) return constant.NO_MUMENT;
 
         // 차단한 유저 리스트 조회
-        // 자신이 차단한, 자신을 차단한 유저 리스트
         const blockUserList: number[] = [];
 
         // 자신이 차단한 유저 반환
         const blockUserResult = await userDB.blockedUserList(userId);
-        blockUserResult.forEach(element => {
+
+        for await (let element of blockUserResult) {
             blockUserList.push(element.exist);
-        });
+        }
+
         let strBlockUserList = '( 0 )';
 
         if (blockUserResult.length != 0) {

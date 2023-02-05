@@ -49,5 +49,7 @@ router.get('/profile/check', auth_1.default, controllers_1.UserController.checkP
 router.post('/notice', controllers_1.UserController.postNotice);
 // 유저 정보 조회
 router.get('/profile', auth_1.default, controllers_1.UserController.getUser);
+// 웹뷰 링크 조회
+router.get('/webview-link', controllers_1.UserController.getWebviewLink);
 exports.default = router;
 //# sourceMappingURL=UserRouter.js.map

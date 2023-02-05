@@ -28,6 +28,7 @@ const Mument_1 = __importDefault(require("../modules/db/Mument"));
 const User_1 = __importDefault(require("../modules/db/User"));
 const cardTagList_1 = __importDefault(require("../modules/cardTagList"));
 const pushHandler_1 = __importDefault(require("../library/pushHandler"));
+const WebViewLink_1 = __importDefault(require("../modules/db/WebViewLink"));
 /**
  * 내가 작성한 뮤멘트 리스트
  */
@@ -717,6 +718,9 @@ const checkProfileSet = (userId) => __awaiter(void 0, void 0, void 0, function* 
         throw error;
     }
 });
+/**
+ * 유저 프로필 정보 조회
+ */
 const getUser = (userId) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const user = yield User_1.default.userInfo(userId);
@@ -728,6 +732,36 @@ const getUser = (userId) => __awaiter(void 0, void 0, void 0, function* () {
             image: user.image,
         };
         return data;
+    }
+    catch (error) {
+        console.log(error);
+        throw error;
+    }
+});
+/**
+ * 웹뷰 링크 조회
+*/
+const getWebviewLink = (page) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        if (page === 'mypage') {
+            // [마이페이지] 웹뷰 조회
+            return {
+                faq: WebViewLink_1.default.faq,
+                contact: WebViewLink_1.default.contact,
+                appInfo: WebViewLink_1.default.appInfo,
+                introduction: WebViewLink_1.default.introduction
+            };
+        }
+        else if (page === 'login') {
+            // [로그인] 웹뷰 조회
+            return {
+                tos: WebViewLink_1.default.tos,
+                privacy: WebViewLink_1.default.privacy
+            };
+        }
+        else {
+            return serviceReturnConstant_1.default.WRONG_QUERYSTRING;
+        }
     }
     catch (error) {
         console.log(error);
@@ -752,5 +786,6 @@ exports.default = {
     postNotice,
     checkProfileSet,
     getUser,
+    getWebviewLink,
 };
 //# sourceMappingURL=UserService.js.map
