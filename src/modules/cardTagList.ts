@@ -4,6 +4,8 @@
  * 
  */
 
+import { TagListInfo } from "../interfaces/common/TagListInfo";
+
 const cardTag  = async (tagList: number[]) => { //인자로 뮤멘트의 전체 태그 리스트를 넘겨주면 됨
     let impressionTag: number[] = [], feelingTag: number[] = [];
     let impressionTagLength: number;
@@ -36,6 +38,21 @@ const cardTag  = async (tagList: number[]) => { //인자로 뮤멘트의 전체 
     return cardTag;
 };
 
+// {mument_id: number, tag_id: number} 형태의 태그 리스트를 이용해 인상 태그/감상 태그 리스트 tagList리스트에 넣기
+const allTagResultTagClassification = async (allTagResult: {mument_id: number, tag_id: number} [], tagList: TagListInfo[]): Promise<TagListInfo[]>=> {
+    allTagResult.reduce((ac: any[], cur: any): any =>  {
+        const mumentIdx = tagList.findIndex(o => o.id === cur.mument_id);
+        if (cur.tag_id < 200) {
+            tagList[mumentIdx].impressionTag.push(cur.tag_id);
+        } else if (cur.tag_id < 300) {
+            tagList[mumentIdx].feelingTag.push(cur.tag_id);
+        };
+    }, allTagResult);
+    
+    return tagList;
+};
+
 export default {
-    cardTag
+    cardTag,
+    allTagResultTagClassification,
 }
