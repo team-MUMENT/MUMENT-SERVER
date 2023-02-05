@@ -401,11 +401,12 @@ const getUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 const getWebviewLink = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     let { page } = req.query;
     try {
-        console.log(page);
         if (page === undefined)
             page = 'login';
-        console.log(page);
         const data = yield services_1.UserService.getWebviewLink(page);
+        if (data === serviceReturnConstant_1.default.WRONG_QUERYSTRING) {
+            return res.status(statusCode_1.default.BAD_REQUEST).send(util_1.default.fail(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.BAD_REQUEST));
+        }
         return res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.READ_USER_SUCCESS, data));
     }
     catch (error) {

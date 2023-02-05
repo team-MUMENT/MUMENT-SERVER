@@ -467,10 +467,12 @@ const getWebviewLink = async (req: Request, res: Response) => {
     let { page } = req.query;
 
     try {
-        console.log(page);
         if (page === undefined) page = 'login';
-        console.log(page);
         const data = await UserService.getWebviewLink(page as string);
+        
+        if (data === constant.WRONG_QUERYSTRING) {
+            return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.BAD_REQUEST));
+        }
 
         return res.status(statusCode.OK).send(util.success(statusCode.OK, message.READ_USER_SUCCESS, data)); 
 
