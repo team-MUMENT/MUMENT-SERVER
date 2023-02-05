@@ -16,6 +16,7 @@ const constant = {
     PRIVATE_MUMENT: -16,
     NO_NOTICE: -17,
     CREATE_NOTICE_FAIL: -18,
+    WRONG_QUERYSTRING: -19,
     // apple
     NO_IDENTITY_TOKEN_SUB: -50,
     APPLE_UNAUTHORIZED: -51,

@@ -15,6 +15,7 @@ import musicDB from '../modules/db/Music';
 import cardTagList from '../modules/cardTagList';
 import config from '../config';
 import { MusicCreateDto } from '../interfaces/music/MusicCreateDto';
+import { IsLikedInfoRDB } from '../interfaces/user/IsLikedInfoRDB';
 
 const qs = require('querystring');
 require('dotenv').config();
@@ -252,11 +253,11 @@ const getMumentList = async (musicId: string, userId: string, isLikeOrder: boole
 
         
         // 뮤멘트 id와 isLiked를 담을 리스트 생성
-        const isLikedList: {id: number, isLiked: boolean}[] = []
+        const isLikedList: {mid: number, isLiked: boolean}[] = []
 
-        mumentIdList.forEach((element: number) => {
-            isLikedList.push({id: element, isLiked: false});
-        });
+        for await (let element of mumentIdList) {
+            isLikedList.push({mid: element, isLiked: false});
+        }
 
         const getisLikedQuery = `
         SELECT mument_id as mid, EXISTS(
@@ -269,13 +270,20 @@ const getMumentList = async (musicId: string, userId: string, isLikeOrder: boole
         WHERE mument_id IN ${strMumentIdList}
         `;
 
-        const getIsLikedResult = await connection.query(getisLikedQuery, [userId]);
 
         // 쿼리 결과에 존재하는 경우에만 isLiked를 true로 바꿈
-        getIsLikedResult.reduce((ac: any[], cur: any) => {
-            const mumentIdx = isLikedList.findIndex(o => o.id === cur.mument_id);
+        const getIsLikedResult: IsLikedInfoRDB[] = await connection.query(getisLikedQuery, [userId]);
+
+        const isLikedListFormat = async (item: IsLikedInfoRDB, idx: number) => {
+            const mumentIdx = isLikedList.findIndex(o => o.mid === item.mid);
+
             if (mumentIdx != -1) isLikedList[mumentIdx].isLiked = true;
-        }, getIsLikedResult);
+        };
+
+        await getIsLikedResult.reduce(async (acc, curr, index) => {
+            return acc.then(() => isLikedListFormat(curr, index));
+        }, Promise.resolve());
+
 
         // string으로 날짜 생성해주는 함수
         const createDate = (createdAt: Date): string => {
@@ -305,7 +313,7 @@ const getMumentList = async (musicId: string, userId: string, isLikeOrder: boole
                 createdAt: mument.created_at,
                 updatedAt: mument.updated_at,
                 date: createDate(mument.created_at),
-                isLiked: Boolean(isLikedList[isLikedList.findIndex(o => o.id == mument.id)].isLiked),
+                isLiked: Boolean(isLikedList[isLikedList.findIndex(o => o.mid == mument.id)].isLiked),
             });
         };
 

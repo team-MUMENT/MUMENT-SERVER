@@ -394,6 +394,28 @@ const getUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         return res.status(statusCode_1.default.INTERNAL_SERVER_ERROR).send(util_1.default.fail(statusCode_1.default.INTERNAL_SERVER_ERROR, responseMessage_1.default.INTERNAL_SERVER_ERROR));
     }
 });
+/**
+ *  @ROUTE GET /webview-link?page=
+ *  @DESC 웹뷰 링크를 가져옵니다.
+ */
+const getWebviewLink = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    let { page } = req.query;
+    try {
+        if (page === undefined)
+            page = 'login';
+        const data = yield services_1.UserService.getWebviewLink(page);
+        if (data === serviceReturnConstant_1.default.WRONG_QUERYSTRING) {
+            return res.status(statusCode_1.default.BAD_REQUEST).send(util_1.default.fail(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.BAD_REQUEST));
+        }
+        return res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.READ_USER_SUCCESS, data));
+    }
+    catch (error) {
+        console.log(error);
+        const slackMessage = slackWebHook_1.default.slackErrorMessage(error.stack);
+        slackWebHook_1.default.sendMessage(slackMessage);
+        return res.status(statusCode_1.default.INTERNAL_SERVER_ERROR).send(util_1.default.fail(statusCode_1.default.INTERNAL_SERVER_ERROR, responseMessage_1.default.INTERNAL_SERVER_ERROR));
+    }
+});
 exports.default = {
     getMyMumentList,
     getLikeMumentList,
@@ -412,5 +434,6 @@ exports.default = {
     checkProfileSet,
     postNotice,
     getUser,
+    getWebviewLink,
 };
 //# sourceMappingURL=UserController.js.map
