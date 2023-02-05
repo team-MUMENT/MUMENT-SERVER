@@ -149,7 +149,7 @@ const getMusicAndMyMument = (musicId, userId, musicCreateDto) => __awaiter(void 
  * 곡 상세보기 - 모든 뮤멘트 조회
  */
 const getMumentList = (musicId, userId, isLikeOrder, limit, offset) => __awaiter(void 0, void 0, void 0, function* () {
-    var e_1, _a, e_2, _b;
+    var e_1, _a;
     const pool = yield db_1.default;
     const connection = yield pool.getConnection();
     try {
@@ -275,38 +275,28 @@ const getMumentList = (musicId, userId, isLikeOrder, limit, offset) => __awaiter
             return date;
         };
         const mumentList = [];
-        try {
-            for (var originalMumentList_1 = __asyncValues(originalMumentList), originalMumentList_1_1; originalMumentList_1_1 = yield originalMumentList_1.next(), !originalMumentList_1_1.done;) {
-                const mument = originalMumentList_1_1.value;
-                mumentList.push({
-                    _id: mument.id,
-                    musicId: mument.music_id.toString(),
-                    user: {
-                        _id: mument.user_id,
-                        name: mument.user_name,
-                        image: mument.user_image,
-                    },
-                    isFirst: Boolean(mument.is_first),
-                    impressionTag: tagList[tagList.findIndex(o => o.id == mument.id)].impressionTag,
-                    feelingTag: tagList[tagList.findIndex(o => o.id == mument.id)].feelingTag,
-                    cardTag: tagList[tagList.findIndex(o => o.id == mument.id)].cardTag,
-                    content: mument.content,
-                    isPrivate: Boolean(mument.is_private),
-                    likeCount: mument.like_count,
-                    isDeleted: Boolean(mument.is_deleted),
-                    createdAt: mument.created_at,
-                    updatedAt: mument.updated_at,
-                    date: createDate(mument.created_at),
-                    isLiked: Boolean(isLikedList[isLikedList.findIndex(o => o.mid == mument.id)].isLiked),
-                });
-            }
-        }
-        catch (e_2_1) { e_2 = { error: e_2_1 }; }
-        finally {
-            try {
-                if (originalMumentList_1_1 && !originalMumentList_1_1.done && (_b = originalMumentList_1.return)) yield _b.call(originalMumentList_1);
-            }
-            finally { if (e_2) throw e_2.error; }
+        for (const mument of originalMumentList) {
+            mumentList.push({
+                _id: mument.id,
+                musicId: mument.music_id.toString(),
+                user: {
+                    _id: mument.user_id,
+                    name: mument.user_name,
+                    image: mument.user_image,
+                },
+                isFirst: Boolean(mument.is_first),
+                impressionTag: tagList[tagList.findIndex(o => o.id == mument.id)].impressionTag,
+                feelingTag: tagList[tagList.findIndex(o => o.id == mument.id)].feelingTag,
+                cardTag: tagList[tagList.findIndex(o => o.id == mument.id)].cardTag,
+                content: mument.content,
+                isPrivate: Boolean(mument.is_private),
+                likeCount: mument.like_count,
+                isDeleted: Boolean(mument.is_deleted),
+                createdAt: mument.created_at,
+                updatedAt: mument.updated_at,
+                date: createDate(mument.created_at),
+                isLiked: Boolean(isLikedList[isLikedList.findIndex(o => o.mid == mument.id)].isLiked),
+            });
         }
         ;
         const data = {

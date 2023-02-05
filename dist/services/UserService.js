@@ -326,7 +326,7 @@ const putProfile = (userId, profileId, image) => __awaiter(void 0, void 0, void 
             id: user.id,
             accessToken,
             refreshToken,
-            profileId: profileId,
+            userName: profileId,
             image: user.image,
         };
         return data;
@@ -399,7 +399,7 @@ const postLeaveCategory = (userId, leaveCategoryId, reasonEtc) => __awaiter(void
         const data = {
             id: getLeaveResult[0].id,
             userId: getLeaveResult[0].user_id,
-            profileId: getLeaveResult[0].profile_id,
+            userName: getLeaveResult[0].profile_id,
             leaveCategoryId: getLeaveResult[0].leave_category_id,
             leaveCategoryName: getLeaveResult[0].name,
             reasonEtc: getLeaveResult[0].reason_etc,
@@ -728,7 +728,7 @@ const getUser = (userId) => __awaiter(void 0, void 0, void 0, function* () {
             return serviceReturnConstant_1.default.NO_USER;
         const data = {
             id: user.id,
-            profileId: user.profile_id,
+            userName: user.profile_id,
             image: user.image,
         };
         return data;

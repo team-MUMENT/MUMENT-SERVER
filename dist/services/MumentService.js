@@ -763,9 +763,19 @@ const getBanner = (userId) => __awaiter(void 0, void 0, void 0, function* () {
             ON music.id = home_banner.music_id
         WHERE home_banner.display_date = ?;
         `;
-        const bannerResult = yield pool_1.default.queryValue(getBannerQuery, [mondayMidnight]);
-        if (bannerResult.length === 0)
-            return serviceReturnConstant_1.default.NO_HOME_CONTENT;
+        let bannerResult = yield pool_1.default.queryValue(getBannerQuery, [mondayMidnight]);
+        if (bannerResult.length === 0) {
+            // 조회 결과가 없을 경우 가장 최근 배너 조회
+            const getOlderBannerQuery = `
+            SELECT *
+            FROM home_banner
+            JOIN music 
+                ON music.id = home_banner.music_id
+            ORDER BY home_banner.display_date DESC
+            LIMIT 3;
+            `;
+            bannerResult = yield pool_1.default.query(getOlderBannerQuery);
+        }
         const bannerList = [];
         bannerResult.forEach(element => {
             const tagTitle = tagTitle_1.tagBannerTitle[element.tag_id];
@@ -811,9 +821,22 @@ const getAgainMument = () => __awaiter(void 0, void 0, void 0, function* () {
         ORDER BY rand()
         LIMIT 3;
         `;
-        const homeAgainResult = yield pool_1.default.query(getAgainQuery);
-        if (homeAgainResult.length === 0)
-            return serviceReturnConstant_1.default.NO_HOME_CONTENT;
+        let homeAgainResult = yield pool_1.default.query(getAgainQuery);
+        if (homeAgainResult.length === 0) {
+            const getAgainBackupQuery = `
+            SELECT mument.id, music.id as music_id, music.name as music_name, music.artist, music.image as music_image, user.id as user_id, user.profile_id as user_name, user.image as user_image, mument.content, mument.created_at
+            FROM mument
+            JOIN music
+                ON mument.music_id = music.id
+            JOIN user
+                ON user.id = mument.user_id
+            WHERE mument.id = 274
+                AND mument.id = 275
+                AND mument.id = 276; 
+            `;
+            homeAgainResult = yield pool_1.default.query(getAgainBackupQuery);
+        }
+        ;
         const againMument = [];
         homeAgainResult.forEach(element => {
             againMument.push({
@@ -974,7 +997,7 @@ const getLikeUserList = (mumentId, userId, limit, offset) => __awaiter(void 0, v
         getLikeUser.reduce((ac, cur) => {
             data.push({
                 id: cur.id,
-                profileId: cur.profile_id,
+                userName: cur.profile_id,
                 image: cur.image,
             });
         }, getLikeUser);
