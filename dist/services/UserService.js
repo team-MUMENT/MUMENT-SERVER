@@ -450,7 +450,7 @@ const deleteUser = (userId) => __awaiter(void 0, void 0, void 0, function* () {
         const isDeleted = user.isDeleted ? true : false;
         const data = {
             id: user.id,
-            profileId: user.profile_id,
+            userName: user.profile_id,
             isDeleted: isDeleted,
             updatedAt: user.updated_at,
         };

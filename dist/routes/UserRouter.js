@@ -11,11 +11,11 @@ const uploadImage_1 = __importDefault(require("../middlewares/uploadImage"));
 const router = (0, express_1.Router)();
 // 프로필 설정
 router.put('/profile', uploadImage_1.default.single('image'), [
-    (0, express_validator_1.body)('profileId').notEmpty().isString(),
+    (0, express_validator_1.body)('userName').notEmpty().isString(),
 ], auth_1.default, controllers_1.UserController.putProfile);
 // 닉네임 중복 확인
 router.get('/profile/check/:profileId', [
-    (0, express_validator_1.param)('profileId').isString(),
+    (0, express_validator_1.param)('userName').isString(),
 ], auth_1.default, controllers_1.UserController.checkDuplicateName);
 // 보관함 나의 뮤멘트 조회
 router.get('/my/list', auth_1.default, controllers_1.UserController.getMyMumentList);

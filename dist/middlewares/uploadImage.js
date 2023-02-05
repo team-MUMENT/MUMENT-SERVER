@@ -14,7 +14,7 @@ const upload = (0, multer_1.default)({
         contentType: multer_s3_1.default.AUTO_CONTENT_TYPE,
         acl: 'public-read',
         key: function (req, file, cb) {
-            cb(null, `${req.body.profileId}/${Date.now()}_${file.originalname}`);
+            cb(null, `${req.body.userName}/${Date.now()}_${file.originalname}`);
         },
     }),
 });
