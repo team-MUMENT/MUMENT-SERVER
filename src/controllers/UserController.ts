@@ -14,7 +14,7 @@ import { NoticePushResponseDto } from '../interfaces/user/NoticePushResponseDto'
  */
 const putProfile = async (req: Request, res: Response) => {
     const userId = req.body.userId;
-    const { profileId } = req.body;
+    const { userName } = req.body;
     const image: Express.MulterS3.File = req.file as Express.MulterS3.File;
 
     const error = validationResult(req);
@@ -28,9 +28,9 @@ const putProfile = async (req: Request, res: Response) => {
 
         if (image) {
             const { location } = image;
-            data = await UserService.putProfile(userId, profileId, location);
+            data = await UserService.putProfile(userId, userName, location);
         } else {
-            data = await UserService.putProfile(userId, profileId, null);
+            data = await UserService.putProfile(userId, userName, null);
         }
 
         if (data === constant.UPDATE_FAIL) {
@@ -55,7 +55,7 @@ const putProfile = async (req: Request, res: Response) => {
  * @DESC 설정하려는 프로필아이디 (이름)이 중복되었는지 확인합니다.
  */
 const checkDuplicateName = async (req: Request, res: Response) => {
-    const { profileId } = req.params;
+    const { userName } = req.params;
     const userId = req.body.userId;
     const error = validationResult(req);
 
@@ -64,7 +64,7 @@ const checkDuplicateName = async (req: Request, res: Response) => {
     }
 
     try {
-        const data = await UserService.checkDuplicateName(profileId);
+        const data = await UserService.checkDuplicateName(userName);
 
         if (data) return res.status(statusCode.OK).send(util.success(statusCode.OK, message.DUPLICATE_PROFILEID));
         else return res.status(statusCode.NO_CONTENT).send(util.success(statusCode.NO_CONTENT, message.AVAILABLE_PROFILEID));
