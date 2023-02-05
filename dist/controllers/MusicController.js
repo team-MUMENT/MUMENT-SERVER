@@ -20,7 +20,7 @@ const services_1 = require("../services");
 const slackWebHook_1 = __importDefault(require("../library/slackWebHook"));
 const serviceReturnConstant_1 = __importDefault(require("../modules/serviceReturnConstant"));
 /**
- * @ROUTE GET /:musicId/
+ * @ROUTE POST /:musicId/
  * @DESC 곡 상세보기 뷰에서 music 정보와 나의 뮤멘트 정보 가져오기
  */
 const getMusicAndMyMument = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
