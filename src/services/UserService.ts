@@ -522,7 +522,7 @@ const deleteUser = async (userId: number): Promise<Number | UserDeleteResponseDt
 
         const data: UserDeleteResponseDto = {
             id: user.id,
-            profileId: user.profile_id,
+            userName: user.profile_id,
             isDeleted: isDeleted,
             updatedAt: user.updated_at,
         }
