@@ -256,12 +256,12 @@ const getMumentList = async (musicId: string, userId: string, isLikeOrder: boole
         // 뮤멘트 id와 isLiked를 담을 리스트 생성
         const isLikedList: {id: number, isLiked: boolean}[] = []
 
-        mumentIdList.forEach((element: number) => {
+        for await (let element of mumentIdList) {
             isLikedList.push({id: element, isLiked: false});
-        });
+        }
 
         const getisLikedQuery = `
-        SELECT mument_id as mid, EXISTS(
+        SELECT mument_id as id, EXISTS(
             SELECT *
             FROM mument.like
             WHERE mument_id = mid
@@ -278,6 +278,7 @@ const getMumentList = async (musicId: string, userId: string, isLikeOrder: boole
             const mumentIdx = isLikedList.findIndex(o => o.id === cur.mument_id);
             if (mumentIdx != -1) isLikedList[mumentIdx].isLiked = true;
         }, getIsLikedResult);
+
 
         // string으로 날짜 생성해주는 함수
         const createDate = (createdAt: Date): string => {
