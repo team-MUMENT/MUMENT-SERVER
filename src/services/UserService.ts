@@ -851,23 +851,27 @@ const getUser = async (userId: string): Promise<UserResponseDto | number> => {
 /** 
  * 웹뷰 링크 조회
 */
-const getWebviewLink = async (page: string): Promise<LoginWebviewLinkDto | MypageWebviewLinkDto> => {
+const getWebviewLink = async (page: string): Promise<LoginWebviewLinkDto | MypageWebviewLinkDto | number> => {
     try {
-        // [마이페이지] 웹뷰 조회
         if (page === 'mypage') {
+             // [마이페이지] 웹뷰 조회
             return {
                 faq: WebViewLinkDummy.faq,
                 contact: WebViewLinkDummy.contact,
                 appInfo: WebViewLinkDummy.appInfo,
                 introduction: WebViewLinkDummy.introduction
             };
+        } else if (page === 'login') {
+            // [로그인] 웹뷰 조회
+            return {
+                tos: WebViewLinkDummy.tos,
+                privacy: WebViewLinkDummy.privacy
+            };
+        } else {
+            return constant.WRONG_QUERYSTRING;
         }
 
-        // 기본으로 [로그인] 웹뷰 조회
-        return {
-            tos: WebViewLinkDummy.tos,
-            privacy: WebViewLinkDummy.privacy
-        };
+        
     } catch (error) {
         console.log(error);
         throw error;

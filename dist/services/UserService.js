@@ -743,8 +743,8 @@ const getUser = (userId) => __awaiter(void 0, void 0, void 0, function* () {
 */
 const getWebviewLink = (page) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        // [마이페이지] 웹뷰 조회
         if (page === 'mypage') {
+            // [마이페이지] 웹뷰 조회
             return {
                 faq: WebViewLink_1.default.faq,
                 contact: WebViewLink_1.default.contact,
@@ -752,11 +752,16 @@ const getWebviewLink = (page) => __awaiter(void 0, void 0, void 0, function* () 
                 introduction: WebViewLink_1.default.introduction
             };
         }
-        // 기본으로 [로그인] 웹뷰 조회
-        return {
-            tos: WebViewLink_1.default.tos,
-            privacy: WebViewLink_1.default.privacy
-        };
+        else if (page === 'login') {
+            // [로그인] 웹뷰 조회
+            return {
+                tos: WebViewLink_1.default.tos,
+                privacy: WebViewLink_1.default.privacy
+            };
+        }
+        else {
+            return serviceReturnConstant_1.default.WRONG_QUERYSTRING;
+        }
     }
     catch (error) {
         console.log(error);
