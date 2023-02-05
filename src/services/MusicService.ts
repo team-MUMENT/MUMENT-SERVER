@@ -15,6 +15,7 @@ import musicDB from '../modules/db/Music';
 import cardTagList from '../modules/cardTagList';
 import config from '../config';
 import { MusicCreateDto } from '../interfaces/music/MusicCreateDto';
+import { IsLikedInfoRDB } from '../interfaces/user/IsLikedInfoRDB';
 
 const qs = require('querystring');
 require('dotenv').config();
@@ -271,13 +272,19 @@ const getMumentList = async (musicId: string, userId: string, isLikeOrder: boole
         WHERE mument_id IN ${strMumentIdList}
         `;
 
-        const getIsLikedResult = await connection.query(getisLikedQuery, [userId]);
 
         // 쿼리 결과에 존재하는 경우에만 isLiked를 true로 바꿈
-        getIsLikedResult.reduce((ac: any[], cur: any) => {
-            const mumentIdx = isLikedList.findIndex(o => o.mid === cur.mument_id);
+        const getIsLikedResult: IsLikedInfoRDB[] = await connection.query(getisLikedQuery, [userId]);
+
+        const isLikedListFormat = async (item: IsLikedInfoRDB, idx: number) => {
+            const mumentIdx = isLikedList.findIndex(o => o.mid === item.mid);
+
             if (mumentIdx != -1) isLikedList[mumentIdx].isLiked = true;
-        }, getIsLikedResult);
+        };
+
+        await getIsLikedResult.reduce(async (acc, curr, index) => {
+            return acc.then(() => isLikedListFormat(curr, index));
+        }, Promise.resolve());
 
 
         // string으로 날짜 생성해주는 함수
