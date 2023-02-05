@@ -837,9 +837,21 @@ const getBanner = async (userId: number): Promise<TodayBannerResponseDto | numbe
         WHERE home_banner.display_date = ?;
         `;
 
-        const bannerResult = await pools.queryValue(getBannerQuery, [mondayMidnight]);
+        let bannerResult = await pools.queryValue(getBannerQuery, [mondayMidnight]);
 
-        if (bannerResult.length === 0) return constant.NO_HOME_CONTENT;
+        if (bannerResult.length === 0) {
+            // 조회 결과가 없을 경우 가장 최근 배너 조회
+            const getOlderBannerQuery = `
+            SELECT *
+            FROM home_banner
+            JOIN music 
+                ON music.id = home_banner.music_id
+            ORDER BY home_banner.display_date DESC
+            LIMIT 3;
+            `
+
+            bannerResult = await pools.query(getOlderBannerQuery);
+        }
 
         const bannerList: BannerSelectionInfo[] = [];
 
@@ -891,9 +903,23 @@ const getAgainMument = async (): Promise<AgainMumentResponseDto | number> => {
         LIMIT 3;
         `;
 
-        const homeAgainResult = await pools.query(getAgainQuery);
+        let homeAgainResult = await pools.query(getAgainQuery);
 
-        if (homeAgainResult.length === 0) return constant.NO_HOME_CONTENT;
+        if (homeAgainResult.length === 0) {
+            const getAgainBackupQuery = `
+            SELECT mument.id, music.id as music_id, music.name as music_name, music.artist, music.image as music_image, user.id as user_id, user.profile_id as user_name, user.image as user_image, mument.content, mument.created_at
+            FROM mument
+            JOIN music
+                ON mument.music_id = music.id
+            JOIN user
+                ON user.id = mument.user_id
+            WHERE mument.id = 274
+                AND mument.id = 275
+                AND mument.id = 276; 
+            `;
+
+            homeAgainResult = await pools.query(getAgainBackupQuery);
+        };
 
         const againMument: AgainSelectionInfo[] = [];
 
