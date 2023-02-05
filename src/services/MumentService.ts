@@ -33,6 +33,8 @@ import { RandomMumentInterface } from '../interfaces/home/RandomMumentInterface'
 import { BannerSelectionInfo } from '../interfaces/home/BannerSelectionInfo';
 import { AgainSelectionInfo } from '../interfaces/home/AgainSelectionInfo';
 import { TodaySelectionInfo } from '../interfaces/home/TodaySelectionInfo';
+import { TagListInfo } from '../interfaces/common/TagListInfo';
+import common from '../modules/common';
 
 /**
  * 뮤멘트 기록하기
@@ -311,7 +313,6 @@ const getMumentHistory = async (userId: string, musicId: string, writerId: strin
             ORDER BY created_at ${orderBy}
             LIMIT ? OFFSET ?;
             `;
-
             getMumentListResult = await connection.query(getMumentListQuery, [userId, musicId, writerId, limit, offset]);
         }
 
@@ -325,40 +326,25 @@ const getMumentHistory = async (userId: string, musicId: string, writerId: strin
         }
 
         // 태그 조회를 위해 뮤멘트 아이디만 빼오고, 스트링으로 만들어주기
-        const mumentIdList = await getMumentListResult.map((x: { id: number }) => x.id);
-        const strMumentIdList = '(' + mumentIdList.join(', ') + ')';
+        const mumentIdList: number[] = await common.mumentIdFilter(getMumentListResult);
 
-        const tagList: { id: number; impressionTag: number[]; feelingTag: number[]; cardTag: number[] }[] = [];
-
-        for await (let element of mumentIdList) {
-            tagList.push({ id: element, impressionTag: [], feelingTag: [], cardTag: [] });
-        }
+        let tagList: TagListInfo[] = await common.insertMumentIdIntoTagList(mumentIdList);
+       
 
         // 해당 뮤멘트들의 태그 모두 가져오기
-        const getAllTagQuery = `
-        SELECT mument_id, tag_id
-        FROM mument_tag
-        WHERE mument_id IN ${strMumentIdList}
-            AND is_deleted = 0
-        ORDER BY mument_id, updated_at ASC;
-        `;
+        const strMumentIdList = '(' + mumentIdList.join(', ') + ')';
 
-        const getAllTagList = await connection.query(getAllTagQuery);
+        const getAllTagResult = await mumentDB.getAllTag(strMumentIdList, connection);
+
 
         // impression tag, feeling tag 분류하기
-        await getAllTagList.reduce((ac: any[], cur: any) => {
-            const mumentIdx = tagList.findIndex(o => o.id === cur.mument_id);
-            if (cur.tag_id < 200) {
-                tagList[mumentIdx].impressionTag.push(cur.tag_id);
-            } else if (cur.tag_id < 300) {
-                tagList[mumentIdx].feelingTag.push(cur.tag_id);
-            }
-        }, getAllTagList);
+        await cardTagList.allTagResultTagClassification(getAllTagResult, tagList);
 
-        for (const object of tagList) {
+        for await (const object of tagList) {
             const allTagList = object.impressionTag.concat(object.feelingTag);
             object.cardTag = await cardTagList.cardTag(allTagList);
         }
+
 
         // id와 좋아요 여부 담은 리스트 생성
         const isLikedList: { id: number; isLiked: boolean }[] = [];
@@ -379,13 +365,13 @@ const getMumentHistory = async (userId: string, musicId: string, writerId: strin
         WHERE mument_id IN ${strMumentIdList};
         `;
 
-        const isLikedResult = await connection.query(getIsLikedQuery, [userId]);
+        const LikedResult = await connection.query(getIsLikedQuery, [userId]);
 
         // 쿼리 결과에 있을 시에만 isLiked를 true로 바꿈
-        await isLikedResult.reduce(async (ac: any[], cur: any) => {
+        await LikedResult.reduce(async (ac: any[], cur: any) => {
             const mumentIdx = isLikedList.findIndex(o => o.id === cur.mument_id);
             isLikedList[mumentIdx].isLiked = true;
-        }, isLikedResult);
+        }, LikedResult);
 
         // string으로 날짜 생성해주는 함수
         const createDate = (createdAt: Date): string => {
