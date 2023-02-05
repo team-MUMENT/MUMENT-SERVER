@@ -11,7 +11,7 @@ const upload = multer ({
         contentType: multerS3.AUTO_CONTENT_TYPE,
         acl: 'public-read',
         key: function (req: Request, file: Express.MulterS3.File, cb) {
-            cb(null, `${req.body.profileId}/${Date.now()}_${file.originalname}`);
+            cb(null, `${req.body.userName}/${Date.now()}_${file.originalname}`);
         },
     }),
 });

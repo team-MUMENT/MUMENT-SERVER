@@ -375,7 +375,7 @@ const putProfile = async (userId: number, profileId: string, image: string | nul
             id: user.id,
             accessToken,
             refreshToken,
-            profileId: profileId,
+            userName: profileId,
             image: user.image,
         };
 
@@ -462,7 +462,7 @@ const postLeaveCategory = async (userId: number, leaveCategoryId: string, reason
         const data: UserLeaveResponseDto = {
             id: getLeaveResult[0].id,
             userId: getLeaveResult[0].user_id,
-            profileId: getLeaveResult[0].profile_id,
+            userName: getLeaveResult[0].profile_id,
             leaveCategoryId: getLeaveResult[0].leave_category_id,
             leaveCategoryName: getLeaveResult[0].name,
             reasonEtc: getLeaveResult[0].reason_etc,
@@ -522,7 +522,7 @@ const deleteUser = async (userId: number): Promise<Number | UserDeleteResponseDt
 
         const data: UserDeleteResponseDto = {
             id: user.id,
-            profileId: user.profile_id,
+            userName: user.profile_id,
             isDeleted: isDeleted,
             updatedAt: user.updated_at,
         }
@@ -837,7 +837,7 @@ const getUser = async (userId: string): Promise<UserResponseDto | number> => {
 
         const data: UserResponseDto = {
             id: user.id,
-            profileId: user.profile_id,
+            userName: user.profile_id,
             image: user.image,
         }
 

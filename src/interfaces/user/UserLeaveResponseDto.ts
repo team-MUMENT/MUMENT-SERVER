@@ -1,7 +1,7 @@
 export interface UserLeaveResponseDto {
     id: number;
     userId: number;
-    profileId: string;
+    userName: string;
     leaveCategoryId: number;
     leaveCategoryName: string;
     reasonEtc: string | null;
