@@ -64,4 +64,7 @@ router.post('/notice', UserController.postNotice);
 // 유저 정보 조회
 router.get('/profile', auth, UserController.getUser);
 
+// 웹뷰 링크 조회
+router.get('/webview-link', UserController.getWebviewLink);
+
 export default router;

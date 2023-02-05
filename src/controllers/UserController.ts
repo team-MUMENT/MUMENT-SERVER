@@ -459,6 +459,31 @@ const getUser = async (req: Request, res: Response) => {
     }
 }
 
+/**
+ *  @ROUTE GET /webview-link?page=
+ *  @DESC 웹뷰 링크를 가져옵니다.
+ */
+const getWebviewLink = async (req: Request, res: Response) => {
+    let { page } = req.query;
+
+    try {
+        console.log(page);
+        if (page === undefined) page = 'login';
+        console.log(page);
+        const data = await UserService.getWebviewLink(page as string);
+
+        return res.status(statusCode.OK).send(util.success(statusCode.OK, message.READ_USER_SUCCESS, data)); 
+
+    } catch (error: any) {
+        console.log(error);
+
+        const slackMessage: SlackMessageFormat = slackWebHook.slackErrorMessage(error.stack);
+        slackWebHook.sendMessage(slackMessage);
+        
+        return res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
+    }
+};
+
 
 export default {
     getMyMumentList,
@@ -478,4 +503,5 @@ export default {
     checkProfileSet,
     postNotice,
     getUser,
+    getWebviewLink,
 };
