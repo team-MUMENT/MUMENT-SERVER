@@ -413,7 +413,7 @@ const getMumentHistory = (userId, musicId, writerId, orderBy, limit, offset) => 
  */
 const createLike = (mumentId, userId) => __awaiter(void 0, void 0, void 0, function* () {
     const pool = yield db_1.default;
-    const connection = yield pool.getConnection();
+    let connection = yield pool.getConnection();
     try {
         const findMumentResult = yield Mument_1.default.isExistMumentInfo(mumentId, connection);
         if (findMumentResult.isExist === false || !findMumentResult.mument)
@@ -454,6 +454,9 @@ const createLike = (mumentId, userId) => __awaiter(void 0, void 0, void 0, funct
             mumentId: likeResult[0].mument_id,
             likeCount: likeResult[0].like_count,
         };
+        yield connection.commit();
+        // 커넥션 쪼개기
+        connection = yield pool.getConnection();
         //좋아요 눌린 뮤멘트 작성자의 소식창에 좋아요 알림 삽입 - 자기 자신의 뮤멘트면 알림 x  (!넣는게 완성성)
         if (Number(userId) !== findMumentResult.mument.user_id) {
             const userData = yield connection.query('SELECT profile_id FROM user WHERE id=?', [userId]);
@@ -464,6 +467,8 @@ const createLike = (mumentId, userId) => __awaiter(void 0, void 0, void 0, funct
                 likeResult[0].music_title,
             ]);
             yield connection.commit();
+            // 커넥션 쪼개기
+            connection = yield pool.getConnection();
             // 좋아요 눌린 뮤멘트 작성자에게 푸시알림 - 차단 유저껀 가지 않음
             const blockedUser = yield connection.query('SELECT * FROM block WHERE user_id=? AND blocked_user_id=?', [likeResult[0].writer_id, userId]);
             if (blockedUser.length === 0) {
@@ -477,7 +482,9 @@ const createLike = (mumentId, userId) => __awaiter(void 0, void 0, void 0, funct
                 }
                 return data;
             }
+            yield connection.commit();
         }
+        yield connection.commit();
         return Object.assign(data, { pushSuccess: false });
     }
     catch (error) {
