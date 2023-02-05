@@ -21,6 +21,19 @@ const mumentTagCreate = async (impressionTag: number[], feelingTag: number[], co
     }
 };
 
+//뮤멘트 id리스트에 해당하는 뮤멘트들의 태그 모두 가져와서 반환
+const getAllTag = async (strMumentIdList: string, connection: any) => {
+    const getAllTagQuery = `
+        SELECT mument_id, tag_id
+        FROM mument_tag
+        WHERE mument_id IN ${strMumentIdList} AND is_deleted = 0
+        ORDER BY mument_id, updated_at ASC;
+    `;
+    const getAllTagResult = await connection.query(getAllTagQuery);
+
+    return getAllTagResult;
+};
+
 
 // 존재하는 뮤멘트 id인지 판단
 const isExistMument = async (mumentId: string , connection: any) => {
@@ -103,6 +116,7 @@ const mumentTagListGet = async (mumentId: string) => {
 
 export default {
     mumentTagCreate,
+    getAllTag,
     isExistMument,
     isExistMumentInfo,
     isLiked,

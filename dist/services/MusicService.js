@@ -25,8 +25,10 @@ const serviceReturnConstant_1 = __importDefault(require("../modules/serviceRetur
 const db_1 = __importDefault(require("../loaders/db"));
 const User_1 = __importDefault(require("../modules/db/User"));
 const Music_1 = __importDefault(require("../modules/db/Music"));
+const Mument_1 = __importDefault(require("../modules/db/Mument"));
 const cardTagList_1 = __importDefault(require("../modules/cardTagList"));
 const config_1 = __importDefault(require("../config"));
+const common_1 = __importDefault(require("../modules/common"));
 const qs = require('querystring');
 require('dotenv').config();
 /**
@@ -149,7 +151,7 @@ const getMusicAndMyMument = (musicId, userId, musicCreateDto) => __awaiter(void 
  * 곡 상세보기 - 모든 뮤멘트 조회
  */
 const getMumentList = (musicId, userId, isLikeOrder, limit, offset) => __awaiter(void 0, void 0, void 0, function* () {
-    var e_1, _a, e_2, _b;
+    var e_1, _a, e_2, _b, e_3, _c, e_4, _d;
     const pool = yield db_1.default;
     const connection = yield pool.getConnection();
     try {
@@ -160,9 +162,19 @@ const getMumentList = (musicId, userId, isLikeOrder, limit, offset) => __awaiter
         const blockUserList = [];
         // 자신이 차단한 유저 반환
         const blockUserResult = yield User_1.default.blockedUserList(userId);
-        blockUserResult.forEach(element => {
-            blockUserList.push(element.exist);
-        });
+        try {
+            for (var blockUserResult_1 = __asyncValues(blockUserResult), blockUserResult_1_1; blockUserResult_1_1 = yield blockUserResult_1.next(), !blockUserResult_1_1.done;) {
+                let element = blockUserResult_1_1.value;
+                blockUserList.push(element.exist);
+            }
+        }
+        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+        finally {
+            try {
+                if (blockUserResult_1_1 && !blockUserResult_1_1.done && (_a = blockUserResult_1.return)) yield _a.call(blockUserResult_1);
+            }
+            finally { if (e_1) throw e_1.error; }
+        }
         let strBlockUserList = '( 0 )';
         if (blockUserResult.length != 0) {
             strBlockUserList = '(' + blockUserList.toString() + ')';
@@ -183,6 +195,7 @@ const getMumentList = (musicId, userId, isLikeOrder, limit, offset) => __awaiter
                 LIMIT ? OFFSET ?;
                 `;
                 originalMumentList = yield connection.query(getMumentListQuery, [musicId, limit, offset]);
+                break;
             }
             case false: { // 최신순 정렬
                 const getMumentListQuery = `
@@ -198,40 +211,32 @@ const getMumentList = (musicId, userId, isLikeOrder, limit, offset) => __awaiter
                 LIMIT ? OFFSET ?;
                 `;
                 originalMumentList = yield connection.query(getMumentListQuery, [musicId, limit, offset]);
+                break;
             }
         }
         if (originalMumentList.length === 0)
             return null;
         // 태그 조회를 위해 뮤멘트 아이디만 빼오고, 스트링으로 만들어주기
-        const mumentIdList = originalMumentList.map((x) => x.id);
-        const strMumentIdList = '(' + mumentIdList.join(', ') + ')';
-        const tagList = [];
-        mumentIdList.forEach((element) => {
-            tagList.push({ id: element, impressionTag: [], feelingTag: [], cardTag: [] });
-        });
+        const mumentIdList = yield common_1.default.mumentIdFilter(originalMumentList);
+        let tagList = yield common_1.default.insertMumentIdIntoTagList(mumentIdList);
         // 해당 뮤멘트들의 태그 모두 가져오기
-        const getAllTagQuery = `
-        SELECT mument_id, tag_id
-        FROM mument_tag
-        WHERE mument_id IN ${strMumentIdList}
-            AND is_deleted = 0
-        ORDER BY mument_id, updated_at ASC;
-        `;
-        const getAllTagResult = yield connection.query(getAllTagQuery);
+        const strMumentIdList = '(' + mumentIdList.join(', ') + ')';
+        const getAllTagResult = yield Mument_1.default.getAllTag(strMumentIdList, connection);
         // impression tag, feeling tag 분류하기
-        getAllTagResult.reduce((ac, cur) => {
-            const mumentIdx = tagList.findIndex(o => o.id === cur.mument_id);
-            if (cur.tag_id < 200) {
-                tagList[mumentIdx].impressionTag.push(cur.tag_id);
+        yield cardTagList_1.default.allTagResultTagClassification(getAllTagResult, tagList);
+        try {
+            for (var tagList_1 = __asyncValues(tagList), tagList_1_1; tagList_1_1 = yield tagList_1.next(), !tagList_1_1.done;) {
+                const object = tagList_1_1.value;
+                const allTagList = object.impressionTag.concat(object.feelingTag);
+                object.cardTag = yield cardTagList_1.default.cardTag(allTagList);
             }
-            else if (cur.tag_id < 300) {
-                tagList[mumentIdx].feelingTag.push(cur.tag_id);
+        }
+        catch (e_2_1) { e_2 = { error: e_2_1 }; }
+        finally {
+            try {
+                if (tagList_1_1 && !tagList_1_1.done && (_b = tagList_1.return)) yield _b.call(tagList_1);
             }
-            ;
-        }, getAllTagResult);
-        for (const object of tagList) {
-            const allTagList = object.impressionTag.concat(object.feelingTag);
-            object.cardTag = yield cardTagList_1.default.cardTag(allTagList);
+            finally { if (e_2) throw e_2.error; }
         }
         ;
         // 뮤멘트 id와 isLiked를 담을 리스트 생성
@@ -242,12 +247,12 @@ const getMumentList = (musicId, userId, isLikeOrder, limit, offset) => __awaiter
                 isLikedList.push({ mid: element, isLiked: false });
             }
         }
-        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+        catch (e_3_1) { e_3 = { error: e_3_1 }; }
         finally {
             try {
-                if (mumentIdList_1_1 && !mumentIdList_1_1.done && (_a = mumentIdList_1.return)) yield _a.call(mumentIdList_1);
+                if (mumentIdList_1_1 && !mumentIdList_1_1.done && (_c = mumentIdList_1.return)) yield _c.call(mumentIdList_1);
             }
-            finally { if (e_1) throw e_1.error; }
+            finally { if (e_3) throw e_3.error; }
         }
         const getisLikedQuery = `
         SELECT mument_id as mid, EXISTS(
@@ -301,12 +306,12 @@ const getMumentList = (musicId, userId, isLikeOrder, limit, offset) => __awaiter
                 });
             }
         }
-        catch (e_2_1) { e_2 = { error: e_2_1 }; }
+        catch (e_4_1) { e_4 = { error: e_4_1 }; }
         finally {
             try {
-                if (originalMumentList_1_1 && !originalMumentList_1_1.done && (_b = originalMumentList_1.return)) yield _b.call(originalMumentList_1);
+                if (originalMumentList_1_1 && !originalMumentList_1_1.done && (_d = originalMumentList_1.return)) yield _d.call(originalMumentList_1);
             }
-            finally { if (e_2) throw e_2.error; }
+            finally { if (e_4) throw e_4.error; }
         }
         ;
         const data = {

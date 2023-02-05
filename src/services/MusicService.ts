@@ -11,11 +11,15 @@ import { MusicMyMumentResponseDto } from '../interfaces/music/MusicMyMumentRespo
 import { MusicResponseDto } from '../interfaces/music/MusicResponseDto';
 
 import musicDB from '../modules/db/Music';
+import mumentDB from '../modules/db/Mument';
 
 import cardTagList from '../modules/cardTagList';
 import config from '../config';
 import { MusicCreateDto } from '../interfaces/music/MusicCreateDto';
 import { IsLikedInfoRDB } from '../interfaces/user/IsLikedInfoRDB';
+import { MumentAndUserInfoRDB } from '../interfaces/mument/MumentAndUserInfoRDB';
+import common from '../modules/common';
+import { TagListInfo } from '../interfaces/common/TagListInfo';
 
 const qs = require('querystring');
 require('dotenv').config();
@@ -168,9 +172,9 @@ const getMumentList = async (musicId: string, userId: string, isLikeOrder: boole
 
         // 자신이 차단한 유저 반환
         const blockUserResult = await userDB.blockedUserList(userId);
-        blockUserResult.forEach(element => {
+        for await (let element of blockUserResult) {
             blockUserList.push(element.exist);
-        });
+        }
 
         let strBlockUserList = '( 0 )';
 
@@ -178,7 +182,7 @@ const getMumentList = async (musicId: string, userId: string, isLikeOrder: boole
             strBlockUserList = '(' + blockUserList.toString() + ')';
         }
 
-        let originalMumentList = [];
+        let originalMumentList: MumentAndUserInfoRDB[] = [];
 
         switch (isLikeOrder) {
             case true: { // 좋아요순 정렬
@@ -194,8 +198,9 @@ const getMumentList = async (musicId: string, userId: string, isLikeOrder: boole
                 ORDER BY mument.like_count DESC
                 LIMIT ? OFFSET ?;
                 `;
-
                 originalMumentList = await connection.query(getMumentListQuery, [musicId, limit, offset]);
+
+                break;
             } case false: { // 최신순 정렬
                 const getMumentListQuery = `
                 SELECT mument.*, user.profile_id as user_name, user.image as user_image
@@ -209,46 +214,31 @@ const getMumentList = async (musicId: string, userId: string, isLikeOrder: boole
                 ORDER BY mument.created_at DESC
                 LIMIT ? OFFSET ?;
                 `;
-
                 originalMumentList = await connection.query(getMumentListQuery, [musicId, limit, offset]);
+
+                break;
             }
         }
 
         if (originalMumentList.length === 0) return null;
 
         // 태그 조회를 위해 뮤멘트 아이디만 빼오고, 스트링으로 만들어주기
-        const mumentIdList = originalMumentList.map((x: { id: number; }) => x.id);
-        const strMumentIdList = '(' + mumentIdList.join(', ') + ')';
+        const mumentIdList: number[] = await common.mumentIdFilter(originalMumentList);
 
-        const tagList: {id: number, impressionTag: number[], feelingTag: number[], cardTag: number[]}[] = [];
+        let tagList: TagListInfo[] = await common.insertMumentIdIntoTagList(mumentIdList);
         
-        mumentIdList.forEach( (element: number) => {
-            tagList.push({ id: element, impressionTag: [], feelingTag: [], cardTag: []})
-        });
 
         // 해당 뮤멘트들의 태그 모두 가져오기
-        const getAllTagQuery = `
-        SELECT mument_id, tag_id
-        FROM mument_tag
-        WHERE mument_id IN ${strMumentIdList}
-            AND is_deleted = 0
-        ORDER BY mument_id, updated_at ASC;
-        `;
+        const strMumentIdList = '(' + mumentIdList.join(', ') + ')';
 
-        const getAllTagResult = await connection.query(getAllTagQuery);
+        const getAllTagResult = await mumentDB.getAllTag(strMumentIdList, connection);
 
 
         // impression tag, feeling tag 분류하기
-        getAllTagResult.reduce((ac: any[], cur: any) =>  {
-            const mumentIdx = tagList.findIndex(o => o.id === cur.mument_id);
-            if (cur.tag_id < 200) {
-                tagList[mumentIdx].impressionTag.push(cur.tag_id);
-            } else if (cur.tag_id < 300) {
-                tagList[mumentIdx].feelingTag.push(cur.tag_id);
-            };
-        }, getAllTagResult);
+        await cardTagList.allTagResultTagClassification(getAllTagResult, tagList);
 
-        for (const object of tagList) {
+
+        for await (const object of tagList) {
             const allTagList = object.impressionTag.concat(object.feelingTag);
             object.cardTag = await cardTagList.cardTag(allTagList);
         };
