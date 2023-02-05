@@ -254,14 +254,14 @@ const getMumentList = async (musicId: string, userId: string, isLikeOrder: boole
 
         
         // 뮤멘트 id와 isLiked를 담을 리스트 생성
-        const isLikedList: {id: number, isLiked: boolean}[] = []
+        const isLikedList: {mid: number, isLiked: boolean}[] = []
 
         for await (let element of mumentIdList) {
-            isLikedList.push({id: element, isLiked: false});
+            isLikedList.push({mid: element, isLiked: false});
         }
 
         const getisLikedQuery = `
-        SELECT mument_id as id, EXISTS(
+        SELECT mument_id as mid, EXISTS(
             SELECT *
             FROM mument.like
             WHERE mument_id = mid
@@ -275,7 +275,7 @@ const getMumentList = async (musicId: string, userId: string, isLikeOrder: boole
 
         // 쿼리 결과에 존재하는 경우에만 isLiked를 true로 바꿈
         getIsLikedResult.reduce((ac: any[], cur: any) => {
-            const mumentIdx = isLikedList.findIndex(o => o.id === cur.mument_id);
+            const mumentIdx = isLikedList.findIndex(o => o.mid === cur.mument_id);
             if (mumentIdx != -1) isLikedList[mumentIdx].isLiked = true;
         }, getIsLikedResult);
 
@@ -308,7 +308,7 @@ const getMumentList = async (musicId: string, userId: string, isLikeOrder: boole
                 createdAt: mument.created_at,
                 updatedAt: mument.updated_at,
                 date: createDate(mument.created_at),
-                isLiked: Boolean(isLikedList[isLikedList.findIndex(o => o.id == mument.id)].isLiked),
+                isLiked: Boolean(isLikedList[isLikedList.findIndex(o => o.mid == mument.id)].isLiked),
             });
         };
 

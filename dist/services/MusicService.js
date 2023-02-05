@@ -239,7 +239,7 @@ const getMumentList = (musicId, userId, isLikeOrder, limit, offset) => __awaiter
         try {
             for (var mumentIdList_1 = __asyncValues(mumentIdList), mumentIdList_1_1; mumentIdList_1_1 = yield mumentIdList_1.next(), !mumentIdList_1_1.done;) {
                 let element = mumentIdList_1_1.value;
-                isLikedList.push({ id: element, isLiked: false });
+                isLikedList.push({ mid: element, isLiked: false });
             }
         }
         catch (e_1_1) { e_1 = { error: e_1_1 }; }
@@ -250,7 +250,7 @@ const getMumentList = (musicId, userId, isLikeOrder, limit, offset) => __awaiter
             finally { if (e_1) throw e_1.error; }
         }
         const getisLikedQuery = `
-        SELECT mument_id as id, EXISTS(
+        SELECT mument_id as mid, EXISTS(
             SELECT *
             FROM mument.like
             WHERE mument_id = mid
@@ -262,7 +262,7 @@ const getMumentList = (musicId, userId, isLikeOrder, limit, offset) => __awaiter
         const getIsLikedResult = yield connection.query(getisLikedQuery, [userId]);
         // 쿼리 결과에 존재하는 경우에만 isLiked를 true로 바꿈
         getIsLikedResult.reduce((ac, cur) => {
-            const mumentIdx = isLikedList.findIndex(o => o.id === cur.mument_id);
+            const mumentIdx = isLikedList.findIndex(o => o.mid === cur.mument_id);
             if (mumentIdx != -1)
                 isLikedList[mumentIdx].isLiked = true;
         }, getIsLikedResult);
@@ -294,7 +294,7 @@ const getMumentList = (musicId, userId, isLikeOrder, limit, offset) => __awaiter
                     createdAt: mument.created_at,
                     updatedAt: mument.updated_at,
                     date: createDate(mument.created_at),
-                    isLiked: Boolean(isLikedList[isLikedList.findIndex(o => o.id == mument.id)].isLiked),
+                    isLiked: Boolean(isLikedList[isLikedList.findIndex(o => o.mid == mument.id)].isLiked),
                 });
             }
         }
