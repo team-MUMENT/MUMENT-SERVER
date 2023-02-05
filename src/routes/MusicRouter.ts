@@ -8,7 +8,11 @@ const router: Router = Router();
 router.get('/search', MusicController.getMusicListBySearch);
 
 router.post('/:musicId', [
-    param('musicId').toInt().isInt(), 
+    param('musicId').toInt().isInt(),
+    body('musicId').notEmpty(),
+    body('musicArtist').notEmpty(),
+    body('musicImage').notEmpty(),
+    body('musicName').notEmpty(),
 ], auth, MusicController.getMusicAndMyMument);
 
 router.get('/:musicId/order', [
