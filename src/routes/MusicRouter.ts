@@ -7,7 +7,7 @@ const router: Router = Router();
 
 router.get('/search', MusicController.getMusicListBySearch);
 
-router.get('/:musicId', [
+router.post('/:musicId', [
     param('musicId').toInt().isInt(), 
 ], auth, MusicController.getMusicAndMyMument);
 

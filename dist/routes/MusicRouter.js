@@ -9,7 +9,7 @@ const express_validator_1 = require("express-validator");
 const auth_1 = __importDefault(require("../middlewares/auth"));
 const router = (0, express_1.Router)();
 router.get('/search', controllers_1.MusicController.getMusicListBySearch);
-router.get('/:musicId', [
+router.post('/:musicId', [
     (0, express_validator_1.param)('musicId').toInt().isInt(),
 ], auth_1.default, controllers_1.MusicController.getMusicAndMyMument);
 router.get('/:musicId/order', [
