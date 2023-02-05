@@ -870,7 +870,6 @@ const getWebviewLink = async (page: string): Promise<LoginWebviewLinkDto | Mypag
         } else {
             return constant.WRONG_QUERYSTRING;
         }
-
         
     } catch (error) {
         console.log(error);
