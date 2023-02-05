@@ -259,13 +259,16 @@ const getMumentList = (musicId, userId, isLikeOrder, limit, offset) => __awaiter
         FROM mument.like
         WHERE mument_id IN ${strMumentIdList}
         `;
-        const getIsLikedResult = yield connection.query(getisLikedQuery, [userId]);
         // 쿼리 결과에 존재하는 경우에만 isLiked를 true로 바꿈
-        getIsLikedResult.reduce((ac, cur) => {
-            const mumentIdx = isLikedList.findIndex(o => o.mid === cur.mument_id);
+        const getIsLikedResult = yield connection.query(getisLikedQuery, [userId]);
+        const isLikedListFormat = (item, idx) => __awaiter(void 0, void 0, void 0, function* () {
+            const mumentIdx = isLikedList.findIndex(o => o.mid === item.mid);
             if (mumentIdx != -1)
                 isLikedList[mumentIdx].isLiked = true;
-        }, getIsLikedResult);
+        });
+        yield getIsLikedResult.reduce((acc, curr, index) => __awaiter(void 0, void 0, void 0, function* () {
+            return acc.then(() => isLikedListFormat(curr, index));
+        }), Promise.resolve());
         // string으로 날짜 생성해주는 함수
         const createDate = (createdAt) => {
             const date = (0, dayjs_1.default)(createdAt).format('D MMM, YYYY');
