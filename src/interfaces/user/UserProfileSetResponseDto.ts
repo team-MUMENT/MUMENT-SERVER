@@ -2,6 +2,6 @@ export interface UserProfileSetResponseDto {
     id: number;
     accessToken: string;
     refreshToken: string;
-    profileId: string;
+    userName: string;
     image?: string;
 }

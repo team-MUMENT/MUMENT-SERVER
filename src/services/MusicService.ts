@@ -182,8 +182,12 @@ const getMumentList = async (musicId: string, userId: string, isLikeOrder: boole
             strBlockUserList = '(' + blockUserList.toString() + ')';
         }
 
+<<<<<<< HEAD
         let originalMumentList: MumentAndUserInfoRDB[] = [];
 
+=======
+        let originalMumentList = [];
+>>>>>>> a1572cad620ac74e99d379ae0c4a31c443ecf34b
         switch (isLikeOrder) {
             case true: { // 좋아요순 정렬
                 const getMumentListQuery = `
@@ -219,7 +223,6 @@ const getMumentList = async (musicId: string, userId: string, isLikeOrder: boole
                 break;
             }
         }
-
         if (originalMumentList.length === 0) return null;
 
         // 태그 조회를 위해 뮤멘트 아이디만 빼오고, 스트링으로 만들어주기
@@ -285,7 +288,7 @@ const getMumentList = async (musicId: string, userId: string, isLikeOrder: boole
 
         const mumentList: MumentCardViewInterface[] = [];
 
-        for await (const mument of originalMumentList) {
+        for (const mument of originalMumentList) {
             mumentList.push({
                 _id: mument.id,
                 musicId: mument.music_id.toString(),

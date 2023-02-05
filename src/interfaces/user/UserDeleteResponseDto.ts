@@ -1,6 +1,6 @@
 export interface UserDeleteResponseDto {
     id: number;
-    profileId: string;
+    userName: string;
     isDeleted: boolean;
     updatedAt: string;
 }
