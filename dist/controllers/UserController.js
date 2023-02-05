@@ -62,10 +62,6 @@ const putProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
 const checkDuplicateName = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { userName } = req.params;
     const userId = req.body.userId;
-    const error = (0, express_validator_1.validationResult)(req);
-    if (!error.isEmpty()) {
-        return res.status(statusCode_1.default.BAD_REQUEST).send(util_1.default.fail(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.WRONG_PARAMS));
-    }
     try {
         const data = yield services_1.UserService.checkDuplicateName(userName);
         if (data)
