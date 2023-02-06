@@ -191,6 +191,7 @@ const getMumentList = (musicId, userId, isLikeOrder, limit, offset) => __awaiter
                     AND mument.user_id NOT IN ${strBlockUserList}
                     AND mument.is_deleted = 0  
                     AND user.is_deleted = 0
+                    AND mument.is_private = 0
                 ORDER BY mument.like_count DESC
                 LIMIT ? OFFSET ?;
                 `;
@@ -207,6 +208,7 @@ const getMumentList = (musicId, userId, isLikeOrder, limit, offset) => __awaiter
                     AND mument.user_id NOT IN ${strBlockUserList}
                     AND mument.is_deleted = 0  
                     AND user.is_deleted = 0
+                    AND mument.is_private = 0
                 ORDER BY mument.created_at DESC
                 LIMIT ? OFFSET ?;
                 `;
