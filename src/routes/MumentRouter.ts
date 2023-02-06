@@ -63,7 +63,6 @@ router.delete('/:mumentId', MumentController.deleteMument);
 // 신고하기
 router.post('/report/:mumentId', [
     body('reportCategory').notEmpty(),
-    body('etcContent').notEmpty(),
 ], auth, MumentController.createReport);
 
 // 좋아요를 누른 사용자 조회
