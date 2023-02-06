@@ -481,8 +481,7 @@ const createLike = async (mumentId: string, userId: string): Promise<LikeCountRe
 
 
         //좋아요 눌린 뮤멘트 작성자의 소식창에 좋아요 알림 삽입 - 자기 자신의 뮤멘트면 알림 x  (!넣는게 완성)
-        //TO-DO: 로컬에서 테스트하고 !==으로 바꾸기
-        if (Number(userId) === findMumentResult.mument.user_id) {
+        if (Number(userId) !== findMumentResult.mument.user_id) {
             const userData = await connection.query('SELECT profile_id FROM user WHERE id=?', [userId]);
 
             await connection.query(
