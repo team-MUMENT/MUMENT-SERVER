@@ -713,10 +713,6 @@ const getNewsList = async (userId: number): Promise<NewsResponseDto[]> => {
                     isRead: Boolean(item.is_read),
                     createdAt: dayjs(item.created_at).format('MM/DD HH:mm'),
                     linkId: item.link_id,
-                    // noticePoint: item.notice_point_word,
-                    // noticeTitle: item.notice_title,
-                    // likeProfileId: item.like_profile_id,
-                    // likeMusicTitle: item.like_music_title
                     notice: {
                         point: item.notice_point_word,
                         title: item.notice_title
@@ -753,17 +749,16 @@ const getNewsList = async (userId: number): Promise<NewsResponseDto[]> => {
  */
 const postNotice = async (point: string | null, title: string, content:string, noticeCategory: number): Promise<NoticePushResponseDto | number> => {
     const pool: any = await poolPromise;
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     try {
-        connection.beginTransaction(); //롤백을 위해 필요함
-
+        await connection.beginTransaction();
         // 공지사항 추가
         const createdNotice = await connection.query(
             'INSERT INTO notice(category, title, content, notice_point_word) VALUES(?, ?, ?, ?)', 
             [noticeCategory, title, content, point]);
         if (createdNotice?.affectedRows === 0) return constant.CREATE_NOTICE_FAIL;
-
+        
 
         // 공지사항 row 조회
         const createdNoticeRow: NoticeInfoRDB[] = await connection.query(
@@ -774,9 +769,14 @@ const postNotice = async (point: string | null, title: string, content:string, n
         const noticePointWord = createdNoticeRow[0].notice_point_word;
         let fcmTokenList: string[] = [];
 
-
         // 모든 활성 유저의 소식창에 공지사항 알림 추가        
         const allActiveUser: UserInfoRDB[] = await connection.query('SELECT * FROM user WHERE is_deleted=0');
+        await connection.commit();
+
+
+        // 커넥션 쪼개기
+        connection = await pool.getConnection();
+        await connection.beginTransaction();
 
         const insertNewsToAllActiveUser = async (item: UserInfoRDB, idx: number) => {
             await connection.query(
@@ -813,7 +813,7 @@ const postNotice = async (point: string | null, title: string, content:string, n
 
     } catch (error) {
         console.log(error);
-        await connection.rollback(); // 하나라도 에러시 롤백 (데이터 적용 원상복귀)
+        await connection.rollback();
         throw error;
     } finally {
         connection.release(); // pool connection 회수
