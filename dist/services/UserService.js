@@ -628,10 +628,6 @@ const getNewsList = (userId) => __awaiter(void 0, void 0, void 0, function* () {
                     isRead: Boolean(item.is_read),
                     createdAt: (0, dayjs_1.default)(item.created_at).format('MM/DD HH:mm'),
                     linkId: item.link_id,
-                    // noticePoint: item.notice_point_word,
-                    // noticeTitle: item.notice_title,
-                    // likeProfileId: item.like_profile_id,
-                    // likeMusicTitle: item.like_music_title
                     notice: {
                         point: item.notice_point_word,
                         title: item.notice_title
@@ -666,9 +662,9 @@ const getNewsList = (userId) => __awaiter(void 0, void 0, void 0, function* () {
  */
 const postNotice = (point, title, content, noticeCategory) => __awaiter(void 0, void 0, void 0, function* () {
     const pool = yield db_1.default;
-    const connection = yield pool.getConnection();
+    let connection = yield pool.getConnection();
     try {
-        connection.beginTransaction(); //롤백을 위해 필요함
+        yield connection.beginTransaction();
         // 공지사항 추가
         const createdNotice = yield connection.query('INSERT INTO notice(category, title, content, notice_point_word) VALUES(?, ?, ?, ?)', [noticeCategory, title, content, point]);
         if ((createdNotice === null || createdNotice === void 0 ? void 0 : createdNotice.affectedRows) === 0)
@@ -682,6 +678,10 @@ const postNotice = (point, title, content, noticeCategory) => __awaiter(void 0, 
         let fcmTokenList = [];
         // 모든 활성 유저의 소식창에 공지사항 알림 추가        
         const allActiveUser = yield connection.query('SELECT * FROM user WHERE is_deleted=0');
+        yield connection.commit();
+        // 커넥션 쪼개기
+        connection = yield pool.getConnection();
+        yield connection.beginTransaction();
         const insertNewsToAllActiveUser = (item, idx) => __awaiter(void 0, void 0, void 0, function* () {
             yield connection.query(`INSERT INTO news(type, user_id, notice_title, link_id, notice_point_word) VALUES('notice', ?, ?, ?, ?)`, [item.id, createdNoticeRow[0].title, noticeId, noticePointWord]);
             if (item.fcm_token && item.fcm_token.length > 0) {
@@ -707,7 +707,7 @@ const postNotice = (point, title, content, noticeCategory) => __awaiter(void 0, 
     }
     catch (error) {
         console.log(error);
-        yield connection.rollback(); // 하나라도 에러시 롤백 (데이터 적용 원상복귀)
+        yield connection.rollback();
         throw error;
     }
     finally {

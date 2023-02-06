@@ -81,6 +81,7 @@ const noticePushAlarmHandler = (pushTitle, pushBody, fcmTokenList) => __awaiter(
                         return;
                 });
             }
+            console.log(pushFailFcmTokenList);
         })
             .catch(function (err) {
             console.log(responseMessage_1.default.PUSH_ALARM_ERROR, err);

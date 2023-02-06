@@ -420,7 +420,7 @@ const createLike = (mumentId, userId) => __awaiter(void 0, void 0, void 0, funct
         const getLikeResultQuery = `
         SELECT mument.like.mument_id, mument.like.user_id, mument.mument.like_count,
         mument.mument.user_id AS writer_id, mument.mument.music_id AS music_id,
-        mument.music.name AS music_title
+        mument.music.name AS music_title, mument.music.artist AS music_artist, mument.music.image AS music_image
         FROM mument.like
         JOIN mument.mument
             ON mument.mument.id = mument.like.mument_id
@@ -440,14 +440,19 @@ const createLike = (mumentId, userId) => __awaiter(void 0, void 0, void 0, funct
         yield connection.commit();
         // 커넥션 쪼개기
         connection = yield pool.getConnection();
-        //좋아요 눌린 뮤멘트 작성자의 소식창에 좋아요 알림 삽입 - 자기 자신의 뮤멘트면 알림 x  (!넣는게 완성성)
-        if (Number(userId) !== findMumentResult.mument.user_id) {
+        //좋아요 눌린 뮤멘트 작성자의 소식창에 좋아요 알림 삽입 - 자기 자신의 뮤멘트면 알림 x  (!넣는게 완성)
+        //TO-DO: 로컬에서 테스트하고 !==으로 바꾸기
+        if (Number(userId) === findMumentResult.mument.user_id) {
             const userData = yield connection.query('SELECT profile_id FROM user WHERE id=?', [userId]);
-            yield connection.query(`INSERT INTO news(type, user_id, like_profile_id, link_id, like_music_title) VALUES('like', ?, ?, ?, ?)`, [
+            yield connection.query(`INSERT INTO news(type, user_id, like_profile_id, link_id, like_music_title, like_music_id, like_music_artist, like_music_image) 
+                VALUES('like', ?, ?, ?, ?, ?, ?, ?)`, [
                 likeResult[0].writer_id,
                 userData[0].profile_id,
                 mumentId,
                 likeResult[0].music_title,
+                likeResult[0].music_id,
+                likeResult[0].music_artist,
+                likeResult[0].music_image
             ]);
             yield connection.commit();
             // 커넥션 쪼개기

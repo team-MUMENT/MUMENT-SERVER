@@ -46,6 +46,7 @@ const noticePushAlarmHandler = async (pushTitle: string, pushBody: string, fcmTo
                         else return; 
                     })
                 }
+                console.log(pushFailFcmTokenList);
                 
             })
             .catch(function (err) {
