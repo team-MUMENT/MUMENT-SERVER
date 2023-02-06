@@ -713,10 +713,23 @@ const getNewsList = async (userId: number): Promise<NewsResponseDto[]> => {
                     isRead: Boolean(item.is_read),
                     createdAt: dayjs(item.created_at).format('MM/DD HH:mm'),
                     linkId: item.link_id,
-                    noticePoint: item.notice_point_word,
-                    noticeTitle: item.notice_title,
-                    likeProfileId: item.like_profile_id,
-                    likeMusicTitle: item.like_music_title
+                    // noticePoint: item.notice_point_word,
+                    // noticeTitle: item.notice_title,
+                    // likeProfileId: item.like_profile_id,
+                    // likeMusicTitle: item.like_music_title
+                    notice: {
+                        point: item.notice_point_word,
+                        title: item.notice_title
+                    },
+                    like: {
+                        userName: item.like_profile_id,
+                        music: {
+                            id: item.like_music_id,
+                            name: item.like_music_title,
+                            artist: item.like_music_artist,
+                            image: item.like_music_image
+                        }
+                    }
                 });
             }
         };
