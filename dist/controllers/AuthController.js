@@ -87,8 +87,29 @@ const getNewAccessToken = (req, res) => __awaiter(void 0, void 0, void 0, functi
         return res.status(statusCode_1.default.INTERNAL_SERVER_ERROR).send(util_1.default.fail(statusCode_1.default.INTERNAL_SERVER_ERROR, responseMessage_1.default.INTERNAL_SERVER_ERROR));
     }
 });
+/**
+ * @ROUTE Patch /auth/logout
+ * @DESC logout
+ */
+const logout = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userId = req.body.userId;
+    try {
+        const data = yield services_1.AuthService.logout(userId);
+        if (data === serviceReturnConstant_1.default.LOGOUT_FAIL) {
+            return res.status(statusCode_1.default.BAD_REQUEST).send(util_1.default.fail(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.LOGOUT_FAIL));
+        }
+        return res.status(statusCode_1.default.NO_CONTENT).send();
+    }
+    catch (error) {
+        console.log(error);
+        const slackMessage = slackWebHook_1.default.slackErrorMessage(error.stack);
+        slackWebHook_1.default.sendMessage(slackMessage);
+        return res.status(statusCode_1.default.INTERNAL_SERVER_ERROR).send(util_1.default.fail(statusCode_1.default.INTERNAL_SERVER_ERROR, responseMessage_1.default.INTERNAL_SERVER_ERROR));
+    }
+});
 exports.default = {
     login,
     getNewAccessToken,
+    logout,
 };
 //# sourceMappingURL=AuthController.js.map
