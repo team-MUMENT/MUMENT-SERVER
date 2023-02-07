@@ -29,6 +29,8 @@ const constant = {
     INVALID_AUTHENTICATION_CODE: -61, // authenticationCode로 토큰 발급 or 프로필 조회가 불가할 때
     NO_KAKAO_REFRESH_TOKEN: -62, // 카카오 리프래쉬 토큰이 넘어오지 않았을 때
 
+    LOGOUT_FAIL: -63, // 로그아웃 실패 시
+
     // jwt token
     TOKEN_EXPIRED: -100, // 토큰이 만료되었을 때
     TOKEN_INVALID: -101, // 유효하지 않은 토큰일 때
