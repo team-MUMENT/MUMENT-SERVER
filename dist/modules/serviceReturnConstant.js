@@ -25,6 +25,7 @@ const constant = {
     NO_AUTHENTICATION_CODE: -60,
     INVALID_AUTHENTICATION_CODE: -61,
     NO_KAKAO_REFRESH_TOKEN: -62,
+    LOGOUT_FAIL: -63,
     // jwt token
     TOKEN_EXPIRED: -100,
     TOKEN_INVALID: -101,

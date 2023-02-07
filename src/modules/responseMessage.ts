@@ -79,7 +79,8 @@ const message = {
     RENEW_ACCESS_TOKEN: 'access token 갱신 성공',
     RENEW_ACCESS_REFRESH_TOKEN: 'access token과 refresh token 갱신 성공',
     INVALID_AUTHENTICATION_CODE: '잘못된 AUTHENTICATION CODE 입니다.',
-
+    LOGOUT_FAIL: '로그아웃 실패',
+    
     //JWT
     NULL_VALUE_TOKEN: 'request-header에 토큰이 없습니다',
     TOKEN_EXPIRED: '토큰이 만료되었습니다',
