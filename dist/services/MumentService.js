@@ -57,11 +57,11 @@ const createMument = (userId, musicId, mumentCreateDto) => __awaiter(void 0, voi
     }
     catch (error) {
         console.log(error);
-        yield connection.rollback(); // query1, query2 중 하나라도 에러시 롤백 (데이터 적용 원상복귀)
+        yield connection.rollback();
         throw error;
     }
     finally {
-        connection.release(); // pool connection 회수
+        connection.release();
     }
 });
 /**
@@ -71,7 +71,7 @@ const updateMument = (mumentId, mumentUpdateDto) => __awaiter(void 0, void 0, vo
     const pool = yield db_1.default;
     const connection = yield pool.getConnection();
     try {
-        yield connection.beginTransaction(); // 트랜잭션 적용 시작
+        yield connection.beginTransaction();
         // 존재하지 않는 id의 뮤멘트를 수정하려고 할 때
         const isExistMument = yield Mument_1.default.isExistMument(mumentId, connection);
         if (isExistMument === false)
@@ -278,6 +278,7 @@ const getMumentHistory = (userId, musicId, writerId, orderBy, limit, offset) => 
             `;
             getMumentListResult = yield connection.query(getMumentListQuery, [userId, musicId, writerId, limit, offset]);
         }
+        //출력
         // 해당 유저가 작성한 뮤멘트가 없을 경우 리턴
         if (getMumentListResult.length === 0) {
             const data = {
@@ -324,14 +325,8 @@ const getMumentHistory = (userId, musicId, writerId, orderBy, limit, offset) => 
         }
         // 좋아요 여부 확인
         const getIsLikedQuery = `
-        SELECT mument_id, EXISTS (
-            SELECT *
-            FROM mument.like
-            WHERE mument_id IN ${strMumentIdList}
-                AND user_id = ?
-        ) as is_liked
-        FROM mument.like
-        WHERE mument_id IN ${strMumentIdList};
+        SELECT mument_id FROM mument.like
+            WHERE mument_id IN ${strMumentIdList} AND user_id = ?;
         `;
         const LikedResult = yield connection.query(getIsLikedQuery, [userId]);
         // 쿼리 결과에 있을 시에만 isLiked를 true로 바꿈

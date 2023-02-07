@@ -253,15 +253,11 @@ const getMumentList = async (musicId: string, userId: string, isLikeOrder: boole
             isLikedList.push({mid: element, isLiked: false});
         }
 
+        // 좋아요 여부 확인
         const getisLikedQuery = `
-        SELECT mument_id as mid, EXISTS(
-            SELECT *
+        SELECT mument_id as mid
             FROM mument.like
-            WHERE mument_id = mid
-                AND user_id = ?
-        ) as is_liked
-        FROM mument.like
-        WHERE mument_id IN ${strMumentIdList}
+            WHERE mument_id IN ${strMumentIdList} AND user_id = ?;
         `;
 
 

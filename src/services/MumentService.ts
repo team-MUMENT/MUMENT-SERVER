@@ -69,10 +69,10 @@ const createMument = async (userId: string, musicId: string, mumentCreateDto: Mu
         return data;
     } catch (error) {
         console.log(error);
-        await connection.rollback(); // query1, query2 중 하나라도 에러시 롤백 (데이터 적용 원상복귀)
+        await connection.rollback();
         throw error;
     } finally {
-        connection.release(); // pool connection 회수
+        connection.release();
     }
 };
 
@@ -84,7 +84,7 @@ const updateMument = async (mumentId: string, mumentUpdateDto: MumentCreateDto):
     const connection = await pool.getConnection();
 
     try {
-        await connection.beginTransaction(); // 트랜잭션 적용 시작
+        await connection.beginTransaction();
 
         // 존재하지 않는 id의 뮤멘트를 수정하려고 할 때
         const isExistMument: boolean = await mumentDB.isExistMument(mumentId, connection);
@@ -315,6 +315,7 @@ const getMumentHistory = async (userId: string, musicId: string, writerId: strin
             `;
             getMumentListResult = await connection.query(getMumentListQuery, [userId, musicId, writerId, limit, offset]);
         }
+        //출력
 
         // 해당 유저가 작성한 뮤멘트가 없을 경우 리턴
         if (getMumentListResult.length === 0) {
@@ -329,6 +330,7 @@ const getMumentHistory = async (userId: string, musicId: string, writerId: strin
         const mumentIdList: number[] = await common.mumentIdFilter(getMumentListResult);
 
         let tagList: TagListInfo[] = await common.insertMumentIdIntoTagList(mumentIdList);
+        
        
 
         // 해당 뮤멘트들의 태그 모두 가져오기
@@ -339,6 +341,7 @@ const getMumentHistory = async (userId: string, musicId: string, writerId: strin
 
         // impression tag, feeling tag 분류하기
         await cardTagList.allTagResultTagClassification(getAllTagResult, tagList);
+        
 
         for await (const object of tagList) {
             const allTagList = object.impressionTag.concat(object.feelingTag);
@@ -355,23 +358,20 @@ const getMumentHistory = async (userId: string, musicId: string, writerId: strin
 
         // 좋아요 여부 확인
         const getIsLikedQuery = `
-        SELECT mument_id, EXISTS (
-            SELECT *
-            FROM mument.like
-            WHERE mument_id IN ${strMumentIdList}
-                AND user_id = ?
-        ) as is_liked
-        FROM mument.like
-        WHERE mument_id IN ${strMumentIdList};
+        SELECT mument_id FROM mument.like
+            WHERE mument_id IN ${strMumentIdList} AND user_id = ?;
         `;
 
         const LikedResult = await connection.query(getIsLikedQuery, [userId]);
+
 
         // 쿼리 결과에 있을 시에만 isLiked를 true로 바꿈
         await LikedResult.reduce(async (ac: any[], cur: any) => {
             const mumentIdx = isLikedList.findIndex(o => o.id === cur.mument_id);
             isLikedList[mumentIdx].isLiked = true;
         }, LikedResult);
+
+
 
         // string으로 날짜 생성해주는 함수
         const createDate = (createdAt: Date): string => {
@@ -382,6 +382,7 @@ const getMumentHistory = async (userId: string, musicId: string, writerId: strin
         const mumentHistory: MumentCardViewInterface[] = [];
 
         for await (const mument of getMumentListResult) {
+
             mumentHistory.push({
                 _id: mument.id,
                 musicId: mument.music_id.toString(),
