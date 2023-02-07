@@ -256,15 +256,11 @@ const getMumentList = (musicId, userId, isLikeOrder, limit, offset) => __awaiter
             }
             finally { if (e_3) throw e_3.error; }
         }
+        // 좋아요 여부 확인
         const getisLikedQuery = `
-        SELECT mument_id as mid, EXISTS(
-            SELECT *
+        SELECT mument_id as mid
             FROM mument.like
-            WHERE mument_id = mid
-                AND user_id = ?
-        ) as is_liked
-        FROM mument.like
-        WHERE mument_id IN ${strMumentIdList}
+            WHERE mument_id IN ${strMumentIdList} AND user_id = ?;
         `;
         // 쿼리 결과에 존재하는 경우에만 isLiked를 true로 바꿈
         const getIsLikedResult = yield connection.query(getisLikedQuery, [userId]);
