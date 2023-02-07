@@ -82,7 +82,34 @@ const getNewAccessToken = async (req: Request, res: Response) => {
     }
 }
 
+/**
+ * @ROUTE Patch /auth/logout
+ * @DESC logout
+ */
+const logout = async (req: Request, res: Response) => {
+    const userId = req.body.userId;
+    
+    try {
+        const data = await AuthService.logout(userId);
+
+        if (data === constant.LOGOUT_FAIL) {
+            return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.LOGOUT_FAIL));
+        }
+        
+        return res.status(statusCode.NO_CONTENT).send();
+    } catch (error: any) {
+        console.log(error);
+
+        const slackMessage: SlackMessageFormat = slackWebHook.slackErrorMessage(error.stack);
+        slackWebHook.sendMessage(slackMessage);
+        
+        return res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
+    }
+};
+
+
 export default {
     login,
     getNewAccessToken,
+    logout,
 };
