@@ -8,13 +8,11 @@ const router: Router = Router();
 
 // 프로필 설정
 router.put('/profile', upload.single('image'), [
-    body('profileId').notEmpty().isString(),
+    body('userName').notEmpty().isString(),
 ], auth, UserController.putProfile);
 
 // 닉네임 중복 확인
-router.get('/profile/check/:profileId', [
-    param('profileId').isString(),
-], auth, UserController.checkDuplicateName);
+router.get('/profile/check/:profileId', auth, UserController.checkDuplicateName);
 
 // 보관함 나의 뮤멘트 조회
 router.get('/my/list', auth, UserController.getMyMumentList);
@@ -60,5 +58,11 @@ router.get('/profile/check', auth, UserController.checkProfileSet);
 
 // 공지사항 등록 - 서버, 기획에서만 사용
 router.post('/notice', UserController.postNotice);
+
+// 유저 정보 조회
+router.get('/profile', auth, UserController.getUser);
+
+// 웹뷰 링크 조회
+router.get('/webview-link', UserController.getWebviewLink);
 
 export default router;

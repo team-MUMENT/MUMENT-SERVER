@@ -11,9 +11,15 @@ import { MusicMyMumentResponseDto } from '../interfaces/music/MusicMyMumentRespo
 import { MusicResponseDto } from '../interfaces/music/MusicResponseDto';
 
 import musicDB from '../modules/db/Music';
+import mumentDB from '../modules/db/Mument';
 
 import cardTagList from '../modules/cardTagList';
 import config from '../config';
+import { MusicCreateDto } from '../interfaces/music/MusicCreateDto';
+import { IsLikedInfoRDB } from '../interfaces/user/IsLikedInfoRDB';
+import { MumentAndUserInfoRDB } from '../interfaces/mument/MumentAndUserInfoRDB';
+import common from '../modules/common';
+import { TagListInfo } from '../interfaces/common/TagListInfo';
 
 const qs = require('querystring');
 require('dotenv').config();
@@ -22,18 +28,17 @@ require('dotenv').config();
 /**
  * 곡 상세보기 - 음악, 나의 뮤멘트 조회
  */
-const getMusicAndMyMument = async (musicId: string, userId: string): Promise<MusicMyMumentResponseDto | number> => {
+const getMusicAndMyMument = async (musicId: string, userId: string, musicCreateDto: MusicCreateDto): Promise<MusicMyMumentResponseDto | number> => {
     const pool: any = await poolPromise;
     const connection = await pool.getConnection();
 
     try {
-        // 곡 조회
-        const music = await connection.query(musicDB.SearchMusic(musicId));
+        // 우리 DB에 음악 존재안하면 새로 삽입
+        await musicDB.SearchAndCreateMusic(musicCreateDto, connection);
 
-        // 음악 조회 결과가 없을 때 404 에러
-        if (music.length === 0) {
-            return constant.NO_MUSIC;
-        }
+        // 우리 DB에서 검색
+        const music = await connection.query(musicDB.SearchMusic(musicId));
+        if (music.length === 0) return constant.NO_MUSIC;
 
         // 가장 최근에 작성한 뮤멘트 조회
         const getLatestMumentQuery = `
@@ -105,7 +110,7 @@ const getMusicAndMyMument = async (musicId: string, userId: string): Promise<Mus
 
 
         // 날짜 가공
-        const mumentDate = dayjs(latestMument[0].createdAt).format('D MMM, YYYY');
+        const mumentDate = dayjs(latestMument[0].created_at).format('D MMM, YYYY');
 
         const myMument: MumentCardViewInterface = {
             _id: latestMument[0].id,
@@ -167,9 +172,9 @@ const getMumentList = async (musicId: string, userId: string, isLikeOrder: boole
 
         // 자신이 차단한 유저 반환
         const blockUserResult = await userDB.blockedUserList(userId);
-        blockUserResult.forEach(element => {
+        for await (let element of blockUserResult) {
             blockUserList.push(element.exist);
-        });
+        }
 
         let strBlockUserList = '( 0 )';
 
@@ -177,7 +182,8 @@ const getMumentList = async (musicId: string, userId: string, isLikeOrder: boole
             strBlockUserList = '(' + blockUserList.toString() + ')';
         }
 
-        let originalMumentList = [];
+        let originalMumentList: MumentAndUserInfoRDB[] = [];
+
 
         switch (isLikeOrder) {
             case true: { // 좋아요순 정렬
@@ -190,11 +196,13 @@ const getMumentList = async (musicId: string, userId: string, isLikeOrder: boole
                     AND mument.user_id NOT IN ${strBlockUserList}
                     AND mument.is_deleted = 0  
                     AND user.is_deleted = 0
+                    AND mument.is_private = 0
                 ORDER BY mument.like_count DESC
                 LIMIT ? OFFSET ?;
                 `;
-
                 originalMumentList = await connection.query(getMumentListQuery, [musicId, limit, offset]);
+
+                break;
             } case false: { // 최신순 정렬
                 const getMumentListQuery = `
                 SELECT mument.*, user.profile_id as user_name, user.image as user_image
@@ -205,79 +213,67 @@ const getMumentList = async (musicId: string, userId: string, isLikeOrder: boole
                     AND mument.user_id NOT IN ${strBlockUserList}
                     AND mument.is_deleted = 0  
                     AND user.is_deleted = 0
+                    AND mument.is_private = 0
                 ORDER BY mument.created_at DESC
                 LIMIT ? OFFSET ?;
                 `;
-
                 originalMumentList = await connection.query(getMumentListQuery, [musicId, limit, offset]);
+
+                break;
             }
         }
-
         if (originalMumentList.length === 0) return null;
 
         // 태그 조회를 위해 뮤멘트 아이디만 빼오고, 스트링으로 만들어주기
-        const mumentIdList = originalMumentList.map((x: { id: number; }) => x.id);
-        const strMumentIdList = '(' + mumentIdList.join(', ') + ')';
+        const mumentIdList: number[] = await common.mumentIdFilter(originalMumentList);
 
-        const tagList: {id: number, impressionTag: number[], feelingTag: number[], cardTag: number[]}[] = [];
+        let tagList: TagListInfo[] = await common.insertMumentIdIntoTagList(mumentIdList);
         
-        mumentIdList.forEach( (element: number) => {
-            tagList.push({ id: element, impressionTag: [], feelingTag: [], cardTag: []})
-        });
 
         // 해당 뮤멘트들의 태그 모두 가져오기
-        const getAllTagQuery = `
-        SELECT mument_id, tag_id
-        FROM mument_tag
-        WHERE mument_id IN ${strMumentIdList}
-            AND is_deleted = 0
-        ORDER BY mument_id, updated_at ASC;
-        `;
+        const strMumentIdList = '(' + mumentIdList.join(', ') + ')';
 
-        const getAllTagResult = await connection.query(getAllTagQuery);
+        const getAllTagResult = await mumentDB.getAllTag(strMumentIdList, connection);
 
 
         // impression tag, feeling tag 분류하기
-        getAllTagResult.reduce((ac: any[], cur: any) =>  {
-            const mumentIdx = tagList.findIndex(o => o.id === cur.mument_id);
-            if (cur.tag_id < 200) {
-                tagList[mumentIdx].impressionTag.push(cur.tag_id);
-            } else if (cur.tag_id < 300) {
-                tagList[mumentIdx].feelingTag.push(cur.tag_id);
-            };
-        }, getAllTagResult);
+        await cardTagList.allTagResultTagClassification(getAllTagResult, tagList);
 
-        for (const object of tagList) {
+
+        for await (const object of tagList) {
             const allTagList = object.impressionTag.concat(object.feelingTag);
             object.cardTag = await cardTagList.cardTag(allTagList);
         };
 
         
         // 뮤멘트 id와 isLiked를 담을 리스트 생성
-        const isLikedList: {id: number, isLiked: boolean}[] = []
+        const isLikedList: {mid: number, isLiked: boolean}[] = []
 
-        mumentIdList.forEach((element: number) => {
-            isLikedList.push({id: element, isLiked: false});
-        });
+        for await (let element of mumentIdList) {
+            isLikedList.push({mid: element, isLiked: false});
+        }
 
+        // 좋아요 여부 확인
         const getisLikedQuery = `
-        SELECT mument_id, EXISTS(
-            SELECT *
+        SELECT mument_id as mid
             FROM mument.like
-            WHERE mument_id IN ${strMumentIdList}
-                AND user_id = ?
-        ) as is_liked
-        FROM mument.like
-        WHERE mument_id IN ${strMumentIdList}
+            WHERE mument_id IN ${strMumentIdList} AND user_id = ?;
         `;
 
-        const getIsLikedResult = await connection.query(getisLikedQuery, [userId]);
 
         // 쿼리 결과에 존재하는 경우에만 isLiked를 true로 바꿈
-        getIsLikedResult.reduce((ac: any[], cur: any) => {
-            const mumentIdx = isLikedList.findIndex(o => o.id === cur.mument_id);
+        const getIsLikedResult: IsLikedInfoRDB[] = await connection.query(getisLikedQuery, [userId]);
+
+        const isLikedListFormat = async (item: IsLikedInfoRDB, idx: number) => {
+            const mumentIdx = isLikedList.findIndex(o => o.mid === item.mid);
+
             if (mumentIdx != -1) isLikedList[mumentIdx].isLiked = true;
-        }, getIsLikedResult);
+        };
+
+        await getIsLikedResult.reduce(async (acc, curr, index) => {
+            return acc.then(() => isLikedListFormat(curr, index));
+        }, Promise.resolve());
+
 
         // string으로 날짜 생성해주는 함수
         const createDate = (createdAt: Date): string => {
@@ -307,7 +303,7 @@ const getMumentList = async (musicId: string, userId: string, isLikeOrder: boole
                 createdAt: mument.created_at,
                 updatedAt: mument.updated_at,
                 date: createDate(mument.created_at),
-                isLiked: Boolean(isLikedList[isLikedList.findIndex(o => o.id == mument.id)].isLiked),
+                isLiked: Boolean(isLikedList[isLikedList.findIndex(o => o.mid == mument.id)].isLiked),
             });
         };
 
@@ -331,7 +327,7 @@ const getMusicListBySearch = async (keyword: string): Promise<MusicResponseDto[]
     try {        
         const token = `Bearer ${config.appleDeveloperToken as string}`;
 
-        let musiclist: MusicResponseDto[] = [];
+        let musicList: MusicResponseDto[] = [];
 
         const appleResponse = async (searchKeyword: string) => {
     
@@ -343,36 +339,40 @@ const getMusicListBySearch = async (keyword: string): Promise<MusicResponseDto[]
                     }
                 }
             )
-            .then(async function (response) {
-                /* apple api에서 받을 수 있는 3개 status code 대응 - 200, 401, 500*/
-                // 200 - success
-                const appleMusicList = response.data.results.songs.data;
+            .then(async function (response: any) {
+                /* apple api에서 받을 수 있는 3개 status code 대응 - 200, 401, 500*/       
 
-                musiclist =  await appleMusicList.map((music: any) => {
-                    let imageUrl = music.attributes.artwork.url;
-                    imageUrl = imageUrl.replace('{w}x{h}', '400x400'); //앨범 이미지 크기 400으로 지정
+                if (response.data.results.hasOwnProperty('songs')) {
+                    // 401 - A response indicating an incorrect Authorization header
+                    if (response.status == 401) return constant.APPLE_UNAUTHORIZED;
 
-                    const m: MusicResponseDto = {
-                        '_id': music.id,
-                        'name': music.attributes.name,
-                        'artist': music.attributes.artistName,
-                        'image': imageUrl
-                    };
-                    return m;
-                });
-                return musiclist;
+                    // 500 - indicating an error occurred on the apple music server
+                    if (response.status == 500) return constant.APPLE_INTERNAL_SERVER_ERROR;
+
+                    const appleMusicList = response.data.results.songs.data; 
+
+                    musicList =  await appleMusicList.map((music: any) => {
+                        let imageUrl = music.attributes.artwork.url;
+                        imageUrl = imageUrl.replace('{w}x{h}', '400x400'); //앨범 이미지 크기 400으로 지정
+
+                        const result: MusicResponseDto = {
+                            '_id': music.id,
+                            'name': music.attributes.name,
+                            'artist': music.attributes.artistName,
+                            'image': imageUrl
+                        };
+                        return result;
+                    });
+                }
+                
+                return musicList;
             })
             .catch(async function (error) {
-                // 401 - A response indicating an incorrect Authorization header
-                if (error.response.status == 401) return constant.APPLE_UNAUTHORIZED;
-
-                // 500 - indicating an error occurred on the apple music server
-                if (error.response.status == 500) return constant.APPLE_INTERNAL_SERVER_ERROR;
-
-                console.log(error);
+                console.log('곡검색 애플 error', error);
+                return constant.APPLE_INTERNAL_SERVER_ERROR;
             });
 
-            return musiclist;
+            return musicList;
         };
         const data = await appleResponse(keyword);
 

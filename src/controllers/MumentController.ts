@@ -313,8 +313,10 @@ const getTodayMument = async (req: Request, res: Response) => {
  * @DESC get banner music and tag title list
  */
 const getBanner = async (req: Request, res: Response) => {
+    const userId = req.body.userId;
+
     try {
-        const data = await MumentService.getBanner();
+        const data = await MumentService.getBanner(userId);
 
         // 조회는 성공했으나, 결과값이 없는 경우
         if (data === constant.NO_HOME_CONTENT) {

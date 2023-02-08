@@ -30,6 +30,7 @@ const Music_1 = __importDefault(require("../modules/db/Music"));
 const tagTitle_1 = require("../modules/tagTitle");
 const cardTagList_1 = __importDefault(require("../modules/cardTagList"));
 const pushHandler_1 = __importDefault(require("../library/pushHandler"));
+const common_1 = __importDefault(require("../modules/common"));
 /**
  * 뮤멘트 기록하기
  */
@@ -56,11 +57,11 @@ const createMument = (userId, musicId, mumentCreateDto) => __awaiter(void 0, voi
     }
     catch (error) {
         console.log(error);
-        yield connection.rollback(); // query1, query2 중 하나라도 에러시 롤백 (데이터 적용 원상복귀)
+        yield connection.rollback();
         throw error;
     }
     finally {
-        connection.release(); // pool connection 회수
+        connection.release();
     }
 });
 /**
@@ -70,7 +71,7 @@ const updateMument = (mumentId, mumentUpdateDto) => __awaiter(void 0, void 0, vo
     const pool = yield db_1.default;
     const connection = yield pool.getConnection();
     try {
-        yield connection.beginTransaction(); // 트랜잭션 적용 시작
+        yield connection.beginTransaction();
         // 존재하지 않는 id의 뮤멘트를 수정하려고 할 때
         const isExistMument = yield Mument_1.default.isExistMument(mumentId, connection);
         if (isExistMument === false)
@@ -277,6 +278,7 @@ const getMumentHistory = (userId, musicId, writerId, orderBy, limit, offset) => 
             `;
             getMumentListResult = yield connection.query(getMumentListQuery, [userId, musicId, writerId, limit, offset]);
         }
+        //출력
         // 해당 유저가 작성한 뮤멘트가 없을 경우 리턴
         if (getMumentListResult.length === 0) {
             const data = {
@@ -285,77 +287,53 @@ const getMumentHistory = (userId, musicId, writerId, orderBy, limit, offset) => 
             return data;
         }
         // 태그 조회를 위해 뮤멘트 아이디만 빼오고, 스트링으로 만들어주기
-        const mumentIdList = yield getMumentListResult.map((x) => x.id);
+        const mumentIdList = yield common_1.default.mumentIdFilter(getMumentListResult);
+        let tagList = yield common_1.default.insertMumentIdIntoTagList(mumentIdList);
+        // 해당 뮤멘트들의 태그 모두 가져오기
         const strMumentIdList = '(' + mumentIdList.join(', ') + ')';
-        const tagList = [];
+        const getAllTagResult = yield Mument_1.default.getAllTag(strMumentIdList, connection);
+        // impression tag, feeling tag 분류하기
+        yield cardTagList_1.default.allTagResultTagClassification(getAllTagResult, tagList);
         try {
-            for (var mumentIdList_1 = __asyncValues(mumentIdList), mumentIdList_1_1; mumentIdList_1_1 = yield mumentIdList_1.next(), !mumentIdList_1_1.done;) {
-                let element = mumentIdList_1_1.value;
-                tagList.push({ id: element, impressionTag: [], feelingTag: [], cardTag: [] });
+            for (var tagList_1 = __asyncValues(tagList), tagList_1_1; tagList_1_1 = yield tagList_1.next(), !tagList_1_1.done;) {
+                const object = tagList_1_1.value;
+                const allTagList = object.impressionTag.concat(object.feelingTag);
+                object.cardTag = yield cardTagList_1.default.cardTag(allTagList);
             }
         }
         catch (e_1_1) { e_1 = { error: e_1_1 }; }
         finally {
             try {
-                if (mumentIdList_1_1 && !mumentIdList_1_1.done && (_a = mumentIdList_1.return)) yield _a.call(mumentIdList_1);
+                if (tagList_1_1 && !tagList_1_1.done && (_a = tagList_1.return)) yield _a.call(tagList_1);
             }
             finally { if (e_1) throw e_1.error; }
-        }
-        // 해당 뮤멘트들의 태그 모두 가져오기
-        const getAllTagQuery = `
-        SELECT mument_id, tag_id
-        FROM mument_tag
-        WHERE mument_id IN ${strMumentIdList}
-            AND is_deleted = 0
-        ORDER BY mument_id, updated_at ASC;
-        `;
-        const getAllTagList = yield connection.query(getAllTagQuery);
-        // impression tag, feeling tag 분류하기
-        yield getAllTagList.reduce((ac, cur) => {
-            const mumentIdx = tagList.findIndex(o => o.id === cur.mument_id);
-            if (cur.tag_id < 200) {
-                tagList[mumentIdx].impressionTag.push(cur.tag_id);
-            }
-            else if (cur.tag_id < 300) {
-                tagList[mumentIdx].feelingTag.push(cur.tag_id);
-            }
-        }, getAllTagList);
-        for (const object of tagList) {
-            const allTagList = object.impressionTag.concat(object.feelingTag);
-            object.cardTag = yield cardTagList_1.default.cardTag(allTagList);
         }
         // id와 좋아요 여부 담은 리스트 생성
         const isLikedList = [];
         try {
-            for (var mumentIdList_2 = __asyncValues(mumentIdList), mumentIdList_2_1; mumentIdList_2_1 = yield mumentIdList_2.next(), !mumentIdList_2_1.done;) {
-                let element = mumentIdList_2_1.value;
+            for (var mumentIdList_1 = __asyncValues(mumentIdList), mumentIdList_1_1; mumentIdList_1_1 = yield mumentIdList_1.next(), !mumentIdList_1_1.done;) {
+                let element = mumentIdList_1_1.value;
                 isLikedList.push({ id: element, isLiked: false });
             }
         }
         catch (e_2_1) { e_2 = { error: e_2_1 }; }
         finally {
             try {
-                if (mumentIdList_2_1 && !mumentIdList_2_1.done && (_b = mumentIdList_2.return)) yield _b.call(mumentIdList_2);
+                if (mumentIdList_1_1 && !mumentIdList_1_1.done && (_b = mumentIdList_1.return)) yield _b.call(mumentIdList_1);
             }
             finally { if (e_2) throw e_2.error; }
         }
         // 좋아요 여부 확인
         const getIsLikedQuery = `
-        SELECT mument_id, EXISTS (
-            SELECT *
-            FROM mument.like
-            WHERE mument_id IN ${strMumentIdList}
-                AND user_id = ?
-        ) as is_liked
-        FROM mument.like
-        WHERE mument_id IN ${strMumentIdList};
+        SELECT mument_id FROM mument.like
+            WHERE mument_id IN ${strMumentIdList} AND user_id = ?;
         `;
-        const isLikedResult = yield connection.query(getIsLikedQuery, [userId]);
+        const LikedResult = yield connection.query(getIsLikedQuery, [userId]);
         // 쿼리 결과에 있을 시에만 isLiked를 true로 바꿈
-        yield isLikedResult.reduce((ac, cur) => {
+        yield LikedResult.reduce((ac, cur) => __awaiter(void 0, void 0, void 0, function* () {
             const mumentIdx = isLikedList.findIndex(o => o.id === cur.mument_id);
             isLikedList[mumentIdx].isLiked = true;
-        }, isLikedResult);
+        }), LikedResult);
         // string으로 날짜 생성해주는 함수
         const createDate = (createdAt) => {
             const date = (0, dayjs_1.default)(createdAt).format('D MMM, YYYY');
@@ -413,7 +391,7 @@ const getMumentHistory = (userId, musicId, writerId, orderBy, limit, offset) => 
  */
 const createLike = (mumentId, userId) => __awaiter(void 0, void 0, void 0, function* () {
     const pool = yield db_1.default;
-    const connection = yield pool.getConnection();
+    let connection = yield pool.getConnection();
     try {
         const findMumentResult = yield Mument_1.default.isExistMumentInfo(mumentId, connection);
         if (findMumentResult.isExist === false || !findMumentResult.mument)
@@ -437,7 +415,7 @@ const createLike = (mumentId, userId) => __awaiter(void 0, void 0, void 0, funct
         const getLikeResultQuery = `
         SELECT mument.like.mument_id, mument.like.user_id, mument.mument.like_count,
         mument.mument.user_id AS writer_id, mument.mument.music_id AS music_id,
-        mument.music.name AS music_title
+        mument.music.name AS music_title, mument.music.artist AS music_artist, mument.music.image AS music_image
         FROM mument.like
         JOIN mument.mument
             ON mument.mument.id = mument.like.mument_id
@@ -454,16 +432,25 @@ const createLike = (mumentId, userId) => __awaiter(void 0, void 0, void 0, funct
             mumentId: likeResult[0].mument_id,
             likeCount: likeResult[0].like_count,
         };
-        //좋아요 눌린 뮤멘트 작성자의 소식창에 좋아요 알림 삽입 - 자기 자신의 뮤멘트면 알림 x  (!넣는게 완성성)
+        yield connection.commit();
+        // 커넥션 쪼개기
+        connection = yield pool.getConnection();
+        //좋아요 눌린 뮤멘트 작성자의 소식창에 좋아요 알림 삽입 - 자기 자신의 뮤멘트면 알림 x  (!넣는게 완성)
         if (Number(userId) !== findMumentResult.mument.user_id) {
             const userData = yield connection.query('SELECT profile_id FROM user WHERE id=?', [userId]);
-            yield connection.query(`INSERT INTO news(type, user_id, like_profile_id, link_id, like_music_title) VALUES('like', ?, ?, ?, ?)`, [
+            yield connection.query(`INSERT INTO news(type, user_id, like_profile_id, link_id, like_music_title, like_music_id, like_music_artist, like_music_image) 
+                VALUES('like', ?, ?, ?, ?, ?, ?, ?)`, [
                 likeResult[0].writer_id,
                 userData[0].profile_id,
                 mumentId,
                 likeResult[0].music_title,
+                likeResult[0].music_id,
+                likeResult[0].music_artist,
+                likeResult[0].music_image
             ]);
             yield connection.commit();
+            // 커넥션 쪼개기
+            connection = yield pool.getConnection();
             // 좋아요 눌린 뮤멘트 작성자에게 푸시알림 - 차단 유저껀 가지 않음
             const blockedUser = yield connection.query('SELECT * FROM block WHERE user_id=? AND blocked_user_id=?', [likeResult[0].writer_id, userId]);
             if (blockedUser.length === 0) {
@@ -477,7 +464,9 @@ const createLike = (mumentId, userId) => __awaiter(void 0, void 0, void 0, funct
                 }
                 return data;
             }
+            yield connection.commit();
         }
+        yield connection.commit();
         return Object.assign(data, { pushSuccess: false });
     }
     catch (error) {
@@ -550,6 +539,7 @@ const deleteLike = (mumentId, userId) => __awaiter(void 0, void 0, void 0, funct
 });
 // 랜덤 태그, 뮤멘트 조회
 const getRandomMument = () => __awaiter(void 0, void 0, void 0, function* () {
+    var e_4, _d;
     try {
         // 난수 생성 함수
         const createRandomNum = (min, max) => {
@@ -561,7 +551,8 @@ const getRandomMument = () => __awaiter(void 0, void 0, void 0, function* () {
         let tagTitle = '';
         // 랜덤 뮤멘트를 가져오는 쿼리
         const getRandomMumentQuery = `
-        SELECT m.id, music.name as music_name, music.artist, m.content, user.profile_id as user_name, user.image as user_image, m.created_at
+        SELECT m.id, music.id as music_id, music.name as music_name, music.artist, music.image as music_image, 
+        m.content, user.profile_id as user_name, user.image as user_image, m.created_at
         FROM home_random as hr
         JOIN mument as m
             ON m.id = hr.mument_id
@@ -601,21 +592,33 @@ const getRandomMument = () => __awaiter(void 0, void 0, void 0, function* () {
             randomMumentList = yield pool_1.default.queryValue(getRandomMumentQuery, [detailTag]);
         }
         const mumentList = [];
-        randomMumentList.forEach(element => {
-            mumentList.push({
-                _id: element.id,
-                music: {
-                    name: element.music_name,
-                    artist: element.artist,
-                },
-                user: {
-                    name: element.user_name,
-                    image: element.user_image,
-                },
-                content: element.content,
-                createdAt: element.created_at,
-            });
-        });
+        try {
+            for (var randomMumentList_1 = __asyncValues(randomMumentList), randomMumentList_1_1; randomMumentList_1_1 = yield randomMumentList_1.next(), !randomMumentList_1_1.done;) {
+                let element = randomMumentList_1_1.value;
+                mumentList.push({
+                    _id: element.id,
+                    music: {
+                        _id: element.music_id.toString(),
+                        name: element.music_name,
+                        artist: element.artist,
+                        image: element.music_image,
+                    },
+                    user: {
+                        name: element.user_name,
+                        image: element.user_image,
+                    },
+                    content: element.content,
+                    createdAt: element.created_at,
+                });
+            }
+        }
+        catch (e_4_1) { e_4 = { error: e_4_1 }; }
+        finally {
+            try {
+                if (randomMumentList_1_1 && !randomMumentList_1_1.done && (_d = randomMumentList_1.return)) yield _d.call(randomMumentList_1);
+            }
+            finally { if (e_4) throw e_4.error; }
+        }
         const data = {
             title: tagTitle,
             mumentList: mumentList,
@@ -729,7 +732,7 @@ const getTodayMument = () => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 // 배너
-const getBanner = () => __awaiter(void 0, void 0, void 0, function* () {
+const getBanner = (userId) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         dayjs_1.default.extend(utc_1.default);
         // 날짜 비교를 위해 이번주 월요일 자정 날짜 받아오기
@@ -742,9 +745,19 @@ const getBanner = () => __awaiter(void 0, void 0, void 0, function* () {
             ON music.id = home_banner.music_id
         WHERE home_banner.display_date = ?;
         `;
-        const bannerResult = yield pool_1.default.queryValue(getBannerQuery, [mondayMidnight]);
-        if (bannerResult.length === 0)
-            return serviceReturnConstant_1.default.NO_HOME_CONTENT;
+        let bannerResult = yield pool_1.default.queryValue(getBannerQuery, [mondayMidnight]);
+        if (bannerResult.length === 0) {
+            // 조회 결과가 없을 경우 가장 최근 배너 조회
+            const getOlderBannerQuery = `
+            SELECT *
+            FROM home_banner
+            JOIN music 
+                ON music.id = home_banner.music_id
+            ORDER BY home_banner.display_date DESC
+            LIMIT 3;
+            `;
+            bannerResult = yield pool_1.default.query(getOlderBannerQuery);
+        }
         const bannerList = [];
         bannerResult.forEach(element => {
             const tagTitle = tagTitle_1.tagBannerTitle[element.tag_id];
@@ -761,6 +774,7 @@ const getBanner = () => __awaiter(void 0, void 0, void 0, function* () {
         });
         const data = {
             todayDate: todayDate,
+            userId: userId,
             bannerList: bannerList,
         };
         return data;
@@ -789,9 +803,22 @@ const getAgainMument = () => __awaiter(void 0, void 0, void 0, function* () {
         ORDER BY rand()
         LIMIT 3;
         `;
-        const homeAgainResult = yield pool_1.default.query(getAgainQuery);
-        if (homeAgainResult.length === 0)
-            return serviceReturnConstant_1.default.NO_HOME_CONTENT;
+        let homeAgainResult = yield pool_1.default.query(getAgainQuery);
+        if (homeAgainResult.length === 0) {
+            const getAgainBackupQuery = `
+            SELECT mument.id, music.id as music_id, music.name as music_name, music.artist, music.image as music_image, user.id as user_id, user.profile_id as user_name, user.image as user_image, mument.content, mument.created_at
+            FROM mument
+            JOIN music
+                ON mument.music_id = music.id
+            JOIN user
+                ON user.id = mument.user_id
+            WHERE mument.id = 274
+                AND mument.id = 275
+                AND mument.id = 276; 
+            `;
+            homeAgainResult = yield pool_1.default.query(getAgainBackupQuery);
+        }
+        ;
         const againMument = [];
         homeAgainResult.forEach(element => {
             againMument.push({
@@ -868,7 +895,7 @@ const getNoticeList = () => __awaiter(void 0, void 0, void 0, function* () {
 });
 // 뮤멘트 신고하기
 const createReport = (mumentId, reportCategory, etcContent, userId) => __awaiter(void 0, void 0, void 0, function* () {
-    var _d;
+    var _e;
     const pool = yield db_1.default;
     const connection = yield pool.getConnection();
     try {
@@ -878,7 +905,7 @@ const createReport = (mumentId, reportCategory, etcContent, userId) => __awaiter
         let reportedUser;
         if (!reportedMument.isExist)
             return serviceReturnConstant_1.default.NO_MUMENT;
-        reportedUser = (_d = reportedMument.mument) === null || _d === void 0 ? void 0 : _d.user_id;
+        reportedUser = (_e = reportedMument.mument) === null || _e === void 0 ? void 0 : _e.user_id;
         // 신고 사유 배열에 대해 모두 POST
         const postReport = (item, idx) => __awaiter(void 0, void 0, void 0, function* () {
             const postReportQuery = `
@@ -903,6 +930,7 @@ const createReport = (mumentId, reportCategory, etcContent, userId) => __awaiter
 });
 // 좋아요 누른 사용자 조회
 const getLikeUserList = (mumentId, userId, limit, offset) => __awaiter(void 0, void 0, void 0, function* () {
+    var e_5, _f;
     const pool = yield db_1.default;
     const connection = yield pool.getConnection();
     try {
@@ -911,13 +939,22 @@ const getLikeUserList = (mumentId, userId, limit, offset) => __awaiter(void 0, v
         if (!isExistMument)
             return serviceReturnConstant_1.default.NO_MUMENT;
         // 차단한 유저 리스트 조회
-        // 자신이 차단한, 자신을 차단한 유저 리스트
         const blockUserList = [];
         // 자신이 차단한 유저 반환
         const blockUserResult = yield User_1.default.blockedUserList(userId);
-        blockUserResult.forEach(element => {
-            blockUserList.push(element.exist);
-        });
+        try {
+            for (var blockUserResult_1 = __asyncValues(blockUserResult), blockUserResult_1_1; blockUserResult_1_1 = yield blockUserResult_1.next(), !blockUserResult_1_1.done;) {
+                let element = blockUserResult_1_1.value;
+                blockUserList.push(element.exist);
+            }
+        }
+        catch (e_5_1) { e_5 = { error: e_5_1 }; }
+        finally {
+            try {
+                if (blockUserResult_1_1 && !blockUserResult_1_1.done && (_f = blockUserResult_1.return)) yield _f.call(blockUserResult_1);
+            }
+            finally { if (e_5) throw e_5.error; }
+        }
         let strBlockUserList = '( 0 )';
         if (blockUserResult.length != 0) {
             strBlockUserList = '(' + blockUserList.toString() + ')';
@@ -942,7 +979,7 @@ const getLikeUserList = (mumentId, userId, limit, offset) => __awaiter(void 0, v
         getLikeUser.reduce((ac, cur) => {
             data.push({
                 id: cur.id,
-                profileId: cur.profile_id,
+                userName: cur.profile_id,
                 image: cur.image,
             });
         }, getLikeUser);

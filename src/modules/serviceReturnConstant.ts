@@ -17,6 +17,7 @@ const constant = {
     PRIVATE_MUMENT: -16, // 비밀글에 다른 유저가 접속하려 할 때
     NO_NOTICE: -17, // 아이디로 조회한 공지사항의 값이 없을 때
     CREATE_NOTICE_FAIL: -18, // 공지사항 등록 실패햇을 때
+    WRONG_QUERYSTRING: -19, // 잘못된 쿼리스트링 일 때,
 
     // apple
     NO_IDENTITY_TOKEN_SUB: -50, // 클라이언트에서 받은 identity token에 sub(id)값이 없을 때
@@ -27,6 +28,8 @@ const constant = {
     NO_AUTHENTICATION_CODE: -60, // authenticationCode가 클라이언트로부터 넘어오지 않았을 때
     INVALID_AUTHENTICATION_CODE: -61, // authenticationCode로 토큰 발급 or 프로필 조회가 불가할 때
     NO_KAKAO_REFRESH_TOKEN: -62, // 카카오 리프래쉬 토큰이 넘어오지 않았을 때
+
+    LOGOUT_FAIL: -63, // 로그아웃 실패 시
 
     // jwt token
     TOKEN_EXPIRED: -100, // 토큰이 만료되었을 때

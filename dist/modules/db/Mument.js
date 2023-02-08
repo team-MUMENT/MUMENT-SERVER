@@ -18,7 +18,7 @@ const pool_1 = __importDefault(require("../pool"));
  */
 // 뮤멘트 태그 삽입 - impressionTag, feelingTag 리스트 합쳐서 처리
 const mumentTagCreate = (impressionTag, feelingTag, connection, mumentId) => __awaiter(void 0, void 0, void 0, function* () {
-    const tagList = impressionTag.concat(feelingTag);
+    const tagList = [...new Set(impressionTag.concat(feelingTag))]; // 중복 제거하여 태그 삽입
     for (let idx in tagList) {
         const query = 'INSERT INTO mument_tag(mument_id, tag_id) VALUES(?, ?);';
         yield connection.query(query, [
@@ -26,6 +26,17 @@ const mumentTagCreate = (impressionTag, feelingTag, connection, mumentId) => __a
             tagList[idx] // tag 번호
         ]);
     }
+});
+//뮤멘트 id리스트에 해당하는 뮤멘트들의 태그 모두 가져와서 반환
+const getAllTag = (strMumentIdList, connection) => __awaiter(void 0, void 0, void 0, function* () {
+    const getAllTagQuery = `
+        SELECT mument_id, tag_id
+        FROM mument_tag
+        WHERE mument_id IN ${strMumentIdList} AND is_deleted = 0
+        ORDER BY mument_id, updated_at ASC;
+    `;
+    const getAllTagResult = yield connection.query(getAllTagQuery);
+    return getAllTagResult;
 });
 // 존재하는 뮤멘트 id인지 판단
 const isExistMument = (mumentId, connection) => __awaiter(void 0, void 0, void 0, function* () {
@@ -51,12 +62,6 @@ const isLiked = (mumentId, userId) => __awaiter(void 0, void 0, void 0, function
     // 좋아요 존재하면 1, 존재하지 않으면 0 반환함
     const isLiked = yield pool_1.default.queryValue(query, [mumentId, userId]);
     return isLiked[0].exist;
-});
-// 뮤멘트의 좋아요 개수 count
-const likeCount = (mumentId) => __awaiter(void 0, void 0, void 0, function* () {
-    const query = `SELECT COUNT(*) as exist FROM mument.like WHERE mument_id=${mumentId};`;
-    const likeCount = yield pool_1.default.query(query);
-    return likeCount[0].exist;
 });
 const mumentHistoryCount = (musicId, writerId, userId) => __awaiter(void 0, void 0, void 0, function* () {
     let historyQuery;
@@ -93,10 +98,10 @@ const mumentTagListGet = (mumentId) => __awaiter(void 0, void 0, void 0, functio
 });
 exports.default = {
     mumentTagCreate,
+    getAllTag,
     isExistMument,
     isExistMumentInfo,
     isLiked,
-    likeCount,
     mumentHistoryCount,
     mumentTagListGet,
 };

@@ -14,7 +14,7 @@ import { NoticePushResponseDto } from '../interfaces/user/NoticePushResponseDto'
  */
 const putProfile = async (req: Request, res: Response) => {
     const userId = req.body.userId;
-    const { profileId } = req.body;
+    const { userName } = req.body;
     const image: Express.MulterS3.File = req.file as Express.MulterS3.File;
 
     const error = validationResult(req);
@@ -28,9 +28,9 @@ const putProfile = async (req: Request, res: Response) => {
 
         if (image) {
             const { location } = image;
-            data = await UserService.putProfile(userId, profileId, location);
+            data = await UserService.putProfile(userId, userName, location);
         } else {
-            data = await UserService.putProfile(userId, profileId, null);
+            data = await UserService.putProfile(userId, userName, null);
         }
 
         if (data === constant.UPDATE_FAIL) {
@@ -55,16 +55,11 @@ const putProfile = async (req: Request, res: Response) => {
  * @DESC 설정하려는 프로필아이디 (이름)이 중복되었는지 확인합니다.
  */
 const checkDuplicateName = async (req: Request, res: Response) => {
-    const { profileId } = req.params;
+    const { userName } = req.params;
     const userId = req.body.userId;
-    const error = validationResult(req);
-
-    if (!error.isEmpty()) {
-        return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.WRONG_PARAMS));
-    }
 
     try {
-        const data = await UserService.checkDuplicateName(profileId);
+        const data = await UserService.checkDuplicateName(userName);
 
         if (data) return res.status(statusCode.OK).send(util.success(statusCode.OK, message.DUPLICATE_PROFILEID));
         else return res.status(statusCode.NO_CONTENT).send(util.success(statusCode.NO_CONTENT, message.AVAILABLE_PROFILEID));
@@ -437,6 +432,55 @@ const postNotice = async (req: Request, res: Response) => {
     }
 };
 
+/**
+ * @ROUTE GET /user
+ * @DESC 유저 정보를 가져옵니다.
+ */
+const getUser = async (req: Request, res: Response) => {
+    const userId = req.body.userId;
+
+    try {
+        const data = await UserService.getUser(userId);
+        if (data === constant.NO_USER) return res.status(statusCode.NO_CONTENT).send(util.success(statusCode.NO_CONTENT, message.NO_USER_ID));
+
+        return res.status(statusCode.OK).send(util.success(statusCode.OK, message.READ_USER_SUCCESS, data));
+    } catch (error: any) {
+        console.log(error);
+
+        const slackMessage: SlackMessageFormat = slackWebHook.slackErrorMessage(error.stack);
+        slackWebHook.sendMessage(slackMessage);
+        
+        return res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
+    }
+}
+
+/**
+ *  @ROUTE GET /webview-link?page=
+ *  @DESC 웹뷰 링크를 가져옵니다.
+ */
+const getWebviewLink = async (req: Request, res: Response) => {
+    let { page } = req.query;
+
+    try {
+        if (page === undefined) page = 'login';
+        const data = await UserService.getWebviewLink(page as string);
+        
+        if (data === constant.WRONG_QUERYSTRING) {
+            return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.BAD_REQUEST));
+        }
+
+        return res.status(statusCode.OK).send(util.success(statusCode.OK, message.READ_USER_SUCCESS, data)); 
+
+    } catch (error: any) {
+        console.log(error);
+
+        const slackMessage: SlackMessageFormat = slackWebHook.slackErrorMessage(error.stack);
+        slackWebHook.sendMessage(slackMessage);
+        
+        return res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
+    }
+};
+
 
 export default {
     getMyMumentList,
@@ -455,4 +499,6 @@ export default {
     getNewsList,
     checkProfileSet,
     postNotice,
+    getUser,
+    getWebviewLink,
 };

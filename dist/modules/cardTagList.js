@@ -44,7 +44,22 @@ const cardTag = (tagList) => __awaiter(void 0, void 0, void 0, function* () {
     }
     return cardTag;
 });
+// {mument_id: number, tag_id: number} 형태의 태그 리스트를 이용해 인상 태그/감상 태그 리스트 tagList리스트에 넣기
+const allTagResultTagClassification = (allTagResult, tagList) => __awaiter(void 0, void 0, void 0, function* () {
+    allTagResult.reduce((ac, cur) => {
+        const mumentIdx = tagList.findIndex(o => o.id === cur.mument_id);
+        if (cur.tag_id < 200) {
+            tagList[mumentIdx].impressionTag.push(cur.tag_id);
+        }
+        else if (cur.tag_id < 300) {
+            tagList[mumentIdx].feelingTag.push(cur.tag_id);
+        }
+        ;
+    }, allTagResult);
+    return tagList;
+});
 exports.default = {
-    cardTag
+    cardTag,
+    allTagResultTagClassification,
 };
 //# sourceMappingURL=cardTagList.js.map

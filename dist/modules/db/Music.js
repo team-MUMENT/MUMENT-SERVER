@@ -19,7 +19,7 @@ const SearchAndCreateMusic = (mumentCreateDto, connection) => __awaiter(void 0, 
     // 존재하지 않는 음악일 시 insert
     if (music.length === 0) {
         const createQuery = 'INSERT INTO music(id, artist, image, name) VALUES(?, ?, ?, ?)';
-        const createdMusic = yield connection.query(createQuery, [
+        yield connection.query(createQuery, [
             mumentCreateDto.musicId, mumentCreateDto.musicArtist,
             mumentCreateDto.musicImage, mumentCreateDto.musicName
         ]);

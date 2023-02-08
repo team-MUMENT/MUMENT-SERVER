@@ -6,22 +6,24 @@ import { validationResult } from 'express-validator';
 import { MusicService } from '../services';
 import slackWebHook, { SlackMessageFormat } from '../library/slackWebHook';
 import constant from '../modules/serviceReturnConstant';
+import { MusicCreateDto } from '../interfaces/music/MusicCreateDto';
 
 /**
- * @ROUTE GET /:musicId/
+ * @ROUTE POST /:musicId/
  * @DESC 곡 상세보기 뷰에서 music 정보와 나의 뮤멘트 정보 가져오기
  */
 const getMusicAndMyMument = async (req: Request, res: Response) => {
-    const { musicId } = req.params;
-    const { userId } = req.body;
     const error = validationResult(req);
-
     if (!error.isEmpty()) {
-        return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.WRONG_PARAMS));
+        return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.BAD_REQUEST));
     }
 
+    const { musicId } = req.params;
+    const userId = req.body.userId;
+    const musicCreateDto: MusicCreateDto = req.body;
+
     try {
-        const data = await MusicService.getMusicAndMyMument(musicId, userId);
+        const data = await MusicService.getMusicAndMyMument(musicId, userId, musicCreateDto);
 
         if (data === constant.NO_MUSIC) {
             return res.status(statusCode.NOT_FOUND).send(util.fail(statusCode.NOT_FOUND, message.NO_MUSIC_ID));
