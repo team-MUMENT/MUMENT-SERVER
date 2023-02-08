@@ -15,6 +15,9 @@ const noticePushAlarmHandler = async (pushTitle: string, pushBody: string, fcmTo
             title: pushTitle,
             body: pushBody,
         },
+        data: {
+            type: 'notice' // 안드로이드 백그라운드 실행을 위해 추가
+        },
         tokens: fcmTokenList,
         android: {
             priority: 'high',
@@ -72,6 +75,9 @@ const likePushAlarmHandler = async (pushTitle: string, pushBody: string, fcmToke
         notification: {
             title: pushTitle,
             body: pushBody,
+        },
+        data: {
+            type: 'like' // 안드로이드 백그라운드 실행을 위해 추가
         },
         token: fcmToken,
         android: {
