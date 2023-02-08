@@ -243,7 +243,45 @@ const getNewAccessToken = async (userId: number, refreshToken: string): Promise<
     }
 }
 
+// 로그아웃
+const logout = async (userId: string): Promise<void | number> => {
+    const pool: any = await poolPromise;
+    const connection = await pool.getConnection();
+
+    try {
+        // refresh, fcm token -> null로 update
+        await connection.query(
+            'UPDATE user SET refresh_token=?, fcm_token=? WHERE id=?', 
+            [null, null, userId]
+        );
+
+        const logoutResult = await connection.query(
+            'SELECT refresh_token, fcm_token FROM user WHERE id=?', 
+            [userId]
+        );
+
+        // user 데이터가 사라진 사람이면 뷰에서 나가야함
+        if (logoutResult.length !== 1) return;
+
+        // refresh, fcm token이 둘다 null이 되지 않으면 fail
+        if (logoutResult[0].refresh_token || logoutResult[0].fcm_token) {
+            return constant.LOGOUT_FAIL;
+        }
+
+        await connection.commit();
+
+    } catch (error) {
+        console.log(error);
+        throw error;
+    } finally {
+        connection.release();
+    }
+};
+
+
+
 export default {
     login,
     getNewAccessToken,
+    logout,
 };

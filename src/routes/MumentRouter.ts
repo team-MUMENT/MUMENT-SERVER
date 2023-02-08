@@ -43,7 +43,7 @@ router.get('/random', MumentController.getRandomMument);
 router.get('/today', MumentController.getTodayMument);
 
 // 배너
-router.get('/banner', MumentController.getBanner);
+router.get('/banner', auth, MumentController.getBanner);
 
 // 다시 들은 뮤멘트
 router.get('/again', MumentController.getAgainMument);
@@ -63,7 +63,6 @@ router.delete('/:mumentId', MumentController.deleteMument);
 // 신고하기
 router.post('/report/:mumentId', [
     body('reportCategory').notEmpty(),
-    body('etcContent').notEmpty(),
 ], auth, MumentController.createReport);
 
 // 좋아요를 누른 사용자 조회

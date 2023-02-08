@@ -210,8 +210,34 @@ const getNewAccessToken = (userId, refreshToken) => __awaiter(void 0, void 0, vo
         connection.release();
     }
 });
+// 로그아웃
+const logout = (userId) => __awaiter(void 0, void 0, void 0, function* () {
+    const pool = yield db_1.default;
+    const connection = yield pool.getConnection();
+    try {
+        // refresh, fcm token -> null로 update
+        yield connection.query('UPDATE user SET refresh_token=?, fcm_token=? WHERE id=?', [null, null, userId]);
+        const logoutResult = yield connection.query('SELECT refresh_token, fcm_token FROM user WHERE id=?', [userId]);
+        // user 데이터가 사라진 사람이면 뷰에서 나가야함
+        if (logoutResult.length !== 1)
+            return;
+        // refresh, fcm token이 둘다 null이 되지 않으면 fail
+        if (logoutResult[0].refresh_token || logoutResult[0].fcm_token) {
+            return serviceReturnConstant_1.default.LOGOUT_FAIL;
+        }
+        yield connection.commit();
+    }
+    catch (error) {
+        console.log(error);
+        throw error;
+    }
+    finally {
+        connection.release();
+    }
+});
 exports.default = {
     login,
     getNewAccessToken,
+    logout,
 };
 //# sourceMappingURL=AuthService.js.map

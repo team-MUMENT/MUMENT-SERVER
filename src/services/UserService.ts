@@ -28,6 +28,8 @@ import { NoticeInfoRDB } from '../interfaces/mument/NoticeInfoRDB';
 import pushHandler from '../library/pushHandler';
 import { NoticePushResponseDto } from '../interfaces/user/NoticePushResponseDto';
 import { BooleanBaseResponseDto } from '../interfaces/common/BooleanBaseResponseDto';
+import { LoginWebviewLinkDto, MypageWebviewLinkDto } from '../interfaces/user/WebviewLinkDto';
+import WebViewLinkDummy from '../modules/db/WebViewLink';
 
 
 /**
@@ -373,7 +375,7 @@ const putProfile = async (userId: number, profileId: string, image: string | nul
             id: user.id,
             accessToken,
             refreshToken,
-            profileId: profileId,
+            userName: profileId,
             image: user.image,
         };
 
@@ -460,7 +462,7 @@ const postLeaveCategory = async (userId: number, leaveCategoryId: string, reason
         const data: UserLeaveResponseDto = {
             id: getLeaveResult[0].id,
             userId: getLeaveResult[0].user_id,
-            profileId: getLeaveResult[0].profile_id,
+            userName: getLeaveResult[0].profile_id,
             leaveCategoryId: getLeaveResult[0].leave_category_id,
             leaveCategoryName: getLeaveResult[0].name,
             reasonEtc: getLeaveResult[0].reason_etc,
@@ -520,7 +522,7 @@ const deleteUser = async (userId: number): Promise<Number | UserDeleteResponseDt
 
         const data: UserDeleteResponseDto = {
             id: user.id,
-            profileId: user.profile_id,
+            userName: user.profile_id,
             isDeleted: isDeleted,
             updatedAt: user.updated_at,
         }
@@ -548,14 +550,24 @@ const getIsReportRestrictedUser = async (userId: number): Promise<ReportRestrict
         const selectReportRestrictionQuery = 'SELECT * FROM report_restriction WHERE user_id=?';
         const restriction: ReportRestrictionInfoRDB[] = await connection.query(selectReportRestrictionQuery, [userId]);
 
-        if (restriction.length === 0 ) return { restricted: false };
+        if (restriction.length === 0 ) {
+            return { 
+                restricted: false,
+                reason: null,
+                musicArtist: null,
+                musicTitle: null,
+                endDate: null,
+                period: null
+            };
+        }
 
         /**
-         * 현재 날짜 < 제재 마감일 이라면
+         * 현재 날짜 <= 제재 마감일 이라면
          *  */ 
         const curr = new Date();
+        const dayDiff = dayjs(curr).diff(restriction[0].restrict_end_date, 'day', true);
 
-        if (dayjs(curr).isBefore(restriction[0].restrict_end_date)) {
+        if (dayDiff < 1) {
             return { 
                 restricted: true,
                 reason: restriction[0].reason,
@@ -566,7 +578,14 @@ const getIsReportRestrictedUser = async (userId: number): Promise<ReportRestrict
             };
         }
 
-        return { restricted: false };
+        return { 
+            restricted: false,
+            reason: null,
+            musicArtist: null,
+            musicTitle: null,
+            endDate: null,
+            period: null
+        };
     }  catch (error) {
         console.log(error);
         throw error;
@@ -694,10 +713,19 @@ const getNewsList = async (userId: number): Promise<NewsResponseDto[]> => {
                     isRead: Boolean(item.is_read),
                     createdAt: dayjs(item.created_at).format('MM/DD HH:mm'),
                     linkId: item.link_id,
-                    noticePoint: item.notice_point_word,
-                    noticeTitle: item.notice_title,
-                    likeProfileId: item.like_profile_id,
-                    likeMusicTitle: item.like_music_title
+                    notice: {
+                        point: item.notice_point_word,
+                        title: item.notice_title
+                    },
+                    like: {
+                        userName: item.like_profile_id,
+                        music: {
+                            id: item.like_music_id,
+                            name: item.like_music_title,
+                            artist: item.like_music_artist,
+                            image: item.like_music_image
+                        }
+                    }
                 });
             }
         };
@@ -721,17 +749,16 @@ const getNewsList = async (userId: number): Promise<NewsResponseDto[]> => {
  */
 const postNotice = async (point: string | null, title: string, content:string, noticeCategory: number): Promise<NoticePushResponseDto | number> => {
     const pool: any = await poolPromise;
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     try {
-        connection.beginTransaction(); //롤백을 위해 필요함
-
+        await connection.beginTransaction();
         // 공지사항 추가
         const createdNotice = await connection.query(
             'INSERT INTO notice(category, title, content, notice_point_word) VALUES(?, ?, ?, ?)', 
             [noticeCategory, title, content, point]);
         if (createdNotice?.affectedRows === 0) return constant.CREATE_NOTICE_FAIL;
-
+        
 
         // 공지사항 row 조회
         const createdNoticeRow: NoticeInfoRDB[] = await connection.query(
@@ -742,9 +769,14 @@ const postNotice = async (point: string | null, title: string, content:string, n
         const noticePointWord = createdNoticeRow[0].notice_point_word;
         let fcmTokenList: string[] = [];
 
-
         // 모든 활성 유저의 소식창에 공지사항 알림 추가        
         const allActiveUser: UserInfoRDB[] = await connection.query('SELECT * FROM user WHERE is_deleted=0');
+        await connection.commit();
+
+
+        // 커넥션 쪼개기
+        connection = await pool.getConnection();
+        await connection.beginTransaction();
 
         const insertNewsToAllActiveUser = async (item: UserInfoRDB, idx: number) => {
             await connection.query(
@@ -781,7 +813,7 @@ const postNotice = async (point: string | null, title: string, content:string, n
 
     } catch (error) {
         console.log(error);
-        await connection.rollback(); // 하나라도 에러시 롤백 (데이터 적용 원상복귀)
+        await connection.rollback();
         throw error;
     } finally {
         connection.release(); // pool connection 회수
@@ -807,6 +839,57 @@ const checkProfileSet = async (userId: string): Promise<boolean> => {
     }
 };
 
+/**
+ * 유저 프로필 정보 조회
+ */
+const getUser = async (userId: string): Promise<UserResponseDto | number> => {
+    try {
+        const user = await userDB.userInfo(userId);
+
+        if (!user) return constant.NO_USER;
+
+        const data: UserResponseDto = {
+            id: user.id,
+            userName: user.profile_id,
+            image: user.image,
+        }
+
+        return data;
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+};
+
+/** 
+ * 웹뷰 링크 조회
+*/
+const getWebviewLink = async (page: string): Promise<LoginWebviewLinkDto | MypageWebviewLinkDto | number> => {
+    try {
+        if (page === 'mypage') {
+             // [마이페이지] 웹뷰 조회
+            return {
+                faq: WebViewLinkDummy.faq,
+                contact: WebViewLinkDummy.contact,
+                appInfo: WebViewLinkDummy.appInfo,
+                introduction: WebViewLinkDummy.introduction
+            };
+        } else if (page === 'login') {
+            // [로그인] 웹뷰 조회
+            return {
+                tos: WebViewLinkDummy.tos,
+                privacy: WebViewLinkDummy.privacy
+            };
+        } else {
+            return constant.WRONG_QUERYSTRING;
+        }
+        
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+};
+
 export default {
     getMyMumentList,
     getLikeMumentList,
@@ -824,4 +907,6 @@ export default {
     getNewsList,
     postNotice,
     checkProfileSet,
+    getUser,
+    getWebviewLink,
 };

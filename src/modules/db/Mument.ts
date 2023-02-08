@@ -10,7 +10,7 @@ import { MumentInfoRDB } from "../../interfaces/mument/MumentInfoRDB";
 
 // 뮤멘트 태그 삽입 - impressionTag, feelingTag 리스트 합쳐서 처리
 const mumentTagCreate = async (impressionTag: number[], feelingTag: number[], connection: any, mumentId: string) => {
-    const tagList = impressionTag.concat(feelingTag);
+    const tagList = [...new Set(impressionTag.concat(feelingTag))]; // 중복 제거하여 태그 삽입
 
     for(let idx in tagList) {
         const query = 'INSERT INTO mument_tag(mument_id, tag_id) VALUES(?, ?);';
@@ -19,6 +19,19 @@ const mumentTagCreate = async (impressionTag: number[], feelingTag: number[], co
             tagList[idx] // tag 번호
         ]);
     }
+};
+
+//뮤멘트 id리스트에 해당하는 뮤멘트들의 태그 모두 가져와서 반환
+const getAllTag = async (strMumentIdList: string, connection: any) => {
+    const getAllTagQuery = `
+        SELECT mument_id, tag_id
+        FROM mument_tag
+        WHERE mument_id IN ${strMumentIdList} AND is_deleted = 0
+        ORDER BY mument_id, updated_at ASC;
+    `;
+    const getAllTagResult = await connection.query(getAllTagQuery);
+
+    return getAllTagResult;
 };
 
 
@@ -56,16 +69,6 @@ const isLiked = async (mumentId: string, userId: string) => {
     const isLiked: NumberBaseResponseDto[] = await pools.queryValue(query, [mumentId, userId]);
 
     return isLiked[0].exist;
-};
-
-
-// 뮤멘트의 좋아요 개수 count
-const likeCount = async (mumentId: string) => {
-    const query = `SELECT COUNT(*) as exist FROM mument.like WHERE mument_id=${mumentId};`;
-
-    const likeCount: NumberBaseResponseDto[] = await pools.query(query);
-
-    return likeCount[0].exist;
 };
 
 
@@ -113,10 +116,10 @@ const mumentTagListGet = async (mumentId: string) => {
 
 export default {
     mumentTagCreate,
+    getAllTag,
     isExistMument,
     isExistMumentInfo,
     isLiked,
-    likeCount,
     mumentHistoryCount,
     mumentTagListGet,
 }

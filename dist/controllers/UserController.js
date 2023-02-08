@@ -25,7 +25,7 @@ const express_validator_1 = require("express-validator");
  */
 const putProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = req.body.userId;
-    const { profileId } = req.body;
+    const { userName } = req.body;
     const image = req.file;
     const error = (0, express_validator_1.validationResult)(req);
     if (!error.isEmpty()) {
@@ -35,10 +35,10 @@ const putProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         let data;
         if (image) {
             const { location } = image;
-            data = yield services_1.UserService.putProfile(userId, profileId, location);
+            data = yield services_1.UserService.putProfile(userId, userName, location);
         }
         else {
-            data = yield services_1.UserService.putProfile(userId, profileId, null);
+            data = yield services_1.UserService.putProfile(userId, userName, null);
         }
         if (data === serviceReturnConstant_1.default.UPDATE_FAIL) {
             return res.status(statusCode_1.default.BAD_REQUEST).send(util_1.default.fail(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.UPDATE_PROFILE_FAIL));
@@ -60,14 +60,10 @@ const putProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
  * @DESC 설정하려는 프로필아이디 (이름)이 중복되었는지 확인합니다.
  */
 const checkDuplicateName = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { profileId } = req.params;
+    const { userName } = req.params;
     const userId = req.body.userId;
-    const error = (0, express_validator_1.validationResult)(req);
-    if (!error.isEmpty()) {
-        return res.status(statusCode_1.default.BAD_REQUEST).send(util_1.default.fail(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.WRONG_PARAMS));
-    }
     try {
-        const data = yield services_1.UserService.checkDuplicateName(profileId);
+        const data = yield services_1.UserService.checkDuplicateName(userName);
         if (data)
             return res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.DUPLICATE_PROFILEID));
         else
@@ -375,6 +371,47 @@ const postNotice = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         return res.status(statusCode_1.default.INTERNAL_SERVER_ERROR).send(util_1.default.fail(statusCode_1.default.INTERNAL_SERVER_ERROR, responseMessage_1.default.INTERNAL_SERVER_ERROR));
     }
 });
+/**
+ * @ROUTE GET /user
+ * @DESC 유저 정보를 가져옵니다.
+ */
+const getUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userId = req.body.userId;
+    try {
+        const data = yield services_1.UserService.getUser(userId);
+        if (data === serviceReturnConstant_1.default.NO_USER)
+            return res.status(statusCode_1.default.NO_CONTENT).send(util_1.default.success(statusCode_1.default.NO_CONTENT, responseMessage_1.default.NO_USER_ID));
+        return res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.READ_USER_SUCCESS, data));
+    }
+    catch (error) {
+        console.log(error);
+        const slackMessage = slackWebHook_1.default.slackErrorMessage(error.stack);
+        slackWebHook_1.default.sendMessage(slackMessage);
+        return res.status(statusCode_1.default.INTERNAL_SERVER_ERROR).send(util_1.default.fail(statusCode_1.default.INTERNAL_SERVER_ERROR, responseMessage_1.default.INTERNAL_SERVER_ERROR));
+    }
+});
+/**
+ *  @ROUTE GET /webview-link?page=
+ *  @DESC 웹뷰 링크를 가져옵니다.
+ */
+const getWebviewLink = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    let { page } = req.query;
+    try {
+        if (page === undefined)
+            page = 'login';
+        const data = yield services_1.UserService.getWebviewLink(page);
+        if (data === serviceReturnConstant_1.default.WRONG_QUERYSTRING) {
+            return res.status(statusCode_1.default.BAD_REQUEST).send(util_1.default.fail(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.BAD_REQUEST));
+        }
+        return res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.READ_USER_SUCCESS, data));
+    }
+    catch (error) {
+        console.log(error);
+        const slackMessage = slackWebHook_1.default.slackErrorMessage(error.stack);
+        slackWebHook_1.default.sendMessage(slackMessage);
+        return res.status(statusCode_1.default.INTERNAL_SERVER_ERROR).send(util_1.default.fail(statusCode_1.default.INTERNAL_SERVER_ERROR, responseMessage_1.default.INTERNAL_SERVER_ERROR));
+    }
+});
 exports.default = {
     getMyMumentList,
     getLikeMumentList,
@@ -392,5 +429,7 @@ exports.default = {
     getNewsList,
     checkProfileSet,
     postNotice,
+    getUser,
+    getWebviewLink,
 };
 //# sourceMappingURL=UserController.js.map

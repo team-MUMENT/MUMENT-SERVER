@@ -11,12 +11,10 @@ const uploadImage_1 = __importDefault(require("../middlewares/uploadImage"));
 const router = (0, express_1.Router)();
 // 프로필 설정
 router.put('/profile', uploadImage_1.default.single('image'), [
-    (0, express_validator_1.body)('profileId').notEmpty().isString(),
+    (0, express_validator_1.body)('userName').notEmpty().isString(),
 ], auth_1.default, controllers_1.UserController.putProfile);
 // 닉네임 중복 확인
-router.get('/profile/check/:profileId', [
-    (0, express_validator_1.param)('profileId').isString(),
-], auth_1.default, controllers_1.UserController.checkDuplicateName);
+router.get('/profile/check/:profileId', auth_1.default, controllers_1.UserController.checkDuplicateName);
 // 보관함 나의 뮤멘트 조회
 router.get('/my/list', auth_1.default, controllers_1.UserController.getMyMumentList);
 // 보관함 좋아요 뮤멘트 조회
@@ -47,5 +45,9 @@ router.delete('/', auth_1.default, controllers_1.UserController.deleteUser);
 router.get('/profile/check', auth_1.default, controllers_1.UserController.checkProfileSet);
 // 공지사항 등록 - 서버, 기획에서만 사용
 router.post('/notice', controllers_1.UserController.postNotice);
+// 유저 정보 조회
+router.get('/profile', auth_1.default, controllers_1.UserController.getUser);
+// 웹뷰 링크 조회
+router.get('/webview-link', controllers_1.UserController.getWebviewLink);
 exports.default = router;
 //# sourceMappingURL=UserRouter.js.map
