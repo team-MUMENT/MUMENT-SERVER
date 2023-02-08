@@ -11,25 +11,24 @@ const noticePushAlarmHandler = async (pushTitle: string, pushBody: string, fcmTo
     if (fcmTokenList.length === 0) return constant.NOTICE_PUSH_FAIL;
 
     let message: MulticastMessage = {
-        notification: {
+        data: {
+            type: 'notice',
             title: pushTitle,
-            body: pushBody,
+            body: pushBody
         },
         tokens: fcmTokenList,
         android: {
             priority: 'high',
-            notification: {
-                sound: 'default',
-            },
-            data: {
-                type: 'notice' // 안드로이드 백그라운드 실행을 위해 추가
-            },
         },
         apns: {
             payload: {
                 aps: {
                     contentAvailable: true,
                     sound: 'default',
+                    alert: {
+                        title: pushTitle,
+                        body: pushBody,
+                    }
                 },
             },
         },
@@ -72,25 +71,24 @@ const likePushAlarmHandler = async (pushTitle: string, pushBody: string, fcmToke
     if (!fcmToken || fcmToken === undefined) return constant.LIKE_PUSH_FAIL;
 
     let message: Message = {
-        notification: {
+        data: {
+            type: 'like',
             title: pushTitle,
             body: pushBody,
         },
         token: fcmToken,
         android: {
             priority: 'high',
-            notification: {
-                sound: 'default',
-            },
-            data: {
-                type: 'like' // 안드로이드 백그라운드 실행을 위해 추가
-            },
         },
         apns: {
             payload: {
                 aps: {
                     contentAvailable: true,
                     sound: 'default',
+                    alert: {
+                        title: pushTitle,
+                        body: pushBody,
+                    }
                 },
             },
         },
