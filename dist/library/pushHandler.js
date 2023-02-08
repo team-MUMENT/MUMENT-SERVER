@@ -46,25 +46,24 @@ const noticePushAlarmHandler = (pushTitle, pushBody, fcmTokenList) => __awaiter(
     if (fcmTokenList.length === 0)
         return serviceReturnConstant_1.default.NOTICE_PUSH_FAIL;
     let message = {
-        notification: {
+        data: {
+            type: 'notice',
             title: pushTitle,
-            body: pushBody,
+            body: pushBody
         },
         tokens: fcmTokenList,
         android: {
             priority: 'high',
-            notification: {
-                sound: 'default',
-            },
-            data: {
-                type: 'notice' // 안드로이드 백그라운드 실행을 위해 추가
-            },
         },
         apns: {
             payload: {
                 aps: {
                     contentAvailable: true,
                     sound: 'default',
+                    alert: {
+                        title: pushTitle,
+                        body: pushBody,
+                    }
                 },
             },
         },
@@ -105,25 +104,24 @@ const likePushAlarmHandler = (pushTitle, pushBody, fcmToken) => __awaiter(void 0
     if (!fcmToken || fcmToken === undefined)
         return serviceReturnConstant_1.default.LIKE_PUSH_FAIL;
     let message = {
-        notification: {
+        data: {
+            type: 'like',
             title: pushTitle,
             body: pushBody,
         },
         token: fcmToken,
         android: {
             priority: 'high',
-            notification: {
-                sound: 'default',
-            },
-            data: {
-                type: 'like' // 안드로이드 백그라운드 실행을 위해 추가
-            },
         },
         apns: {
             payload: {
                 aps: {
                     contentAvailable: true,
                     sound: 'default',
+                    alert: {
+                        title: pushTitle,
+                        body: pushBody,
+                    }
                 },
             },
         },
