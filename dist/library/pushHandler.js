@@ -50,14 +50,14 @@ const noticePushAlarmHandler = (pushTitle, pushBody, fcmTokenList) => __awaiter(
             title: pushTitle,
             body: pushBody,
         },
-        data: {
-            type: 'notice' // 안드로이드 백그라운드 실행을 위해 추가
-        },
         tokens: fcmTokenList,
         android: {
             priority: 'high',
             notification: {
                 sound: 'default',
+            },
+            data: {
+                type: 'notice' // 안드로이드 백그라운드 실행을 위해 추가
             },
         },
         apns: {
@@ -109,14 +109,14 @@ const likePushAlarmHandler = (pushTitle, pushBody, fcmToken) => __awaiter(void 0
             title: pushTitle,
             body: pushBody,
         },
-        data: {
-            type: 'like' // 안드로이드 백그라운드 실행을 위해 추가
-        },
         token: fcmToken,
         android: {
             priority: 'high',
             notification: {
                 sound: 'default',
+            },
+            data: {
+                type: 'like' // 안드로이드 백그라운드 실행을 위해 추가
             },
         },
         apns: {
