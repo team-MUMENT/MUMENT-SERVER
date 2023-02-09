@@ -31,6 +31,7 @@ const tagTitle_1 = require("../modules/tagTitle");
 const cardTagList_1 = __importDefault(require("../modules/cardTagList"));
 const pushHandler_1 = __importDefault(require("../library/pushHandler"));
 const common_1 = __importDefault(require("../modules/common"));
+const slackWebHook_1 = __importDefault(require("../library/slackWebHook"));
 /**
  * 뮤멘트 기록하기
  */
@@ -895,9 +896,9 @@ const getNoticeList = () => __awaiter(void 0, void 0, void 0, function* () {
 });
 // 뮤멘트 신고하기
 const createReport = (mumentId, reportCategory, etcContent, userId) => __awaiter(void 0, void 0, void 0, function* () {
-    var _e;
+    var _e, _f;
     const pool = yield db_1.default;
-    const connection = yield pool.getConnection();
+    let connection = yield pool.getConnection();
     try {
         yield connection.beginTransaction(); //롤백을 위해 필요함
         // 신고 당하는 유저 id 가져오기
@@ -908,16 +909,19 @@ const createReport = (mumentId, reportCategory, etcContent, userId) => __awaiter
         reportedUser = (_e = reportedMument.mument) === null || _e === void 0 ? void 0 : _e.user_id;
         // 신고 사유 배열에 대해 모두 POST
         const postReport = (item, idx) => __awaiter(void 0, void 0, void 0, function* () {
-            const postReportQuery = `
-                INSERT INTO report(user_id, reported_user_id, report_category_id, reason_etc, mument_id) 
-                    VALUES(?, ?, ?, ?, ?);
-            `;
+            const postReportQuery = 'INSERT INTO report(user_id, reported_user_id, report_category_id, reason_etc, mument_id) VALUES(?, ?, ?, ?, ?);';
             yield connection.query(postReportQuery, [userId, reportedUser, item, etcContent, mumentId]);
         });
         yield reportCategory.reduce((acc, curr, index) => __awaiter(void 0, void 0, void 0, function* () {
             return acc.then(() => postReport(curr, index));
         }), Promise.resolve());
         yield connection.commit(); // 모두 성공시 커밋(데이터 적용)
+        // 신고 내역 웹훅 채널 전송
+        const slackMessage = slackWebHook_1.default.slackReportMessage(`🚨신고 접수🚨
+    - 뮤멘트 내용: ${(_f = reportedMument.mument) === null || _f === void 0 ? void 0 : _f.content}
+
+    - 신고 이유: ${etcContent}`);
+        slackWebHook_1.default.sendMessage(slackMessage);
     }
     catch (error) {
         console.log(error);
@@ -930,7 +934,7 @@ const createReport = (mumentId, reportCategory, etcContent, userId) => __awaiter
 });
 // 좋아요 누른 사용자 조회
 const getLikeUserList = (mumentId, userId, limit, offset) => __awaiter(void 0, void 0, void 0, function* () {
-    var e_5, _f;
+    var e_5, _g;
     const pool = yield db_1.default;
     const connection = yield pool.getConnection();
     try {
@@ -951,7 +955,7 @@ const getLikeUserList = (mumentId, userId, limit, offset) => __awaiter(void 0, v
         catch (e_5_1) { e_5 = { error: e_5_1 }; }
         finally {
             try {
-                if (blockUserResult_1_1 && !blockUserResult_1_1.done && (_f = blockUserResult_1.return)) yield _f.call(blockUserResult_1);
+                if (blockUserResult_1_1 && !blockUserResult_1_1.done && (_g = blockUserResult_1.return)) yield _g.call(blockUserResult_1);
             }
             finally { if (e_5) throw e_5.error; }
         }
