@@ -912,6 +912,7 @@ const createReport = (mumentId, reportCategory, etcContent, userId) => __awaiter
         const postReport = (item, idx) => __awaiter(void 0, void 0, void 0, function* () {
             const postReportQuery = 'INSERT INTO report(user_id, reported_user_id, report_category_id, reason_etc, mument_id) VALUES(?, ?, ?, ?, ?);';
             yield connection.query(postReportQuery, [userId, reportedUser, item, etcContent, mumentId]);
+            // 신고 카테고리 조회
             const category = yield connection.query('SELECT name FROM report_category WHERE id=?', [item]);
             resasonList.push(category[0].name);
         });
@@ -920,10 +921,8 @@ const createReport = (mumentId, reportCategory, etcContent, userId) => __awaiter
         }), Promise.resolve());
         yield connection.commit();
         // 신고 내역 웹훅 채널 전송
-        const slackMessage = slackWebHook_1.default.slackReportMessage(`🚨신고 접수🚨
-    - 뮤멘트 내용: ${(_f = reportedMument.mument) === null || _f === void 0 ? void 0 : _f.content}
-    - 신고 이유: ${resasonList}
-    - 기타: ${etcContent}`);
+        const slackMessage = slackWebHook_1.default.slackReportMessage(`🚨신고 접수🚨 \n\n 1. 뮤멘트 내용: ${(_f = reportedMument.mument) === null || _f === void 0 ? void 0 : _f.content} \n\n 2. 신고 이유: ${resasonList.join(' / ')}
+            \n 3. 기타: ${etcContent}`);
         slackWebHook_1.default.sendMessage(slackMessage);
     }
     catch (error) {
