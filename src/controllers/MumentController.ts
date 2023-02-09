@@ -428,8 +428,8 @@ const createReport = async (req: Request, res: Response) => {
     } catch (error: any) {
         console.log(error);
 
-        //const slackMessage: SlackMessageFormat = slackWebHook.slackErrorMessage(error.stack);
-        //slackWebHook.sendMessage(slackMessage);
+        const slackMessage: SlackMessageFormat = slackWebHook.slackErrorMessage(error.stack);
+        slackWebHook.sendMessage(slackMessage);
         
         return res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
     }
