@@ -1029,11 +1029,12 @@ const createReport = async (mumentId: string, reportCategory: number[], etcConte
         
         // 신고 내역 웹훅 채널 전송
         const slackMessage: SlackMessageFormat = slackWebHook.slackReportMessage(
-            `🚨신고 접수🚨 @기획_이수지 @기획_정예진
+            `🚨신고 접수🚨
+    - 뮤멘트 내용: ${reportedMument.mument?.content}
 
-            - 뮤멘트 내용: ${reportedMument.mument?.content}
-            - 신고 이유: ${etcContent}`
+    - 신고 이유: ${etcContent}`
         );
+        
         slackWebHook.sendMessage(slackMessage);
     } catch (error) {
         console.log(error);

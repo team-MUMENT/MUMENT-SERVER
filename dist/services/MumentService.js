@@ -917,10 +917,10 @@ const createReport = (mumentId, reportCategory, etcContent, userId) => __awaiter
         }), Promise.resolve());
         yield connection.commit(); // 모두 성공시 커밋(데이터 적용)
         // 신고 내역 웹훅 채널 전송
-        const slackMessage = slackWebHook_1.default.slackReportMessage(`🚨신고 접수🚨 @기획_이수지 @기획_정예진
+        const slackMessage = slackWebHook_1.default.slackReportMessage(`🚨신고 접수🚨
+    - 뮤멘트 내용: ${(_f = reportedMument.mument) === null || _f === void 0 ? void 0 : _f.content}
 
-            - 뮤멘트 내용: ${(_f = reportedMument.mument) === null || _f === void 0 ? void 0 : _f.content}
-            - 신고 이유: ${etcContent}`);
+    - 신고 이유: ${etcContent}`);
         slackWebHook_1.default.sendMessage(slackMessage);
     }
     catch (error) {
