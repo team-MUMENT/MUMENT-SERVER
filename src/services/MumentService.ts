@@ -1013,12 +1013,15 @@ const createReport = async (mumentId: string, reportCategory: number[], etcConte
         if (!reportedMument.isExist) return constant.NO_MUMENT;
         reportedUser = reportedMument.mument?.user_id as number;
 
+        
         // 신고 사유 배열에 대해 모두 POST
         let resasonList: string[] = [];
+
         const postReport = async (item: number, idx: number) => {
             const postReportQuery = 'INSERT INTO report(user_id, reported_user_id, report_category_id, reason_etc, mument_id) VALUES(?, ?, ?, ?, ?);'
             await connection.query(postReportQuery, [userId, reportedUser, item, etcContent, mumentId]);
 
+            // 신고 카테고리 조회
             const category = await connection.query('SELECT name FROM report_category WHERE id=?', [item]);
             resasonList.push(category[0].name);
         };
@@ -1032,13 +1035,12 @@ const createReport = async (mumentId: string, reportCategory: number[], etcConte
         
         // 신고 내역 웹훅 채널 전송
         const slackMessage: SlackMessageFormat = slackWebHook.slackReportMessage(
-            `🚨신고 접수🚨
-    - 뮤멘트 내용: ${reportedMument.mument?.content}
-    - 신고 이유: ${resasonList}
-    - 기타: ${etcContent}`
+            `🚨신고 접수🚨 \n\n 1. 뮤멘트 내용: ${reportedMument.mument?.content} \n\n 2. 신고 이유: ${resasonList.join(' / ')}
+            \n 3. 기타: ${etcContent}`
         );
         
         slackWebHook.sendMessage(slackMessage);
+
     } catch (error) {
         console.log(error);
         await connection.rollback(); // 하나라도 에러시 롤백 (데이터 적용 원상복귀)
