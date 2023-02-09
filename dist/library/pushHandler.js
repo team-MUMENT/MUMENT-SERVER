@@ -85,7 +85,7 @@ const noticePushAlarmHandler = (pushTitle, pushBody, fcmTokenList) => __awaiter(
                 });
             }
             console.log('공지 푸시 실패유저 토큰: ', pushFailFcmTokenList);
-            const slackMessage = slackWebHook_1.default.slackErrorMessage(`공지 푸시알림 실패 유저의 fcm token입니다 : ${pushFailFcmTokenList}`);
+            const slackMessage = slackWebHook_1.default.slackPushFailMessage(`공지 푸시알림 실패 유저의 fcm token입니다 : ${pushFailFcmTokenList}`);
             slackWebHook_1.default.sendMessage(slackMessage);
         })
             .catch(function (err) {
@@ -137,7 +137,7 @@ const likePushAlarmHandler = (pushTitle, pushBody, fcmToken) => __awaiter(void 0
         })
             .catch(function (err) {
             console.log(responseMessage_1.default.PUSH_ALARM_ERROR, err);
-            const slackMessage = slackWebHook_1.default.slackErrorMessage(`좋아요 푸시 실패 유저의 fcm token입니다 : ${fcmToken}`);
+            const slackMessage = slackWebHook_1.default.slackPushFailMessage(`좋아요 푸시 실패 유저의 fcm token입니다 : ${fcmToken}`);
             slackWebHook_1.default.sendMessage(slackMessage);
             return serviceReturnConstant_1.default.LIKE_PUSH_FAIL;
         });

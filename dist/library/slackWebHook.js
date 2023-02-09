@@ -14,11 +14,39 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const axios_1 = __importDefault(require("axios"));
 const config_1 = __importDefault(require("../config"));
-const API_URL = config_1.default.webhookURI;
+const API_URL = config_1.default.webhookURI; // 서버_webhook 채널
+const API_REPORT_URL = config_1.default.webhookReportURI; // 기획_서버_신고접수 채널
 const slackErrorMessage = (errorStack) => {
     return {
         title: 'MUMENT ec2 서버 오류',
         text: '서버 내부 오류입니다',
+        type: 'error',
+        fields: [
+            {
+                title: 'Error Stack:',
+                value: `\`\`\`${errorStack}\`\`\``,
+            },
+        ],
+    };
+};
+const slackPushFailMessage = (errorStack) => {
+    return {
+        title: '푸시 실패자 알림',
+        text: '푸시알림 실패자가 존재합니다',
+        type: 'push',
+        fields: [
+            {
+                title: 'Error Stack:',
+                value: `\`\`\`${errorStack}\`\`\``,
+            },
+        ],
+    };
+};
+const slackReportMessage = (errorStack) => {
+    return {
+        title: '신고 접수 알림',
+        text: '신고가 접수되었습니다.',
+        type: 'report',
         fields: [
             {
                 title: 'Error Stack:',
@@ -28,10 +56,17 @@ const slackErrorMessage = (errorStack) => {
     };
 };
 // 슬랙 api url과 연결하는 함수
-const getChannels = () => {
-    return {
-        production: API_URL,
-    };
+const getChannels = (type) => {
+    if (type === 'error' || type === 'push') {
+        return {
+            production: API_URL,
+        };
+    }
+    else {
+        return {
+            production: API_REPORT_URL,
+        };
+    }
 };
 // 슬랙 알림 보내기
 const sendMessage = (message) => __awaiter(void 0, void 0, void 0, function* () {
@@ -52,7 +87,7 @@ const sendMessage = (message) => __awaiter(void 0, void 0, void 0, function* () 
     }
     data.attachments.push(message);
     (0, axios_1.default)({
-        url: getChannels().production,
+        url: getChannels(message.type).production,
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -60,5 +95,5 @@ const sendMessage = (message) => __awaiter(void 0, void 0, void 0, function* () 
         data,
     });
 });
-exports.default = { sendMessage, slackErrorMessage };
+exports.default = { sendMessage, slackErrorMessage, slackPushFailMessage, slackReportMessage };
 //# sourceMappingURL=slackWebHook.js.map
