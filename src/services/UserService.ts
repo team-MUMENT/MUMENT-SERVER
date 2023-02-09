@@ -405,7 +405,7 @@ const checkDuplicateName = async (profileId: string): Promise<boolean> => {
         `;
 
         const checkResult = await pools.queryValue(checkQuery, [profileId]);
-
+        
         const isDuplicate: boolean = checkResult[0].is_duplicate;
 
         const data = isDuplicate;
