@@ -12,7 +12,7 @@ router.put('/profile', upload.single('image'), [
 ], auth, UserController.putProfile);
 
 // 닉네임 중복 확인
-router.get('/profile/check/:profileId', auth, UserController.checkDuplicateName);
+router.get('/profile/check/:userName', auth, UserController.checkDuplicateName);
 
 // 보관함 나의 뮤멘트 조회
 router.get('/my/list', auth, UserController.getMyMumentList);
