@@ -35,6 +35,7 @@ import { AgainSelectionInfo } from '../interfaces/home/AgainSelectionInfo';
 import { TodaySelectionInfo } from '../interfaces/home/TodaySelectionInfo';
 import { TagListInfo } from '../interfaces/common/TagListInfo';
 import common from '../modules/common';
+import slackWebHook, { SlackMessageFormat } from '../library/slackWebHook';
 
 /**
  * 뮤멘트 기록하기
@@ -1000,7 +1001,7 @@ const getNoticeList = async (): Promise<NoticeInfoRDB[]> => {
 // 뮤멘트 신고하기
 const createReport = async (mumentId: string, reportCategory: number[], etcContent: string, userId: string): Promise<void | number> => {
     const pool: any = await poolPromise;
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     try {
         await connection.beginTransaction(); //롤백을 위해 필요함
@@ -1014,10 +1015,7 @@ const createReport = async (mumentId: string, reportCategory: number[], etcConte
 
         // 신고 사유 배열에 대해 모두 POST
         const postReport = async (item: number, idx: number) => {
-            const postReportQuery = `
-                INSERT INTO report(user_id, reported_user_id, report_category_id, reason_etc, mument_id) 
-                    VALUES(?, ?, ?, ?, ?);
-            `;
+            const postReportQuery = 'INSERT INTO report(user_id, reported_user_id, report_category_id, reason_etc, mument_id) VALUES(?, ?, ?, ?, ?);'
 
             await connection.query(postReportQuery, [userId, reportedUser, item, etcContent, mumentId]);
         };
@@ -1027,6 +1025,16 @@ const createReport = async (mumentId: string, reportCategory: number[], etcConte
         }, Promise.resolve());
 
         await connection.commit(); // 모두 성공시 커밋(데이터 적용)
+
+        
+        // 신고 내역 웹훅 채널 전송
+        const slackMessage: SlackMessageFormat = slackWebHook.slackReportMessage(
+            `🚨신고 접수🚨 @기획_이수지 @기획_정예진
+
+            - 뮤멘트 내용: ${reportedMument.mument?.content}
+            - 신고 이유: ${etcContent}`
+        );
+        slackWebHook.sendMessage(slackMessage);
     } catch (error) {
         console.log(error);
         await connection.rollback(); // 하나라도 에러시 롤백 (데이터 적용 원상복귀)
