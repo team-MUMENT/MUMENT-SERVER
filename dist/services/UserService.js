@@ -762,7 +762,8 @@ const getWebviewLink = (page) => __awaiter(void 0, void 0, void 0, function* () 
                 faq: WebViewLink_1.default.faq,
                 contact: WebViewLink_1.default.contact,
                 appInfo: WebViewLink_1.default.appInfo,
-                introduction: WebViewLink_1.default.introduction
+                introduction: WebViewLink_1.default.introduction,
+                license: WebViewLink_1.default.license,
             };
         }
         else if (page === 'login') {
