@@ -872,7 +872,8 @@ const getWebviewLink = async (page: string): Promise<LoginWebviewLinkDto | Mypag
                 faq: WebViewLinkDummy.faq,
                 contact: WebViewLinkDummy.contact,
                 appInfo: WebViewLinkDummy.appInfo,
-                introduction: WebViewLinkDummy.introduction
+                introduction: WebViewLinkDummy.introduction,
+                license: WebViewLinkDummy.license,
             };
         } else if (page === 'login') {
             // [로그인] 웹뷰 조회
