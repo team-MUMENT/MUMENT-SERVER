@@ -22,8 +22,6 @@ router.get('/:musicId/:userId/history', [
     param('musicId').toInt().isInt(),
     param('userId').toInt().isInt(),
     query('default').isString().isIn(['Y', 'N']),
-    query('limit').toInt().isInt(),
-    query('offset').toInt().isInt(),
 ], auth, MumentController.getMumentHistory);
 
 // 좋아요 등록
