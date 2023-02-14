@@ -196,10 +196,10 @@ const getMumentList = async (musicId: string, userId: string, isLikeOrder: boole
                     AND mument.user_id NOT IN ${strBlockUserList}
                     AND mument.is_deleted = 0  
                     AND user.is_deleted = 0
-                    AND mument.is_private = 0
+                    AND is_private = 0 OR (user.id = ? AND is_private = 1)
                 ORDER BY mument.like_count DESC;
                 `;
-                originalMumentList = await connection.query(getMumentListQuery, [musicId]);
+                originalMumentList = await connection.query(getMumentListQuery, [musicId, userId]);
 
                 break;
             } case false: { // 최신순 정렬
@@ -212,10 +212,10 @@ const getMumentList = async (musicId: string, userId: string, isLikeOrder: boole
                     AND mument.user_id NOT IN ${strBlockUserList}
                     AND mument.is_deleted = 0  
                     AND user.is_deleted = 0
-                    AND mument.is_private = 0
+                    AND is_private = 0 OR (user.id = ? AND is_private = 1)
                 ORDER BY mument.created_at DESC;
                 `;
-                originalMumentList = await connection.query(getMumentListQuery, [musicId]);
+                originalMumentList = await connection.query(getMumentListQuery, [musicId, userId]);
 
                 break;
             }
