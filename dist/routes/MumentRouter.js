@@ -21,8 +21,6 @@ router.get('/:musicId/:userId/history', [
     (0, express_validator_1.param)('musicId').toInt().isInt(),
     (0, express_validator_1.param)('userId').toInt().isInt(),
     (0, express_validator_1.query)('default').isString().isIn(['Y', 'N']),
-    (0, express_validator_1.query)('limit').toInt().isInt(),
-    (0, express_validator_1.query)('offset').toInt().isInt(),
 ], auth_1.default, controllers_1.MumentController.getMumentHistory);
 // 좋아요 등록
 router.post('/:mumentId/like', [
