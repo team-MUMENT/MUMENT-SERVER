@@ -268,7 +268,7 @@ const getIsFirst = async (userId: string, musicId: string): Promise<IsFirstRespo
 /**
  * 히스토리 조회
  */
-const getMumentHistory = async (userId: string, musicId: string, writerId: string, orderBy: string, limit: any, offset: any): Promise<MumentHistoryResponseDto | number | null> => {
+const getMumentHistory = async (userId: string, musicId: string, writerId: string, orderBy: string): Promise<MumentHistoryResponseDto | number | null> => {
     const pool: any = await poolPromise;
     const connection = await pool.getConnection();
 
@@ -290,11 +290,10 @@ const getMumentHistory = async (userId: string, musicId: string, writerId: strin
                 AND mument.user_id = ?
                 AND mument.is_deleted = 0
                 AND user.is_deleted = 0
-            ORDER BY created_at ${orderBy}
-            LIMIT ? OFFSET ?;
+            ORDER BY created_at ${orderBy};
             `;
 
-            getMumentListResult = await connection.query(getMumentListQuery, [userId, musicId, writerId, limit, offset]);
+            getMumentListResult = await connection.query(getMumentListQuery, [userId, musicId, writerId]);
         } else {
             // 비밀글 볼 수 없게 함
             const getMumentListQuery = `
@@ -312,9 +311,8 @@ const getMumentHistory = async (userId: string, musicId: string, writerId: strin
                 AND mument.is_deleted = 0
                 AND user.is_deleted = 0
             ORDER BY created_at ${orderBy}
-            LIMIT ? OFFSET ?;
             `;
-            getMumentListResult = await connection.query(getMumentListQuery, [userId, musicId, writerId, limit, offset]);
+            getMumentListResult = await connection.query(getMumentListQuery, [userId, musicId, writerId]);
         }
         //출력
 
