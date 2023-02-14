@@ -232,7 +232,7 @@ const getIsFirst = (userId, musicId) => __awaiter(void 0, void 0, void 0, functi
 /**
  * 히스토리 조회
  */
-const getMumentHistory = (userId, musicId, writerId, orderBy, limit, offset) => __awaiter(void 0, void 0, void 0, function* () {
+const getMumentHistory = (userId, musicId, writerId, orderBy) => __awaiter(void 0, void 0, void 0, function* () {
     var e_1, _a, e_2, _b, e_3, _c;
     const pool = yield db_1.default;
     const connection = yield pool.getConnection();
@@ -253,10 +253,9 @@ const getMumentHistory = (userId, musicId, writerId, orderBy, limit, offset) => 
                 AND mument.user_id = ?
                 AND mument.is_deleted = 0
                 AND user.is_deleted = 0
-            ORDER BY created_at ${orderBy}
-            LIMIT ? OFFSET ?;
+            ORDER BY created_at ${orderBy};
             `;
-            getMumentListResult = yield connection.query(getMumentListQuery, [userId, musicId, writerId, limit, offset]);
+            getMumentListResult = yield connection.query(getMumentListQuery, [userId, musicId, writerId]);
         }
         else {
             // 비밀글 볼 수 없게 함
@@ -275,9 +274,8 @@ const getMumentHistory = (userId, musicId, writerId, orderBy, limit, offset) => 
                 AND mument.is_deleted = 0
                 AND user.is_deleted = 0
             ORDER BY created_at ${orderBy}
-            LIMIT ? OFFSET ?;
             `;
-            getMumentListResult = yield connection.query(getMumentListQuery, [userId, musicId, writerId, limit, offset]);
+            getMumentListResult = yield connection.query(getMumentListQuery, [userId, musicId, writerId]);
         }
         //출력
         // 해당 유저가 작성한 뮤멘트가 없을 경우 리턴
