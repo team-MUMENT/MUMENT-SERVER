@@ -47,7 +47,7 @@ const getMusicAndMyMument = async (req: Request, res: Response) => {
 const getMumentList = async (req: Request, res: Response) => {
     const { musicId } = req.params;
     const { userId } = req.body;
-    const { default: orderOption, limit, offset } = req.query;
+    const { default: orderOption} = req.query;
 
     const error = validationResult(req);
     if (!error.isEmpty()) {
@@ -67,7 +67,7 @@ const getMumentList = async (req: Request, res: Response) => {
     }
 
     try {
-        const data = await MusicService.getMumentList(musicId, userId, isLikeOrder, limit, offset);
+        const data = await MusicService.getMumentList(musicId, userId, isLikeOrder);
 
         
         if (!data) {// 조회 성공했으나, 결과값 없을 때 204 리턴

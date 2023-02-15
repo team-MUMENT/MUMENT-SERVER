@@ -145,7 +145,7 @@ const getIsFirst = async (req: Request, res: Response) => {
 const getMumentHistory = async (req: Request, res: Response) => {
     const { musicId, userId: writerId } = req.params;
     const userId = req.body.userId;
-    const { default: orderOption, limit, offset } = req.query;
+    const { default: orderOption } = req.query;
 
     const error = validationResult(req);
     if (!error.isEmpty()) {
@@ -166,7 +166,7 @@ const getMumentHistory = async (req: Request, res: Response) => {
 
 
     try {
-        const data = await MumentService.getMumentHistory(userId, musicId, writerId, orderBy, limit, offset);
+        const data = await MumentService.getMumentHistory(userId, musicId, writerId, orderBy);
 
         return res.status(statusCode.OK).send(util.success(statusCode.OK, message.READ_MUMENT_HISTORY_SUCCESS, data));
     } catch (error: any) {

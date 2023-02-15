@@ -158,7 +158,7 @@ const getMusicAndMyMument = async (musicId: string, userId: string, musicCreateD
 /**
  * 곡 상세보기 - 모든 뮤멘트 조회
  */
-const getMumentList = async (musicId: string, userId: string, isLikeOrder: boolean, limit: any, offset: any): Promise<MusicMumentListResponseDto | number | null> => {
+const getMumentList = async (musicId: string, userId: string, isLikeOrder: boolean): Promise<MusicMumentListResponseDto | number | null> => {
     const pool: any = await poolPromise;
     const connection = await pool.getConnection();
     
@@ -196,11 +196,10 @@ const getMumentList = async (musicId: string, userId: string, isLikeOrder: boole
                     AND mument.user_id NOT IN ${strBlockUserList}
                     AND mument.is_deleted = 0  
                     AND user.is_deleted = 0
-                    AND mument.is_private = 0
-                ORDER BY mument.like_count DESC
-                LIMIT ? OFFSET ?;
+                    AND (is_private = 0 OR (user.id = ? AND is_private = 1))
+                ORDER BY mument.like_count DESC;
                 `;
-                originalMumentList = await connection.query(getMumentListQuery, [musicId, limit, offset]);
+                originalMumentList = await connection.query(getMumentListQuery, [musicId, userId]);
 
                 break;
             } case false: { // 최신순 정렬
@@ -213,11 +212,10 @@ const getMumentList = async (musicId: string, userId: string, isLikeOrder: boole
                     AND mument.user_id NOT IN ${strBlockUserList}
                     AND mument.is_deleted = 0  
                     AND user.is_deleted = 0
-                    AND mument.is_private = 0
-                ORDER BY mument.created_at DESC
-                LIMIT ? OFFSET ?;
+                    AND (is_private = 0 OR (user.id = ? AND is_private = 1))
+                ORDER BY mument.created_at DESC;
                 `;
-                originalMumentList = await connection.query(getMumentListQuery, [musicId, limit, offset]);
+                originalMumentList = await connection.query(getMumentListQuery, [musicId, userId]);
 
                 break;
             }
