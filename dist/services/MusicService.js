@@ -150,7 +150,7 @@ const getMusicAndMyMument = (musicId, userId, musicCreateDto) => __awaiter(void 
 /**
  * 곡 상세보기 - 모든 뮤멘트 조회
  */
-const getMumentList = (musicId, userId, isLikeOrder, limit, offset) => __awaiter(void 0, void 0, void 0, function* () {
+const getMumentList = (musicId, userId, isLikeOrder) => __awaiter(void 0, void 0, void 0, function* () {
     var e_1, _a, e_2, _b, e_3, _c;
     const pool = yield db_1.default;
     const connection = yield pool.getConnection();
@@ -191,11 +191,10 @@ const getMumentList = (musicId, userId, isLikeOrder, limit, offset) => __awaiter
                     AND mument.user_id NOT IN ${strBlockUserList}
                     AND mument.is_deleted = 0  
                     AND user.is_deleted = 0
-                    AND mument.is_private = 0
-                ORDER BY mument.like_count DESC
-                LIMIT ? OFFSET ?;
+                    AND (is_private = 0 OR (user.id = ? AND is_private = 1))
+                ORDER BY mument.like_count DESC;
                 `;
-                originalMumentList = yield connection.query(getMumentListQuery, [musicId, limit, offset]);
+                originalMumentList = yield connection.query(getMumentListQuery, [musicId, userId]);
                 break;
             }
             case false: { // 최신순 정렬
@@ -208,11 +207,10 @@ const getMumentList = (musicId, userId, isLikeOrder, limit, offset) => __awaiter
                     AND mument.user_id NOT IN ${strBlockUserList}
                     AND mument.is_deleted = 0  
                     AND user.is_deleted = 0
-                    AND mument.is_private = 0
-                ORDER BY mument.created_at DESC
-                LIMIT ? OFFSET ?;
+                    AND (is_private = 0 OR (user.id = ? AND is_private = 1))
+                ORDER BY mument.created_at DESC;
                 `;
-                originalMumentList = yield connection.query(getMumentListQuery, [musicId, limit, offset]);
+                originalMumentList = yield connection.query(getMumentListQuery, [musicId, userId]);
                 break;
             }
         }

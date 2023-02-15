@@ -19,8 +19,6 @@ router.post('/:musicId', [
 router.get('/:musicId/order', [
     (0, express_validator_1.param)('musicId').toInt().isInt(),
     (0, express_validator_1.query)('default').isString().isIn(['Y', 'N']),
-    (0, express_validator_1.query)('limit').toInt().isInt(),
-    (0, express_validator_1.query)('offset').toInt().isInt(),
 ], auth_1.default, controllers_1.MusicController.getMumentList);
 exports.default = router;
 //# sourceMappingURL=MusicRouter.js.map
