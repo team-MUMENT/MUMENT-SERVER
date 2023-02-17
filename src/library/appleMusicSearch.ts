@@ -3,12 +3,13 @@ import config from "../config";
 import { MusicResponseDto } from "../interfaces/music/MusicResponseDto";
 import constant from "../modules/serviceReturnConstant";
 
-// Apple Music Api 곡 검색 최대 50개 가져오는 라이브러리
+// Apple Music Api 곡 검색 최대 50개 가져오기
 const searchMusic = async (searchKeyword: string, offset: number) => {
     const token = `Bearer ${config.appleDeveloperToken as string}`;
     let musicList: MusicResponseDto[] = [];
+    console.log(`https://api.music.apple.com/v1/catalog/kr/search?types=songs&limit=25&offset=${offset}&term=`);
     
-    await axios.get(`https://api.music.apple.com/v1/catalog/kr/search?types=songs&limit=25&offset=${0}&term=`
+    await axios.get(`https://api.music.apple.com/v1/catalog/kr/search?types=songs&limit=25&offset=${offset}&term=`
                 + encodeURI(searchKeyword), {
                     headers: {
                       'Content-Type': 'application/x-www-form-urlencoded',
