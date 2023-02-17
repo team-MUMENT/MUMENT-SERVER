@@ -19,7 +19,6 @@ const serviceReturnConstant_1 = __importDefault(require("../modules/serviceRetur
 const searchMusic = (searchKeyword, offset) => __awaiter(void 0, void 0, void 0, function* () {
     const token = `Bearer ${config_1.default.appleDeveloperToken}`;
     let musicList = [];
-    console.log(`https://api.music.apple.com/v1/catalog/kr/search?types=songs&limit=25&offset=${offset}&term=`);
     yield axios_1.default.get(`https://api.music.apple.com/v1/catalog/kr/search?types=songs&limit=25&offset=${offset}&term=`
         + encodeURI(searchKeyword), {
         headers: {
