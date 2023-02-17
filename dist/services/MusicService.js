@@ -20,15 +20,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const dayjs_1 = __importDefault(require("dayjs"));
-const axios_1 = __importDefault(require("axios"));
 const serviceReturnConstant_1 = __importDefault(require("../modules/serviceReturnConstant"));
 const db_1 = __importDefault(require("../loaders/db"));
 const User_1 = __importDefault(require("../modules/db/User"));
 const Music_1 = __importDefault(require("../modules/db/Music"));
 const Mument_1 = __importDefault(require("../modules/db/Mument"));
 const cardTagList_1 = __importDefault(require("../modules/cardTagList"));
-const config_1 = __importDefault(require("../config"));
 const common_1 = __importDefault(require("../modules/common"));
+const appleMusicSearch_1 = __importDefault(require("../library/appleMusicSearch"));
 const qs = require('querystring');
 require('dotenv').config();
 /**
@@ -314,56 +313,54 @@ const getMumentList = (musicId, userId, isLikeOrder) => __awaiter(void 0, void 0
     }
 });
 /**
- * 곡 검색 - apple music api 사용 곡 검색 / 최대 25개의 곡 리스트 반환 가능
+ * 곡 검색 - apple music api 사용 곡 검색 / 최대 50개까지 곡 리스트 반환 가능
  */
 const getMusicListBySearch = (keyword) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const token = `Bearer ${config_1.default.appleDeveloperToken}`;
-        let musicList = [];
-        const appleResponse = (searchKeyword) => __awaiter(void 0, void 0, void 0, function* () {
-            yield axios_1.default.get('https://api.music.apple.com/v1/catalog/kr/search?types=songs&limit=20&term='
-                + encodeURI(searchKeyword), {
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'Authorization': token
-                }
-            })
-                .then(function (response) {
-                return __awaiter(this, void 0, void 0, function* () {
-                    /* apple api에서 받을 수 있는 3개 status code 대응 - 200, 401, 500*/
-                    if (response.data.results.hasOwnProperty('songs')) {
-                        // 401 - A response indicating an incorrect Authorization header
-                        if (response.status == 401)
-                            return serviceReturnConstant_1.default.APPLE_UNAUTHORIZED;
-                        // 500 - indicating an error occurred on the apple music server
-                        if (response.status == 500)
-                            return serviceReturnConstant_1.default.APPLE_INTERNAL_SERVER_ERROR;
-                        const appleMusicList = response.data.results.songs.data;
-                        musicList = yield appleMusicList.map((music) => {
-                            let imageUrl = music.attributes.artwork.url;
-                            imageUrl = imageUrl.replace('{w}x{h}', '400x400'); //앨범 이미지 크기 400으로 지정
-                            const result = {
-                                '_id': music.id,
-                                'name': music.attributes.name,
-                                'artist': music.attributes.artistName,
-                                'image': imageUrl
-                            };
-                            return result;
-                        });
-                    }
-                    return musicList;
-                });
-            })
-                .catch(function (error) {
-                return __awaiter(this, void 0, void 0, function* () {
-                    console.log('곡검색 애플 error', error);
-                    return serviceReturnConstant_1.default.APPLE_INTERNAL_SERVER_ERROR;
-                });
-            });
-            return musicList;
-        });
-        const data = yield appleResponse(keyword);
-        return data;
+        //const token = `Bearer ${config.appleDeveloperToken as string}`;
+        // const appleResponse = async (searchKeyword: string) => {
+        //     await axios.get(`https://api.music.apple.com/v1/catalog/kr/search?types=songs&limit=25&offset=${0}&term=`
+        //         + encodeURI(searchKeyword), {
+        //             headers: {
+        //               'Content-Type': 'application/x-www-form-urlencoded',
+        //               'Authorization': token
+        //             }
+        //         }
+        //     )
+        //     .then(async function (response: any) {
+        //         /* apple api에서 받을 수 있는 3개 status code 대응 - 200, 401, 500*/       
+        //         if (response.data.results.hasOwnProperty('songs')) {
+        //             // 401 - A response indicating an incorrect Authorization header
+        //             if (response.status == 401) return constant.APPLE_UNAUTHORIZED;
+        //             // 500 - indicating an error occurred on the apple music server
+        //             if (response.status == 500) return constant.APPLE_INTERNAL_SERVER_ERROR;
+        //             const appleMusicList = response.data.results.songs.data; 
+        //             musicList =  await appleMusicList.map((music: any) => {
+        //                 let imageUrl = music.attributes.artwork.url;
+        //                 imageUrl = imageUrl.replace('{w}x{h}', '400x400'); //앨범 이미지 크기 400으로 지정
+        //                 const result: MusicResponseDto = {
+        //                     '_id': music.id,
+        //                     'name': music.attributes.name,
+        //                     'artist': music.attributes.artistName,
+        //                     'image': imageUrl
+        //                 };
+        //                 return result;
+        //             });
+        //         }
+        //         return musicList;
+        //     })
+        //     .catch(async function (error) {
+        //         console.log('곡검색 애플 error', error);
+        //         return constant.APPLE_INTERNAL_SERVER_ERROR;
+        //     });
+        //     return musicList;
+        // };
+        // 곡 검색 첫 페이지 개수가 25개 이상일 경우만 검색 2회 요청
+        const page1 = yield appleMusicSearch_1.default.searchMusic(keyword, 0);
+        if (page1.length < 25)
+            return page1;
+        const page2 = yield appleMusicSearch_1.default.searchMusic(keyword, 25);
+        return page1.concat(page2);
     }
     catch (error) {
         console.log(error);
