@@ -7,8 +7,7 @@ import constant from "../modules/serviceReturnConstant";
 const searchMusic = async (searchKeyword: string, offset: number) => {
     const token = `Bearer ${config.appleDeveloperToken as string}`;
     let musicList: MusicResponseDto[] = [];
-    console.log(`https://api.music.apple.com/v1/catalog/kr/search?types=songs&limit=25&offset=${offset}&term=`);
-    
+
     await axios.get(`https://api.music.apple.com/v1/catalog/kr/search?types=songs&limit=25&offset=${offset}&term=`
                 + encodeURI(searchKeyword), {
                     headers: {
