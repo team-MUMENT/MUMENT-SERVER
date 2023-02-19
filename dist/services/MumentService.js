@@ -252,7 +252,6 @@ const getMumentHistory = (userId, musicId, writerId, orderBy) => __awaiter(void 
             WHERE mument.music_id = ?
                 AND mument.user_id = ?
                 AND mument.is_deleted = 0
-                AND user.is_deleted = 0
             ORDER BY created_at ${orderBy};
             `;
             getMumentListResult = yield connection.query(getMumentListQuery, [userId, musicId, writerId]);
@@ -272,7 +271,6 @@ const getMumentHistory = (userId, musicId, writerId, orderBy) => __awaiter(void 
                 AND mument.user_id = ?
                 AND mument.is_private = 0
                 AND mument.is_deleted = 0
-                AND user.is_deleted = 0
             ORDER BY created_at ${orderBy}
             `;
             getMumentListResult = yield connection.query(getMumentListQuery, [userId, musicId, writerId]);
@@ -971,7 +969,6 @@ const getLikeUserList = (mumentId, userId, limit, offset) => __awaiter(void 0, v
             ON mument.like.user_id = user.id
         WHERE mument.like.mument_id = ?
             AND mument.like.user_id NOT IN ${strBlockUserList}
-            AND user.is_deleted = 0
         ORDER BY mument.like.created_at DESC
         LIMIT ? OFFSET ?;
         `;
