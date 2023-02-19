@@ -74,7 +74,7 @@ const getMyMumentList = (userId, tagList) => __awaiter(void 0, void 0, void 0, f
                     isPrivate: Boolean(item.is_private),
                     likeCount: item.like_count,
                     isLiked: Boolean(isLiked),
-                    createdAt: (0, dayjs_1.default)(item.created_at).format('D MMM, YYYY'),
+                    createdAt: (0, dayjs_1.default)(item.created_at).format('YYYY.MM.DD'),
                     year: Number((0, dayjs_1.default)(item.created_at).format('YYYY')),
                     month: Number((0, dayjs_1.default)(item.created_at).format('M'))
                 });
@@ -159,7 +159,7 @@ const getLikeMumentList = (userId, tagList) => __awaiter(void 0, void 0, void 0,
                     isPrivate: Boolean(item.is_private),
                     likeCount: item.like_count,
                     isLiked: true,
-                    createdAt: (0, dayjs_1.default)(item.created_at).format('D MMM, YYYY'),
+                    createdAt: (0, dayjs_1.default)(item.created_at).format('YYYY.MM.DD'),
                     year: Number((0, dayjs_1.default)(item.created_at).format('YYYY')),
                     month: Number((0, dayjs_1.default)(item.created_at).format('M'))
                 });
@@ -626,7 +626,7 @@ const getNewsList = (userId) => __awaiter(void 0, void 0, void 0, function* () {
                     userId: item.user_id,
                     isDeleted: Boolean(item.is_deleted),
                     isRead: Boolean(item.is_read),
-                    createdAt: (0, dayjs_1.default)(item.created_at).format('MM/DD HH:mm'),
+                    createdAt: (0, dayjs_1.default)(item.created_at).format('MM.DD h:mm A'),
                     linkId: item.link_id,
                     notice: {
                         point: item.notice_point_word,

@@ -335,7 +335,7 @@ const getMumentHistory = (userId, musicId, writerId, orderBy) => __awaiter(void 
         }), LikedResult);
         // string으로 날짜 생성해주는 함수
         const createDate = (createdAt) => {
-            const date = (0, dayjs_1.default)(createdAt).format('D MMM, YYYY');
+            const date = (0, dayjs_1.default)(createdAt).format('YYYY.MM.DD');
             return date;
         };
         const mumentHistory = [];
@@ -693,7 +693,7 @@ const getTodayMument = () => __awaiter(void 0, void 0, void 0, function* () {
         }
         const cardTag = yield cardTagList_1.default.cardTag(tagList);
         const createDate = (createdAt) => {
-            const date = (0, dayjs_1.default)(createdAt).format('D MMM, YYYY');
+            const date = (0, dayjs_1.default)(createdAt).format('YYYY.MM.DD');
             return date;
         };
         const isFirst = todayMument.is_first ? true : false;
