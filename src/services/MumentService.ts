@@ -289,7 +289,6 @@ const getMumentHistory = async (userId: string, musicId: string, writerId: strin
             WHERE mument.music_id = ?
                 AND mument.user_id = ?
                 AND mument.is_deleted = 0
-                AND user.is_deleted = 0
             ORDER BY created_at ${orderBy};
             `;
 
@@ -309,7 +308,6 @@ const getMumentHistory = async (userId: string, musicId: string, writerId: strin
                 AND mument.user_id = ?
                 AND mument.is_private = 0
                 AND mument.is_deleted = 0
-                AND user.is_deleted = 0
             ORDER BY created_at ${orderBy}
             `;
             getMumentListResult = await connection.query(getMumentListQuery, [userId, musicId, writerId]);
@@ -1081,7 +1079,6 @@ const getLikeUserList = async (mumentId: string, userId: string, limit: any, off
             ON mument.like.user_id = user.id
         WHERE mument.like.mument_id = ?
             AND mument.like.user_id NOT IN ${strBlockUserList}
-            AND user.is_deleted = 0
         ORDER BY mument.like.created_at DESC
         LIMIT ? OFFSET ?;
         `;
