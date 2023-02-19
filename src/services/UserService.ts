@@ -84,7 +84,7 @@ const getMyMumentList = async (userId: string, tagList: number[]): Promise<UserM
                     isPrivate: Boolean(item.is_private),
                     likeCount: item.like_count,
                     isLiked: Boolean(isLiked),
-                    createdAt: dayjs(item.created_at).format('D MMM, YYYY'),
+                    createdAt: dayjs(item.created_at).format('YYYY.MM.DD'),
                     year: Number(dayjs(item.created_at).format('YYYY')),
                     month: Number(dayjs(item.created_at).format('M'))
                 });
@@ -179,7 +179,7 @@ const getLikeMumentList = async (userId: string, tagList: number[]): Promise<Use
                     isPrivate: Boolean(item.is_private),
                     likeCount: item.like_count,
                     isLiked: true, //무조건 true
-                    createdAt: dayjs(item.created_at).format('D MMM, YYYY'),
+                    createdAt: dayjs(item.created_at).format('YYYY.MM.DD'),
                     year: Number(dayjs(item.created_at).format('YYYY')),
                     month: Number(dayjs(item.created_at).format('M'))
                 });
@@ -711,7 +711,7 @@ const getNewsList = async (userId: number): Promise<NewsResponseDto[]> => {
                     userId: item.user_id,
                     isDeleted: Boolean(item.is_deleted),
                     isRead: Boolean(item.is_read),
-                    createdAt: dayjs(item.created_at).format('MM/DD HH:mm'),
+                    createdAt: dayjs(item.created_at).format('MM.DD h:mm A'),
                     linkId: item.link_id,
                     notice: {
                         point: item.notice_point_word,

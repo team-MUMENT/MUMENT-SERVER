@@ -103,7 +103,7 @@ const getMusicAndMyMument = (musicId, userId, musicCreateDto) => __awaiter(void 
         const isLikedResult = yield connection.query(getIsLikedQuery, [latestMument[0].id, userId]);
         const isLiked = Boolean(isLikedResult[0].is_liked);
         // 날짜 가공
-        const mumentDate = (0, dayjs_1.default)(latestMument[0].created_at).format('D MMM, YYYY');
+        const mumentDate = (0, dayjs_1.default)(latestMument[0].created_at).format('YYYY.MM.DD');
         const myMument = {
             _id: latestMument[0].id,
             music: {
@@ -271,7 +271,7 @@ const getMumentList = (musicId, userId, isLikeOrder) => __awaiter(void 0, void 0
         }), Promise.resolve());
         // string으로 날짜 생성해주는 함수
         const createDate = (createdAt) => {
-            const date = (0, dayjs_1.default)(createdAt).format('D MMM, YYYY');
+            const date = (0, dayjs_1.default)(createdAt).format('YYYY.MM.DD');
             return date;
         };
         const mumentList = [];

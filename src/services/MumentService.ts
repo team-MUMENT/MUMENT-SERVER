@@ -374,7 +374,7 @@ const getMumentHistory = async (userId: string, musicId: string, writerId: strin
 
         // string으로 날짜 생성해주는 함수
         const createDate = (createdAt: Date): string => {
-            const date = dayjs(createdAt).format('D MMM, YYYY');
+            const date = dayjs(createdAt).format('YYYY.MM.DD');
             return date;
         };
 
@@ -769,7 +769,7 @@ const getTodayMument = async (): Promise<TodayMumentResponseDto | number> => {
         const cardTag: number[] = await cardTagList.cardTag(tagList);
 
         const createDate = (createdAt: Date): string => {
-            const date = dayjs(createdAt).format('D MMM, YYYY');
+            const date = dayjs(createdAt).format('YYYY.MM.DD');
             return date;
         };
 
