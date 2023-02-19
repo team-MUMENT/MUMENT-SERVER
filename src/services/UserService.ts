@@ -305,7 +305,7 @@ const getBlockedUserList = async (userId: number): Promise<UserResponseDto[] | n
         const selectBlockQuery = `
             SELECT blocked_user_id as id, user.profile_id, user.image FROM block
             JOIN user ON block.blocked_user_id=user.id
-            WHERE block.user_id=? AND user.is_deleted=0;
+            WHERE block.user_id=?;
         `;
         const blockedUserList: UserResponseDto[] = await pools.queryValue(selectBlockQuery, [
             userId
