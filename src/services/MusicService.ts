@@ -111,7 +111,7 @@ const getMusicAndMyMument = async (musicId: string, userId: string, musicCreateD
 
 
         // 날짜 가공
-        const mumentDate = dayjs(latestMument[0].created_at).format('D MMM, YYYY');
+        const mumentDate = dayjs(latestMument[0].created_at).format('YYYY.MM.DD');
 
         const myMument: MumentCardViewInterface = {
             _id: latestMument[0].id,
@@ -276,7 +276,7 @@ const getMumentList = async (musicId: string, userId: string, isLikeOrder: boole
 
         // string으로 날짜 생성해주는 함수
         const createDate = (createdAt: Date): string => {
-            const date = dayjs(createdAt).format('D MMM, YYYY');
+            const date = dayjs(createdAt).format('YYYY.MM.DD');
             return date;
         };
 
