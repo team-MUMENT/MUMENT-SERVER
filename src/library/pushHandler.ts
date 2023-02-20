@@ -2,6 +2,7 @@ import responseMessage from '../modules/responseMessage';
 import constant from '../modules/serviceReturnConstant'
 import * as admin from 'firebase-admin';
 import { Message, MulticastMessage } from 'firebase-admin/lib/messaging/messaging-api';
+import slackWebHook, { SlackMessageFormat } from '../library/slackWebHook';
 
 /**
  * 푸시알림 - 공지사항용
@@ -11,22 +12,24 @@ const noticePushAlarmHandler = async (pushTitle: string, pushBody: string, fcmTo
     if (fcmTokenList.length === 0) return constant.NOTICE_PUSH_FAIL;
 
     let message: MulticastMessage = {
-        notification: {
+        data: {
+            type: 'notice',
             title: pushTitle,
-            body: pushBody,
+            body: pushBody
         },
         tokens: fcmTokenList,
         android: {
             priority: 'high',
-            notification: {
-                sound: 'default',
-            },
         },
         apns: {
             payload: {
                 aps: {
                     contentAvailable: true,
                     sound: 'default',
+                    alert: {
+                        title: pushTitle,
+                        body: pushBody,
+                    }
                 },
             },
         },
@@ -42,11 +45,13 @@ const noticePushAlarmHandler = async (pushTitle: string, pushBody: string, fcmTo
                 // 푸시알림 실패한 유저 있을 경우 찾아서 보냄
                 if (res.failureCount > 0) {
                     res.responses.forEach((response, idx) => {
-                        if (response.success) pushFailFcmTokenList.push(fcmTokenList[idx]) 
+                        if (!response.success) pushFailFcmTokenList.push(fcmTokenList[idx]) 
                         else return; 
                     })
                 }
-                console.log(pushFailFcmTokenList);
+                console.log('공지 푸시 실패유저 토큰: ', pushFailFcmTokenList);
+                const slackMessage: SlackMessageFormat = slackWebHook.slackPushFailMessage(`공지 푸시알림 실패 유저의 fcm token입니다 : ${pushFailFcmTokenList}`);
+                slackWebHook.sendMessage(slackMessage);
                 
             })
             .catch(function (err) {
@@ -69,22 +74,24 @@ const likePushAlarmHandler = async (pushTitle: string, pushBody: string, fcmToke
     if (!fcmToken || fcmToken === undefined) return constant.LIKE_PUSH_FAIL;
 
     let message: Message = {
-        notification: {
+        data: {
+            type: 'like',
             title: pushTitle,
             body: pushBody,
         },
         token: fcmToken,
         android: {
             priority: 'high',
-            notification: {
-                sound: 'default',
-            },
         },
         apns: {
             payload: {
                 aps: {
                     contentAvailable: true,
                     sound: 'default',
+                    alert: {
+                        title: pushTitle,
+                        body: pushBody,
+                    }
                 },
             },
         },
@@ -94,10 +101,12 @@ const likePushAlarmHandler = async (pushTitle: string, pushBody: string, fcmToke
         await admin
             .messaging()
             .send(message)
-            .then(function (res) {        
+            .then(function (res) {   
             })
             .catch(function (err) {
                 console.log(responseMessage.PUSH_ALARM_ERROR, err);
+                const slackMessage: SlackMessageFormat = slackWebHook.slackPushFailMessage(`좋아요 푸시 실패 유저의 fcm token입니다 : ${fcmToken}`);
+                slackWebHook.sendMessage(slackMessage);  
                 return constant.LIKE_PUSH_FAIL;
             });
         

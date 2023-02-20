@@ -38,6 +38,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const responseMessage_1 = __importDefault(require("../modules/responseMessage"));
 const serviceReturnConstant_1 = __importDefault(require("../modules/serviceReturnConstant"));
 const admin = __importStar(require("firebase-admin"));
+const slackWebHook_1 = __importDefault(require("../library/slackWebHook"));
 /**
  * 푸시알림 - 공지사항용
  * FCM TOKEN - 여러 개 배열로 받음
@@ -46,22 +47,24 @@ const noticePushAlarmHandler = (pushTitle, pushBody, fcmTokenList) => __awaiter(
     if (fcmTokenList.length === 0)
         return serviceReturnConstant_1.default.NOTICE_PUSH_FAIL;
     let message = {
-        notification: {
+        data: {
+            type: 'notice',
             title: pushTitle,
-            body: pushBody,
+            body: pushBody
         },
         tokens: fcmTokenList,
         android: {
             priority: 'high',
-            notification: {
-                sound: 'default',
-            },
         },
         apns: {
             payload: {
                 aps: {
                     contentAvailable: true,
                     sound: 'default',
+                    alert: {
+                        title: pushTitle,
+                        body: pushBody,
+                    }
                 },
             },
         },
@@ -75,13 +78,15 @@ const noticePushAlarmHandler = (pushTitle, pushBody, fcmTokenList) => __awaiter(
             // 푸시알림 실패한 유저 있을 경우 찾아서 보냄
             if (res.failureCount > 0) {
                 res.responses.forEach((response, idx) => {
-                    if (response.success)
+                    if (!response.success)
                         pushFailFcmTokenList.push(fcmTokenList[idx]);
                     else
                         return;
                 });
             }
-            console.log(pushFailFcmTokenList);
+            console.log('공지 푸시 실패유저 토큰: ', pushFailFcmTokenList);
+            const slackMessage = slackWebHook_1.default.slackPushFailMessage(`공지 푸시알림 실패 유저의 fcm token입니다 : ${pushFailFcmTokenList}`);
+            slackWebHook_1.default.sendMessage(slackMessage);
         })
             .catch(function (err) {
             console.log(responseMessage_1.default.PUSH_ALARM_ERROR, err);
@@ -102,22 +107,24 @@ const likePushAlarmHandler = (pushTitle, pushBody, fcmToken) => __awaiter(void 0
     if (!fcmToken || fcmToken === undefined)
         return serviceReturnConstant_1.default.LIKE_PUSH_FAIL;
     let message = {
-        notification: {
+        data: {
+            type: 'like',
             title: pushTitle,
             body: pushBody,
         },
         token: fcmToken,
         android: {
             priority: 'high',
-            notification: {
-                sound: 'default',
-            },
         },
         apns: {
             payload: {
                 aps: {
                     contentAvailable: true,
                     sound: 'default',
+                    alert: {
+                        title: pushTitle,
+                        body: pushBody,
+                    }
                 },
             },
         },
@@ -130,6 +137,8 @@ const likePushAlarmHandler = (pushTitle, pushBody, fcmToken) => __awaiter(void 0
         })
             .catch(function (err) {
             console.log(responseMessage_1.default.PUSH_ALARM_ERROR, err);
+            const slackMessage = slackWebHook_1.default.slackPushFailMessage(`좋아요 푸시 실패 유저의 fcm token입니다 : ${fcmToken}`);
+            slackWebHook_1.default.sendMessage(slackMessage);
             return serviceReturnConstant_1.default.LIKE_PUSH_FAIL;
         });
         return serviceReturnConstant_1.default.LIKE_PUSH_SUCCESS;

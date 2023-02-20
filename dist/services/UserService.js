@@ -74,7 +74,7 @@ const getMyMumentList = (userId, tagList) => __awaiter(void 0, void 0, void 0, f
                     isPrivate: Boolean(item.is_private),
                     likeCount: item.like_count,
                     isLiked: Boolean(isLiked),
-                    createdAt: (0, dayjs_1.default)(item.created_at).format('D MMM, YYYY'),
+                    createdAt: (0, dayjs_1.default)(item.created_at).format('YYYY.MM.DD'),
                     year: Number((0, dayjs_1.default)(item.created_at).format('YYYY')),
                     month: Number((0, dayjs_1.default)(item.created_at).format('M'))
                 });
@@ -159,7 +159,7 @@ const getLikeMumentList = (userId, tagList) => __awaiter(void 0, void 0, void 0,
                     isPrivate: Boolean(item.is_private),
                     likeCount: item.like_count,
                     isLiked: true,
-                    createdAt: (0, dayjs_1.default)(item.created_at).format('D MMM, YYYY'),
+                    createdAt: (0, dayjs_1.default)(item.created_at).format('YYYY.MM.DD'),
                     year: Number((0, dayjs_1.default)(item.created_at).format('YYYY')),
                     month: Number((0, dayjs_1.default)(item.created_at).format('M'))
                 });
@@ -270,7 +270,7 @@ const getBlockedUserList = (userId) => __awaiter(void 0, void 0, void 0, functio
         const selectBlockQuery = `
             SELECT blocked_user_id as id, user.profile_id, user.image FROM block
             JOIN user ON block.blocked_user_id=user.id
-            WHERE block.user_id=? AND user.is_deleted=0;
+            WHERE block.user_id=?;
         `;
         const blockedUserList = yield pool_1.default.queryValue(selectBlockQuery, [
             userId
@@ -626,7 +626,7 @@ const getNewsList = (userId) => __awaiter(void 0, void 0, void 0, function* () {
                     userId: item.user_id,
                     isDeleted: Boolean(item.is_deleted),
                     isRead: Boolean(item.is_read),
-                    createdAt: (0, dayjs_1.default)(item.created_at).format('MM/DD HH:mm'),
+                    createdAt: (0, dayjs_1.default)(item.created_at).format('MM.DD h:mm A'),
                     linkId: item.link_id,
                     notice: {
                         point: item.notice_point_word,
@@ -762,7 +762,8 @@ const getWebviewLink = (page) => __awaiter(void 0, void 0, void 0, function* () 
                 faq: WebViewLink_1.default.faq,
                 contact: WebViewLink_1.default.contact,
                 appInfo: WebViewLink_1.default.appInfo,
-                introduction: WebViewLink_1.default.introduction
+                introduction: WebViewLink_1.default.introduction,
+                license: WebViewLink_1.default.license,
             };
         }
         else if (page === 'login') {

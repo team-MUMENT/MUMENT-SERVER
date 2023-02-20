@@ -18,8 +18,6 @@ router.post('/:musicId', [
 router.get('/:musicId/order', [
     param('musicId').toInt().isInt(), 
     query('default').isString().isIn(['Y', 'N']),
-    query('limit').toInt().isInt(),
-    query('offset').toInt().isInt(),
 ], auth, MusicController.getMumentList);
 
 export default router;

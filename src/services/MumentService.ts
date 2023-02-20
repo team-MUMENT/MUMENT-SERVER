@@ -35,6 +35,7 @@ import { AgainSelectionInfo } from '../interfaces/home/AgainSelectionInfo';
 import { TodaySelectionInfo } from '../interfaces/home/TodaySelectionInfo';
 import { TagListInfo } from '../interfaces/common/TagListInfo';
 import common from '../modules/common';
+import slackWebHook, { SlackMessageFormat } from '../library/slackWebHook';
 
 /**
  * 뮤멘트 기록하기
@@ -267,7 +268,7 @@ const getIsFirst = async (userId: string, musicId: string): Promise<IsFirstRespo
 /**
  * 히스토리 조회
  */
-const getMumentHistory = async (userId: string, musicId: string, writerId: string, orderBy: string, limit: any, offset: any): Promise<MumentHistoryResponseDto | number | null> => {
+const getMumentHistory = async (userId: string, musicId: string, writerId: string, orderBy: string): Promise<MumentHistoryResponseDto | number | null> => {
     const pool: any = await poolPromise;
     const connection = await pool.getConnection();
 
@@ -288,12 +289,10 @@ const getMumentHistory = async (userId: string, musicId: string, writerId: strin
             WHERE mument.music_id = ?
                 AND mument.user_id = ?
                 AND mument.is_deleted = 0
-                AND user.is_deleted = 0
-            ORDER BY created_at ${orderBy}
-            LIMIT ? OFFSET ?;
+            ORDER BY created_at ${orderBy};
             `;
 
-            getMumentListResult = await connection.query(getMumentListQuery, [userId, musicId, writerId, limit, offset]);
+            getMumentListResult = await connection.query(getMumentListQuery, [userId, musicId, writerId]);
         } else {
             // 비밀글 볼 수 없게 함
             const getMumentListQuery = `
@@ -309,11 +308,9 @@ const getMumentHistory = async (userId: string, musicId: string, writerId: strin
                 AND mument.user_id = ?
                 AND mument.is_private = 0
                 AND mument.is_deleted = 0
-                AND user.is_deleted = 0
             ORDER BY created_at ${orderBy}
-            LIMIT ? OFFSET ?;
             `;
-            getMumentListResult = await connection.query(getMumentListQuery, [userId, musicId, writerId, limit, offset]);
+            getMumentListResult = await connection.query(getMumentListQuery, [userId, musicId, writerId]);
         }
         //출력
 
@@ -375,7 +372,7 @@ const getMumentHistory = async (userId: string, musicId: string, writerId: strin
 
         // string으로 날짜 생성해주는 함수
         const createDate = (createdAt: Date): string => {
-            const date = dayjs(createdAt).format('D MMM, YYYY');
+            const date = dayjs(createdAt).format('YYYY.MM.DD');
             return date;
         };
 
@@ -770,7 +767,7 @@ const getTodayMument = async (): Promise<TodayMumentResponseDto | number> => {
         const cardTag: number[] = await cardTagList.cardTag(tagList);
 
         const createDate = (createdAt: Date): string => {
-            const date = dayjs(createdAt).format('D MMM, YYYY');
+            const date = dayjs(createdAt).format('YYYY.MM.DD');
             return date;
         };
 
@@ -1000,7 +997,7 @@ const getNoticeList = async (): Promise<NoticeInfoRDB[]> => {
 // 뮤멘트 신고하기
 const createReport = async (mumentId: string, reportCategory: number[], etcContent: string, userId: string): Promise<void | number> => {
     const pool: any = await poolPromise;
-    const connection = await pool.getConnection();
+    let connection = await pool.getConnection();
 
     try {
         await connection.beginTransaction(); //롤백을 위해 필요함
@@ -1012,21 +1009,34 @@ const createReport = async (mumentId: string, reportCategory: number[], etcConte
         if (!reportedMument.isExist) return constant.NO_MUMENT;
         reportedUser = reportedMument.mument?.user_id as number;
 
+        
         // 신고 사유 배열에 대해 모두 POST
-        const postReport = async (item: number, idx: number) => {
-            const postReportQuery = `
-                INSERT INTO report(user_id, reported_user_id, report_category_id, reason_etc, mument_id) 
-                    VALUES(?, ?, ?, ?, ?);
-            `;
+        let resasonList: string[] = [];
 
+        const postReport = async (item: number, idx: number) => {
+            const postReportQuery = 'INSERT INTO report(user_id, reported_user_id, report_category_id, reason_etc, mument_id) VALUES(?, ?, ?, ?, ?);'
             await connection.query(postReportQuery, [userId, reportedUser, item, etcContent, mumentId]);
+
+            // 신고 카테고리 조회
+            const category = await connection.query('SELECT name FROM report_category WHERE id=?', [item]);
+            resasonList.push(category[0].name);
         };
 
         await reportCategory.reduce(async (acc, curr, index) => {
             return acc.then(() => postReport(curr, index));
         }, Promise.resolve());
 
-        await connection.commit(); // 모두 성공시 커밋(데이터 적용)
+        await connection.commit();
+
+        
+        // 신고 내역 웹훅 채널 전송
+        const slackMessage: SlackMessageFormat = slackWebHook.slackReportMessage(
+            `🚨신고 접수🚨 \n\n 1. 뮤멘트 내용: ${reportedMument.mument?.content} \n\n 2. 신고 이유: ${resasonList.join(' / ')}
+            \n 3. 기타: ${etcContent}`
+        );
+        
+        slackWebHook.sendMessage(slackMessage);
+
     } catch (error) {
         console.log(error);
         await connection.rollback(); // 하나라도 에러시 롤백 (데이터 적용 원상복귀)
@@ -1069,7 +1079,6 @@ const getLikeUserList = async (mumentId: string, userId: string, limit: any, off
             ON mument.like.user_id = user.id
         WHERE mument.like.mument_id = ?
             AND mument.like.user_id NOT IN ${strBlockUserList}
-            AND user.is_deleted = 0
         ORDER BY mument.like.created_at DESC
         LIMIT ? OFFSET ?;
         `;
