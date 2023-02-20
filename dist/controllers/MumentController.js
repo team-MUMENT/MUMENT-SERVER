@@ -136,7 +136,7 @@ const getIsFirst = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
 const getMumentHistory = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { musicId, userId: writerId } = req.params;
     const userId = req.body.userId;
-    const { default: orderOption, limit, offset } = req.query;
+    const { default: orderOption } = req.query;
     const error = (0, express_validator_1.validationResult)(req);
     if (!error.isEmpty()) {
         return res.status(statusCode_1.default.BAD_REQUEST).send(util_1.default.fail(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.WRONG_PARAMS));
@@ -154,7 +154,7 @@ const getMumentHistory = (req, res) => __awaiter(void 0, void 0, void 0, functio
     }
     ;
     try {
-        const data = yield services_1.MumentService.getMumentHistory(userId, musicId, writerId, orderBy, limit, offset);
+        const data = yield services_1.MumentService.getMumentHistory(userId, musicId, writerId, orderBy);
         return res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.READ_MUMENT_HISTORY_SUCCESS, data));
     }
     catch (error) {

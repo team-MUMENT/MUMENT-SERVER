@@ -54,7 +54,7 @@ const getMusicAndMyMument = (req, res) => __awaiter(void 0, void 0, void 0, func
 const getMumentList = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { musicId } = req.params;
     const { userId } = req.body;
-    const { default: orderOption, limit, offset } = req.query;
+    const { default: orderOption } = req.query;
     const error = (0, express_validator_1.validationResult)(req);
     if (!error.isEmpty()) {
         return res.status(statusCode_1.default.BAD_REQUEST).send(util_1.default.fail(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.WRONG_PARAMS));
@@ -71,7 +71,7 @@ const getMumentList = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         }
     }
     try {
-        const data = yield services_1.MusicService.getMumentList(musicId, userId, isLikeOrder, limit, offset);
+        const data = yield services_1.MusicService.getMumentList(musicId, userId, isLikeOrder);
         if (!data) { // 조회 성공했으나, 결과값 없을 때 204 리턴
             return res.status(statusCode_1.default.NO_CONTENT).send(util_1.default.success(statusCode_1.default.NO_CONTENT, responseMessage_1.default.READ_MUSIC_MUMENTLIST_SUCCESS));
         }

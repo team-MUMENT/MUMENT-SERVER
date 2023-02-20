@@ -20,6 +20,7 @@ exports.default = {
      * Connect to Slack with Webhook
      */
     webhookURI: process.env.WEBHOOK_URI,
+    webhookReportURI: process.env.WEBHOOK_REPORT_URI,
     /**
      *  RDS MySQL
      */

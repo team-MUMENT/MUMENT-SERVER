@@ -84,7 +84,7 @@ const getMyMumentList = async (userId: string, tagList: number[]): Promise<UserM
                     isPrivate: Boolean(item.is_private),
                     likeCount: item.like_count,
                     isLiked: Boolean(isLiked),
-                    createdAt: dayjs(item.created_at).format('D MMM, YYYY'),
+                    createdAt: dayjs(item.created_at).format('YYYY.MM.DD'),
                     year: Number(dayjs(item.created_at).format('YYYY')),
                     month: Number(dayjs(item.created_at).format('M'))
                 });
@@ -179,7 +179,7 @@ const getLikeMumentList = async (userId: string, tagList: number[]): Promise<Use
                     isPrivate: Boolean(item.is_private),
                     likeCount: item.like_count,
                     isLiked: true, //무조건 true
-                    createdAt: dayjs(item.created_at).format('D MMM, YYYY'),
+                    createdAt: dayjs(item.created_at).format('YYYY.MM.DD'),
                     year: Number(dayjs(item.created_at).format('YYYY')),
                     month: Number(dayjs(item.created_at).format('M'))
                 });
@@ -305,7 +305,7 @@ const getBlockedUserList = async (userId: number): Promise<UserResponseDto[] | n
         const selectBlockQuery = `
             SELECT blocked_user_id as id, user.profile_id, user.image FROM block
             JOIN user ON block.blocked_user_id=user.id
-            WHERE block.user_id=? AND user.is_deleted=0;
+            WHERE block.user_id=?;
         `;
         const blockedUserList: UserResponseDto[] = await pools.queryValue(selectBlockQuery, [
             userId
@@ -405,7 +405,7 @@ const checkDuplicateName = async (profileId: string): Promise<boolean> => {
         `;
 
         const checkResult = await pools.queryValue(checkQuery, [profileId]);
-
+        
         const isDuplicate: boolean = checkResult[0].is_duplicate;
 
         const data = isDuplicate;
@@ -711,7 +711,7 @@ const getNewsList = async (userId: number): Promise<NewsResponseDto[]> => {
                     userId: item.user_id,
                     isDeleted: Boolean(item.is_deleted),
                     isRead: Boolean(item.is_read),
-                    createdAt: dayjs(item.created_at).format('MM/DD HH:mm'),
+                    createdAt: dayjs(item.created_at).format('MM.DD h:mm A'),
                     linkId: item.link_id,
                     notice: {
                         point: item.notice_point_word,
@@ -872,7 +872,8 @@ const getWebviewLink = async (page: string): Promise<LoginWebviewLinkDto | Mypag
                 faq: WebViewLinkDummy.faq,
                 contact: WebViewLinkDummy.contact,
                 appInfo: WebViewLinkDummy.appInfo,
-                introduction: WebViewLinkDummy.introduction
+                introduction: WebViewLinkDummy.introduction,
+                license: WebViewLinkDummy.license,
             };
         } else if (page === 'login') {
             // [로그인] 웹뷰 조회

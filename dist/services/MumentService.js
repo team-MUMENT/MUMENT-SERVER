@@ -31,6 +31,7 @@ const tagTitle_1 = require("../modules/tagTitle");
 const cardTagList_1 = __importDefault(require("../modules/cardTagList"));
 const pushHandler_1 = __importDefault(require("../library/pushHandler"));
 const common_1 = __importDefault(require("../modules/common"));
+const slackWebHook_1 = __importDefault(require("../library/slackWebHook"));
 /**
  * 뮤멘트 기록하기
  */
@@ -231,7 +232,7 @@ const getIsFirst = (userId, musicId) => __awaiter(void 0, void 0, void 0, functi
 /**
  * 히스토리 조회
  */
-const getMumentHistory = (userId, musicId, writerId, orderBy, limit, offset) => __awaiter(void 0, void 0, void 0, function* () {
+const getMumentHistory = (userId, musicId, writerId, orderBy) => __awaiter(void 0, void 0, void 0, function* () {
     var e_1, _a, e_2, _b, e_3, _c;
     const pool = yield db_1.default;
     const connection = yield pool.getConnection();
@@ -251,11 +252,9 @@ const getMumentHistory = (userId, musicId, writerId, orderBy, limit, offset) => 
             WHERE mument.music_id = ?
                 AND mument.user_id = ?
                 AND mument.is_deleted = 0
-                AND user.is_deleted = 0
-            ORDER BY created_at ${orderBy}
-            LIMIT ? OFFSET ?;
+            ORDER BY created_at ${orderBy};
             `;
-            getMumentListResult = yield connection.query(getMumentListQuery, [userId, musicId, writerId, limit, offset]);
+            getMumentListResult = yield connection.query(getMumentListQuery, [userId, musicId, writerId]);
         }
         else {
             // 비밀글 볼 수 없게 함
@@ -272,11 +271,9 @@ const getMumentHistory = (userId, musicId, writerId, orderBy, limit, offset) => 
                 AND mument.user_id = ?
                 AND mument.is_private = 0
                 AND mument.is_deleted = 0
-                AND user.is_deleted = 0
             ORDER BY created_at ${orderBy}
-            LIMIT ? OFFSET ?;
             `;
-            getMumentListResult = yield connection.query(getMumentListQuery, [userId, musicId, writerId, limit, offset]);
+            getMumentListResult = yield connection.query(getMumentListQuery, [userId, musicId, writerId]);
         }
         //출력
         // 해당 유저가 작성한 뮤멘트가 없을 경우 리턴
@@ -336,7 +333,7 @@ const getMumentHistory = (userId, musicId, writerId, orderBy, limit, offset) => 
         }), LikedResult);
         // string으로 날짜 생성해주는 함수
         const createDate = (createdAt) => {
-            const date = (0, dayjs_1.default)(createdAt).format('D MMM, YYYY');
+            const date = (0, dayjs_1.default)(createdAt).format('YYYY.MM.DD');
             return date;
         };
         const mumentHistory = [];
@@ -694,7 +691,7 @@ const getTodayMument = () => __awaiter(void 0, void 0, void 0, function* () {
         }
         const cardTag = yield cardTagList_1.default.cardTag(tagList);
         const createDate = (createdAt) => {
-            const date = (0, dayjs_1.default)(createdAt).format('D MMM, YYYY');
+            const date = (0, dayjs_1.default)(createdAt).format('YYYY.MM.DD');
             return date;
         };
         const isFirst = todayMument.is_first ? true : false;
@@ -895,9 +892,9 @@ const getNoticeList = () => __awaiter(void 0, void 0, void 0, function* () {
 });
 // 뮤멘트 신고하기
 const createReport = (mumentId, reportCategory, etcContent, userId) => __awaiter(void 0, void 0, void 0, function* () {
-    var _e;
+    var _e, _f;
     const pool = yield db_1.default;
-    const connection = yield pool.getConnection();
+    let connection = yield pool.getConnection();
     try {
         yield connection.beginTransaction(); //롤백을 위해 필요함
         // 신고 당하는 유저 id 가져오기
@@ -907,17 +904,22 @@ const createReport = (mumentId, reportCategory, etcContent, userId) => __awaiter
             return serviceReturnConstant_1.default.NO_MUMENT;
         reportedUser = (_e = reportedMument.mument) === null || _e === void 0 ? void 0 : _e.user_id;
         // 신고 사유 배열에 대해 모두 POST
+        let resasonList = [];
         const postReport = (item, idx) => __awaiter(void 0, void 0, void 0, function* () {
-            const postReportQuery = `
-                INSERT INTO report(user_id, reported_user_id, report_category_id, reason_etc, mument_id) 
-                    VALUES(?, ?, ?, ?, ?);
-            `;
+            const postReportQuery = 'INSERT INTO report(user_id, reported_user_id, report_category_id, reason_etc, mument_id) VALUES(?, ?, ?, ?, ?);';
             yield connection.query(postReportQuery, [userId, reportedUser, item, etcContent, mumentId]);
+            // 신고 카테고리 조회
+            const category = yield connection.query('SELECT name FROM report_category WHERE id=?', [item]);
+            resasonList.push(category[0].name);
         });
         yield reportCategory.reduce((acc, curr, index) => __awaiter(void 0, void 0, void 0, function* () {
             return acc.then(() => postReport(curr, index));
         }), Promise.resolve());
-        yield connection.commit(); // 모두 성공시 커밋(데이터 적용)
+        yield connection.commit();
+        // 신고 내역 웹훅 채널 전송
+        const slackMessage = slackWebHook_1.default.slackReportMessage(`🚨신고 접수🚨 \n\n 1. 뮤멘트 내용: ${(_f = reportedMument.mument) === null || _f === void 0 ? void 0 : _f.content} \n\n 2. 신고 이유: ${resasonList.join(' / ')}
+            \n 3. 기타: ${etcContent}`);
+        slackWebHook_1.default.sendMessage(slackMessage);
     }
     catch (error) {
         console.log(error);
@@ -930,7 +932,7 @@ const createReport = (mumentId, reportCategory, etcContent, userId) => __awaiter
 });
 // 좋아요 누른 사용자 조회
 const getLikeUserList = (mumentId, userId, limit, offset) => __awaiter(void 0, void 0, void 0, function* () {
-    var e_5, _f;
+    var e_5, _g;
     const pool = yield db_1.default;
     const connection = yield pool.getConnection();
     try {
@@ -951,7 +953,7 @@ const getLikeUserList = (mumentId, userId, limit, offset) => __awaiter(void 0, v
         catch (e_5_1) { e_5 = { error: e_5_1 }; }
         finally {
             try {
-                if (blockUserResult_1_1 && !blockUserResult_1_1.done && (_f = blockUserResult_1.return)) yield _f.call(blockUserResult_1);
+                if (blockUserResult_1_1 && !blockUserResult_1_1.done && (_g = blockUserResult_1.return)) yield _g.call(blockUserResult_1);
             }
             finally { if (e_5) throw e_5.error; }
         }
@@ -967,7 +969,6 @@ const getLikeUserList = (mumentId, userId, limit, offset) => __awaiter(void 0, v
             ON mument.like.user_id = user.id
         WHERE mument.like.mument_id = ?
             AND mument.like.user_id NOT IN ${strBlockUserList}
-            AND user.is_deleted = 0
         ORDER BY mument.like.created_at DESC
         LIMIT ? OFFSET ?;
         `;
