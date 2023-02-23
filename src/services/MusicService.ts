@@ -1,5 +1,4 @@
 import dayjs from 'dayjs';
-import axios from 'axios';
 import constant from '../modules/serviceReturnConstant';
 import poolPromise from '../loaders/db';
 
@@ -14,7 +13,6 @@ import musicDB from '../modules/db/Music';
 import mumentDB from '../modules/db/Mument';
 
 import cardTagList from '../modules/cardTagList';
-import config from '../config';
 import { MusicCreateDto } from '../interfaces/music/MusicCreateDto';
 import { IsLikedInfoRDB } from '../interfaces/user/IsLikedInfoRDB';
 import { MumentAndUserInfoRDB } from '../interfaces/mument/MumentAndUserInfoRDB';
