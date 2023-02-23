@@ -1,7 +1,12 @@
 import axios from 'axios';
 import config from '../config';
 
-const API_URL = config.webhookURI; // 서버_webhook 채널
+let API_URL = config.webhookURI;
+
+if (process.env.NODE_ENV == 'production') {
+    API_URL = config.webhookReleaseURI;
+} 
+
 const API_REPORT_URL = config.webhookReportURI; // 기획_서버_신고접수 채널
 
 // 마크다운 메세지 포맷 인터페이스
