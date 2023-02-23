@@ -14,7 +14,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const axios_1 = __importDefault(require("axios"));
 const config_1 = __importDefault(require("../config"));
-const API_URL = config_1.default.webhookURI; // 서버_webhook 채널
+let API_URL = config_1.default.webhookURI;
+if (process.env.NODE_ENV == 'production') {
+    API_URL = config_1.default.webhookReleaseURI;
+}
 const API_REPORT_URL = config_1.default.webhookReportURI; // 기획_서버_신고접수 채널
 const slackErrorMessage = (errorStack) => {
     return {
