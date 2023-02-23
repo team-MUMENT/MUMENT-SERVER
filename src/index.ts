@@ -4,15 +4,18 @@ import routes from './routes';
 import * as admin from 'firebase-admin';
 import { ServiceAccount } from 'firebase-admin';
 import serviceAccount from '../src/config/serviceAccountKey.json';
+import serviceAccountRelease from '../src/config/serviceAccountKeyRelease.json';
 
 require('dotenv').config();
+
+const serviceAccountEnv = process.env.NODE_ENV == 'production' ? serviceAccountRelease : serviceAccount;
 
 
 // firebase setting
 let firebase;
 if (admin.apps.length === 0) {
   firebase = admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount as ServiceAccount),
+    credential: admin.credential.cert(serviceAccountEnv as ServiceAccount),
   });
 } else {
   firebase = admin.app();
