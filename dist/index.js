@@ -31,12 +31,14 @@ const app = (0, express_1.default)();
 const routes_1 = __importDefault(require("./routes"));
 const admin = __importStar(require("firebase-admin"));
 const serviceAccountKey_json_1 = __importDefault(require("../src/config/serviceAccountKey.json"));
+const serviceAccountKeyRelease_json_1 = __importDefault(require("../src/config/serviceAccountKeyRelease.json"));
 require('dotenv').config();
+const serviceAccountEnv = process.env.NODE_ENV == 'production' ? serviceAccountKeyRelease_json_1.default : serviceAccountKey_json_1.default;
 // firebase setting
 let firebase;
 if (admin.apps.length === 0) {
     firebase = admin.initializeApp({
-        credential: admin.credential.cert(serviceAccountKey_json_1.default),
+        credential: admin.credential.cert(serviceAccountEnv),
     });
 }
 else {

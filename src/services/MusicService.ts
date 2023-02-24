@@ -1,5 +1,4 @@
 import dayjs from 'dayjs';
-import axios from 'axios';
 import constant from '../modules/serviceReturnConstant';
 import poolPromise from '../loaders/db';
 
@@ -14,12 +13,12 @@ import musicDB from '../modules/db/Music';
 import mumentDB from '../modules/db/Mument';
 
 import cardTagList from '../modules/cardTagList';
-import config from '../config';
 import { MusicCreateDto } from '../interfaces/music/MusicCreateDto';
 import { IsLikedInfoRDB } from '../interfaces/user/IsLikedInfoRDB';
 import { MumentAndUserInfoRDB } from '../interfaces/mument/MumentAndUserInfoRDB';
 import common from '../modules/common';
 import { TagListInfo } from '../interfaces/common/TagListInfo';
+import appleMusic from '../library/appleMusicSearch';
 
 const qs = require('querystring');
 require('dotenv').config();
@@ -110,7 +109,7 @@ const getMusicAndMyMument = async (musicId: string, userId: string, musicCreateD
 
 
         // 날짜 가공
-        const mumentDate = dayjs(latestMument[0].created_at).format('D MMM, YYYY');
+        const mumentDate = dayjs(latestMument[0].created_at).format('YYYY.MM.DD');
 
         const myMument: MumentCardViewInterface = {
             _id: latestMument[0].id,
@@ -195,7 +194,6 @@ const getMumentList = async (musicId: string, userId: string, isLikeOrder: boole
                 WHERE mument.music_id = ?
                     AND mument.user_id NOT IN ${strBlockUserList}
                     AND mument.is_deleted = 0  
-                    AND user.is_deleted = 0
                     AND (is_private = 0 OR (user.id = ? AND is_private = 1))
                 ORDER BY mument.like_count DESC;
                 `;
@@ -211,7 +209,6 @@ const getMumentList = async (musicId: string, userId: string, isLikeOrder: boole
                 WHERE mument.music_id = ?
                     AND mument.user_id NOT IN ${strBlockUserList}
                     AND mument.is_deleted = 0  
-                    AND user.is_deleted = 0
                     AND (is_private = 0 OR (user.id = ? AND is_private = 1))
                 ORDER BY mument.created_at DESC;
                 `;
@@ -275,7 +272,7 @@ const getMumentList = async (musicId: string, userId: string, isLikeOrder: boole
 
         // string으로 날짜 생성해주는 함수
         const createDate = (createdAt: Date): string => {
-            const date = dayjs(createdAt).format('D MMM, YYYY');
+            const date = dayjs(createdAt).format('YYYY.MM.DD');
             return date;
         };
 
@@ -319,62 +316,17 @@ const getMumentList = async (musicId: string, userId: string, isLikeOrder: boole
 };
 
 /**
- * 곡 검색 - apple music api 사용 곡 검색 / 최대 25개의 곡 리스트 반환 가능
+ * 곡 검색 - apple music api 사용 곡 검색 / 최대 50개까지 곡 리스트 반환 가능
  */
 const getMusicListBySearch = async (keyword: string): Promise<MusicResponseDto[] | number | void> => {
     try {        
-        const token = `Bearer ${config.appleDeveloperToken as string}`;
+        // 곡 검색 첫 페이지 개수가 25개 이상일 경우만 검색 2회 요청
+        const page1 = await appleMusic.searchMusic(keyword, 0);
+        if (page1.length < 25) return page1;
+        
+        const page2 = await appleMusic.searchMusic(keyword, 25);
 
-        let musicList: MusicResponseDto[] = [];
-
-        const appleResponse = async (searchKeyword: string) => {
-    
-            await axios.get('https://api.music.apple.com/v1/catalog/kr/search?types=songs&limit=20&term=' 
-                + encodeURI(searchKeyword), {
-                    headers: {
-                      'Content-Type': 'application/x-www-form-urlencoded',
-                      'Authorization': token
-                    }
-                }
-            )
-            .then(async function (response: any) {
-                /* apple api에서 받을 수 있는 3개 status code 대응 - 200, 401, 500*/       
-
-                if (response.data.results.hasOwnProperty('songs')) {
-                    // 401 - A response indicating an incorrect Authorization header
-                    if (response.status == 401) return constant.APPLE_UNAUTHORIZED;
-
-                    // 500 - indicating an error occurred on the apple music server
-                    if (response.status == 500) return constant.APPLE_INTERNAL_SERVER_ERROR;
-
-                    const appleMusicList = response.data.results.songs.data; 
-
-                    musicList =  await appleMusicList.map((music: any) => {
-                        let imageUrl = music.attributes.artwork.url;
-                        imageUrl = imageUrl.replace('{w}x{h}', '400x400'); //앨범 이미지 크기 400으로 지정
-
-                        const result: MusicResponseDto = {
-                            '_id': music.id,
-                            'name': music.attributes.name,
-                            'artist': music.attributes.artistName,
-                            'image': imageUrl
-                        };
-                        return result;
-                    });
-                }
-                
-                return musicList;
-            })
-            .catch(async function (error) {
-                console.log('곡검색 애플 error', error);
-                return constant.APPLE_INTERNAL_SERVER_ERROR;
-            });
-
-            return musicList;
-        };
-        const data = await appleResponse(keyword);
-
-        return data;
+        return page1.concat(page2);
     } catch (error) {
         console.log(error);
         throw error;
