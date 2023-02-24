@@ -175,3 +175,6 @@ src/config/apple
 
 # firebase
 src/config/serviceAccountKey.json
+src/config/serviceAccountKeyRelease.json
+dist/config/serviceAccountKey.json
+dist/config/serviceAccountKeyRelease.json

@@ -20,15 +20,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const dayjs_1 = __importDefault(require("dayjs"));
-const axios_1 = __importDefault(require("axios"));
 const serviceReturnConstant_1 = __importDefault(require("../modules/serviceReturnConstant"));
 const db_1 = __importDefault(require("../loaders/db"));
 const User_1 = __importDefault(require("../modules/db/User"));
 const Music_1 = __importDefault(require("../modules/db/Music"));
 const Mument_1 = __importDefault(require("../modules/db/Mument"));
 const cardTagList_1 = __importDefault(require("../modules/cardTagList"));
-const config_1 = __importDefault(require("../config"));
 const common_1 = __importDefault(require("../modules/common"));
+const appleMusicSearch_1 = __importDefault(require("../library/appleMusicSearch"));
 const qs = require('querystring');
 require('dotenv').config();
 /**
@@ -104,7 +103,7 @@ const getMusicAndMyMument = (musicId, userId, musicCreateDto) => __awaiter(void 
         const isLikedResult = yield connection.query(getIsLikedQuery, [latestMument[0].id, userId]);
         const isLiked = Boolean(isLikedResult[0].is_liked);
         // 날짜 가공
-        const mumentDate = (0, dayjs_1.default)(latestMument[0].created_at).format('D MMM, YYYY');
+        const mumentDate = (0, dayjs_1.default)(latestMument[0].created_at).format('YYYY.MM.DD');
         const myMument = {
             _id: latestMument[0].id,
             music: {
@@ -150,7 +149,7 @@ const getMusicAndMyMument = (musicId, userId, musicCreateDto) => __awaiter(void 
 /**
  * 곡 상세보기 - 모든 뮤멘트 조회
  */
-const getMumentList = (musicId, userId, isLikeOrder, limit, offset) => __awaiter(void 0, void 0, void 0, function* () {
+const getMumentList = (musicId, userId, isLikeOrder) => __awaiter(void 0, void 0, void 0, function* () {
     var e_1, _a, e_2, _b, e_3, _c;
     const pool = yield db_1.default;
     const connection = yield pool.getConnection();
@@ -190,12 +189,10 @@ const getMumentList = (musicId, userId, isLikeOrder, limit, offset) => __awaiter
                 WHERE mument.music_id = ?
                     AND mument.user_id NOT IN ${strBlockUserList}
                     AND mument.is_deleted = 0  
-                    AND user.is_deleted = 0
-                    AND mument.is_private = 0
-                ORDER BY mument.like_count DESC
-                LIMIT ? OFFSET ?;
+                    AND (is_private = 0 OR (user.id = ? AND is_private = 1))
+                ORDER BY mument.like_count DESC;
                 `;
-                originalMumentList = yield connection.query(getMumentListQuery, [musicId, limit, offset]);
+                originalMumentList = yield connection.query(getMumentListQuery, [musicId, userId]);
                 break;
             }
             case false: { // 최신순 정렬
@@ -207,12 +204,10 @@ const getMumentList = (musicId, userId, isLikeOrder, limit, offset) => __awaiter
                 WHERE mument.music_id = ?
                     AND mument.user_id NOT IN ${strBlockUserList}
                     AND mument.is_deleted = 0  
-                    AND user.is_deleted = 0
-                    AND mument.is_private = 0
-                ORDER BY mument.created_at DESC
-                LIMIT ? OFFSET ?;
+                    AND (is_private = 0 OR (user.id = ? AND is_private = 1))
+                ORDER BY mument.created_at DESC;
                 `;
-                originalMumentList = yield connection.query(getMumentListQuery, [musicId, limit, offset]);
+                originalMumentList = yield connection.query(getMumentListQuery, [musicId, userId]);
                 break;
             }
         }
@@ -274,7 +269,7 @@ const getMumentList = (musicId, userId, isLikeOrder, limit, offset) => __awaiter
         }), Promise.resolve());
         // string으로 날짜 생성해주는 함수
         const createDate = (createdAt) => {
-            const date = (0, dayjs_1.default)(createdAt).format('D MMM, YYYY');
+            const date = (0, dayjs_1.default)(createdAt).format('YYYY.MM.DD');
             return date;
         };
         const mumentList = [];
@@ -316,56 +311,16 @@ const getMumentList = (musicId, userId, isLikeOrder, limit, offset) => __awaiter
     }
 });
 /**
- * 곡 검색 - apple music api 사용 곡 검색 / 최대 25개의 곡 리스트 반환 가능
+ * 곡 검색 - apple music api 사용 곡 검색 / 최대 50개까지 곡 리스트 반환 가능
  */
 const getMusicListBySearch = (keyword) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const token = `Bearer ${config_1.default.appleDeveloperToken}`;
-        let musicList = [];
-        const appleResponse = (searchKeyword) => __awaiter(void 0, void 0, void 0, function* () {
-            yield axios_1.default.get('https://api.music.apple.com/v1/catalog/kr/search?types=songs&limit=20&term='
-                + encodeURI(searchKeyword), {
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'Authorization': token
-                }
-            })
-                .then(function (response) {
-                return __awaiter(this, void 0, void 0, function* () {
-                    /* apple api에서 받을 수 있는 3개 status code 대응 - 200, 401, 500*/
-                    if (response.data.results.hasOwnProperty('songs')) {
-                        // 401 - A response indicating an incorrect Authorization header
-                        if (response.status == 401)
-                            return serviceReturnConstant_1.default.APPLE_UNAUTHORIZED;
-                        // 500 - indicating an error occurred on the apple music server
-                        if (response.status == 500)
-                            return serviceReturnConstant_1.default.APPLE_INTERNAL_SERVER_ERROR;
-                        const appleMusicList = response.data.results.songs.data;
-                        musicList = yield appleMusicList.map((music) => {
-                            let imageUrl = music.attributes.artwork.url;
-                            imageUrl = imageUrl.replace('{w}x{h}', '400x400'); //앨범 이미지 크기 400으로 지정
-                            const result = {
-                                '_id': music.id,
-                                'name': music.attributes.name,
-                                'artist': music.attributes.artistName,
-                                'image': imageUrl
-                            };
-                            return result;
-                        });
-                    }
-                    return musicList;
-                });
-            })
-                .catch(function (error) {
-                return __awaiter(this, void 0, void 0, function* () {
-                    console.log('곡검색 애플 error', error);
-                    return serviceReturnConstant_1.default.APPLE_INTERNAL_SERVER_ERROR;
-                });
-            });
-            return musicList;
-        });
-        const data = yield appleResponse(keyword);
-        return data;
+        // 곡 검색 첫 페이지 개수가 25개 이상일 경우만 검색 2회 요청
+        const page1 = yield appleMusicSearch_1.default.searchMusic(keyword, 0);
+        if (page1.length < 25)
+            return page1;
+        const page2 = yield appleMusicSearch_1.default.searchMusic(keyword, 25);
+        return page1.concat(page2);
     }
     catch (error) {
         console.log(error);
