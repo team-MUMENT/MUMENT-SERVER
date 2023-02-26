@@ -1,9 +1,6 @@
 import axios from 'axios';
 import config from '../config';
 
-<<<<<<< HEAD
-const API_URL = config.webhookURI;
-=======
 let API_URL = config.webhookURI;
 
 if (process.env.NODE_ENV == 'production') {
@@ -11,7 +8,6 @@ if (process.env.NODE_ENV == 'production') {
 } 
 
 const API_REPORT_URL = config.webhookReportURI; // 기획_서버_신고접수 채널
->>>>>>> 6f65d3d7d8e4a839810a0352a17b768d376a3557
 
 // 마크다운 메세지 포맷 인터페이스
 export interface SlackMdFormat {
@@ -23,10 +19,7 @@ export interface SlackMdFormat {
 export interface SlackMessageFormat {
     title: string;
     text: string;
-<<<<<<< HEAD
-=======
     type: string; // error / push / report
->>>>>>> 6f65d3d7d8e4a839810a0352a17b768d376a3557
     fields?: SlackMdFormat[];
 }
 
@@ -41,10 +34,7 @@ const slackErrorMessage = (errorStack: any) => {
     return {
         title: 'MUMENT ec2 서버 오류',
         text: '서버 내부 오류입니다',
-<<<<<<< HEAD
-=======
         type: 'error',
->>>>>>> 6f65d3d7d8e4a839810a0352a17b768d376a3557
         fields: [
             {
                 title: 'Error Stack:',
@@ -54,15 +44,6 @@ const slackErrorMessage = (errorStack: any) => {
     };
 };
 
-<<<<<<< HEAD
-// 슬랙 api url과 연결하는 함수
-const getChannels = () => {
-    return {
-        production: API_URL,
-    };
-};
-
-=======
 const slackPushFailMessage = (errorStack: any) => {
     return {
         title: '푸시 실패자 알림',
@@ -104,7 +85,6 @@ const getChannels = (type: string) => {
     }
 };
 
->>>>>>> 6f65d3d7d8e4a839810a0352a17b768d376a3557
 // 슬랙 알림 보내기
 const sendMessage = async (message: SlackMessageFormat) => {
     if (!message) {
@@ -129,11 +109,7 @@ const sendMessage = async (message: SlackMessageFormat) => {
 
 
     axios({
-<<<<<<< HEAD
-        url: getChannels().production,
-=======
         url: getChannels(message.type).production,
->>>>>>> 6f65d3d7d8e4a839810a0352a17b768d376a3557
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -142,8 +118,4 @@ const sendMessage = async (message: SlackMessageFormat) => {
     });
 };
 
-<<<<<<< HEAD
-export default { sendMessage, slackErrorMessage };
-=======
 export default { sendMessage, slackErrorMessage, slackPushFailMessage, slackReportMessage };
->>>>>>> 6f65d3d7d8e4a839810a0352a17b768d376a3557
