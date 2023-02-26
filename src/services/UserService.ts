@@ -28,7 +28,7 @@ import { NoticeInfoRDB } from '../interfaces/mument/NoticeInfoRDB';
 import pushHandler from '../library/pushHandler';
 import { NoticePushResponseDto } from '../interfaces/user/NoticePushResponseDto';
 import { BooleanBaseResponseDto } from '../interfaces/common/BooleanBaseResponseDto';
-import { LoginWebviewLinkDto, MypageWebviewLinkDto } from '../interfaces/user/WebviewLinkDto';
+import { LoginWebviewLinkDto, MypageWebviewLinkDto, VersionDto } from '../interfaces/user/WebviewLinkDto';
 import WebViewLinkDummy from '../modules/db/WebViewLink';
 
 
@@ -864,7 +864,7 @@ const getUser = async (userId: string): Promise<UserResponseDto | number> => {
 /** 
  * 웹뷰 링크 조회
 */
-const getWebviewLink = async (page: string): Promise<LoginWebviewLinkDto | MypageWebviewLinkDto | number> => {
+const getWebviewLink = async (page: string): Promise<LoginWebviewLinkDto | MypageWebviewLinkDto | VersionDto | number> => {
     try {
         if (page === 'mypage') {
              // [마이페이지] 웹뷰 조회
@@ -880,6 +880,15 @@ const getWebviewLink = async (page: string): Promise<LoginWebviewLinkDto | Mypag
             return {
                 tos: WebViewLinkDummy.tos,
                 privacy: WebViewLinkDummy.privacy
+            };
+        } else if (page === 'version'){
+            // 최신 버전 조회            
+            const getVersionResult = await pools.query(`SELECT ver FROM version ORDER BY created_at DESC LIMIT 1`);
+
+            const version = getVersionResult[0].ver;
+
+            return {
+                version: version
             };
         } else {
             return constant.WRONG_QUERYSTRING;
