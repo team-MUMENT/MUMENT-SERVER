@@ -29,6 +29,12 @@ const User_1 = __importDefault(require("../modules/db/User"));
 const cardTagList_1 = __importDefault(require("../modules/cardTagList"));
 const pushHandler_1 = __importDefault(require("../library/pushHandler"));
 const WebViewLink_1 = __importDefault(require("../modules/db/WebViewLink"));
+const appleSignRevoke_1 = __importDefault(require("../library/appleSignRevoke"));
+const fs = require('fs');
+const AppleAuth = require('apple-auth');
+// 경로 기준 - dist폴더를 현재위치의 기준으로 쓴 것임
+const appleConfig = fs.readFileSync('src/config/apple/AppleConfig.json');
+const appleAuth = new AppleAuth(appleConfig, fs.readFileSync('src/config/apple/AuthKey.p8').toString(), 'text');
 /**
  * 내가 작성한 뮤멘트 리스트
  */
@@ -466,6 +472,71 @@ const deleteUser = (userId) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 /**
+ * 유저 탈퇴 처리 후 소셜 로그인 연동 끊기 (NEW)
+*/
+const deleteUserAndRevokeSocial = (userId, appleAccessToken) => __awaiter(void 0, void 0, void 0, function* () {
+    const pool = yield db_1.default;
+    const connection = yield pool.getConnection();
+    try {
+        // 존재하는 유저인지 확인
+        const isExistUser = yield User_1.default.isExistUser(userId);
+        if (!isExistUser)
+            return serviceReturnConstant_1.default.NO_USER;
+        connection.beginTransaction();
+        // 유저 탈퇴
+        const deleteUserQuery = `
+        UPDATE user
+        SET is_deleted = 1
+        WHERE id = ?
+            AND is_deleted = 0;
+        `;
+        yield connection.query(deleteUserQuery, [userId]);
+        // 삭제되었는지 확인
+        const getUserQuery = `
+        SELECT id, profile_id, is_deleted, updated_at, provider
+        FROM user
+        WHERE id = ?
+        `;
+        const getUserResult = yield connection.query(getUserQuery, [userId]);
+        const user = getUserResult[0];
+        if (!user.is_deleted)
+            return serviceReturnConstant_1.default.DELETE_FAIL;
+        const isDeleted = user.isDeleted ? true : false;
+        const data = {
+            id: user.id,
+            userName: user.profile_id,
+            isDeleted: isDeleted,
+            updatedAt: user.updated_at,
+        };
+        // // 방법1) apple 유저 - 서비스 연동 끊기 (authorization code를 받을 경우 - access token생성 필요)
+        // if (user.provider === 'apple' && typeof authorizationCode == 'string') {
+        //     const appleAccessToken = await appleAuth.accessToken(authorizationCode);
+        // }
+        // 방법2) apple 유저 - 서비스 연동 끊기 (access token을 받을 경우)
+        if (user.provider === 'apple' && typeof appleAccessToken == 'string') {
+            const appleRevokeResult = yield appleSignRevoke_1.default.appleSignRevoke(appleAccessToken);
+            if (appleRevokeResult === serviceReturnConstant_1.default.APPLE_SIGN_REVOKE_SUCCESS) {
+                return data;
+            }
+            else {
+                // 애플 연동 해제 실패 시 데이터 rollback
+                yield connection.rollback();
+                return serviceReturnConstant_1.default.APPLE_SIGN_REVOKE_FAIL;
+            }
+        }
+        yield connection.commit();
+        return data;
+    }
+    catch (error) {
+        console.log(error);
+        yield connection.rollback();
+        throw error;
+    }
+    finally {
+        connection.release();
+    }
+});
+/**
  * 신고 제재 기간인 유저인지 확인
  */
 const getIsReportRestrictedUser = (userId) => __awaiter(void 0, void 0, void 0, function* () {
@@ -792,6 +863,7 @@ exports.default = {
     checkDuplicateName,
     postLeaveCategory,
     deleteUser,
+    deleteUserAndRevokeSocial,
     getIsReportRestrictedUser,
     getUnreadNewsisExist,
     updateUnreadNews,

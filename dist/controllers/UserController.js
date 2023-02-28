@@ -214,6 +214,10 @@ const postLeaveCategory = (req, res) => __awaiter(void 0, void 0, void 0, functi
         return res.status(statusCode_1.default.INTERNAL_SERVER_ERROR).send(util_1.default.fail(statusCode_1.default.INTERNAL_SERVER_ERROR, responseMessage_1.default.INTERNAL_SERVER_ERROR));
     }
 });
+/**
+ * @ROUTE DELETE /
+ * @DESC 유저 탈퇴처리를 합니다.
+ */
 const deleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = req.body.userId;
     try {
@@ -223,6 +227,32 @@ const deleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                 return res.status(statusCode_1.default.BAD_REQUEST).send(util_1.default.fail(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.NO_USER_ID));
             case serviceReturnConstant_1.default.DELETE_FAIL:
                 return res.status(statusCode_1.default.BAD_REQUEST).send(util_1.default.fail(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.DELETE_USER_FAIL));
+        }
+        return res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.DELETE_USER_SUCCESS, data));
+    }
+    catch (error) {
+        console.log(error);
+        const slackMessage = slackWebHook_1.default.slackErrorMessage(error.stack);
+        slackWebHook_1.default.sendMessage(slackMessage);
+        return res.status(statusCode_1.default.INTERNAL_SERVER_ERROR).send(util_1.default.fail(statusCode_1.default.INTERNAL_SERVER_ERROR, responseMessage_1.default.INTERNAL_SERVER_ERROR));
+    }
+});
+/**
+ * @ROUTE POST /leave
+ * @DESC 유저 탈퇴처리를 하고 소셜 로그인 연동을 끊습니다. (NEW)
+ */
+const deleteUserAndRevokeSocial = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userId = req.body.userId;
+    const { appleAccessToken } = req.body;
+    try {
+        const data = yield services_1.UserService.deleteUserAndRevokeSocial(userId, appleAccessToken);
+        switch (data) {
+            case serviceReturnConstant_1.default.NO_USER:
+                return res.status(statusCode_1.default.BAD_REQUEST).send(util_1.default.fail(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.NO_USER_ID));
+            case serviceReturnConstant_1.default.DELETE_FAIL:
+                return res.status(statusCode_1.default.BAD_REQUEST).send(util_1.default.fail(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.DELETE_USER_FAIL));
+            case serviceReturnConstant_1.default.APPLE_SIGN_REVOKE_FAIL:
+                return res.status(statusCode_1.default.FORBIDDEN).send(util_1.default.fail(statusCode_1.default.FORBIDDEN, responseMessage_1.default.APPLE_SIGN_REVOKE_FAIL));
         }
         return res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.DELETE_USER_SUCCESS, data));
     }
@@ -423,6 +453,7 @@ exports.default = {
     checkDuplicateName,
     postLeaveCategory,
     deleteUser,
+    deleteUserAndRevokeSocial,
     getUnreadNewsisExist,
     updateUnreadNews,
     deleteNews,
