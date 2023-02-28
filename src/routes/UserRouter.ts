@@ -50,8 +50,12 @@ router.post('/leave-category', [
     body('leaveCategoryId').toInt().isInt(),
 ], auth, UserController.postLeaveCategory);
 
+// 유저 탈퇴 후 소셜 로그인까지 끊기 (NEW)
+router.post('/leave', auth, UserController.deleteUserAndRevokeSocial);
+
 // 유저 탈퇴
 router.delete('/', auth, UserController.deleteUser);
+
 
 // 프로필 설정 완료 조회
 router.get('/profile/check', auth, UserController.checkProfileSet);

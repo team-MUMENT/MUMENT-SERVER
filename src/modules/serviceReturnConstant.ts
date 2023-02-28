@@ -23,6 +23,8 @@ const constant = {
     NO_IDENTITY_TOKEN_SUB: -50, // 클라이언트에서 받은 identity token에 sub(id)값이 없을 때
     APPLE_UNAUTHORIZED: -51, // 애플 API 개발자 토큰 유효하지 않을 때
     APPLE_INTERNAL_SERVER_ERROR: -51, // 애플 API 서버 에러났을 때
+    APPLE_SIGN_REVOKE_SUCCESS: -52, // 애플 탈퇴 시 서비스 연결 끊기 성공
+    APPLE_SIGN_REVOKE_FAIL: -53, // 애플 탈퇴 시 서비스 연결 끊기 실패
 
     // kakao
     NO_AUTHENTICATION_CODE: -60, // authenticationCode가 클라이언트로부터 넘어오지 않았을 때
