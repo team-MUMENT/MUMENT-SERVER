@@ -235,6 +235,10 @@ const postLeaveCategory = async (req: Request, res: Response) => {
     }
 };
 
+/**
+ * @ROUTE DELETE /
+ * @DESC 유저 탈퇴처리를 합니다.
+ */
 const deleteUser = async (req: Request, res: Response) => {
     const userId = req.body.userId;
 
@@ -257,6 +261,38 @@ const deleteUser = async (req: Request, res: Response) => {
         return res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
     }
 };
+
+
+/**
+ * @ROUTE POST /leave
+ * @DESC 유저 탈퇴처리를 하고 소셜 로그인 연동을 끊습니다. (NEW)
+ */
+const deleteUserAndRevokeSocial = async (req: Request, res: Response) => {
+    const userId = req.body.userId;
+    const { appleAccessToken } = req.body;
+
+    try {
+        const data = await UserService.deleteUserAndRevokeSocial(userId, appleAccessToken);
+
+        switch (data) {
+            case constant.NO_USER:
+                return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.NO_USER_ID));
+            case constant.DELETE_FAIL:
+                return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.DELETE_USER_FAIL));
+            case constant.APPLE_SIGN_REVOKE_FAIL:
+                return res.status(statusCode.FORBIDDEN).send(util.fail(statusCode.FORBIDDEN, message.APPLE_SIGN_REVOKE_FAIL));
+        }
+        return res.status(statusCode.OK).send(util.success(statusCode.OK, message.DELETE_USER_SUCCESS, data));
+    } catch (error: any) {
+        console.log(error);
+
+        const slackMessage: SlackMessageFormat = slackWebHook.slackErrorMessage(error.stack);
+        slackWebHook.sendMessage(slackMessage);
+        
+        return res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
+    }
+};
+
 
 /**
  *  @ROUTE GET /news
@@ -493,6 +529,7 @@ export default {
     checkDuplicateName,
     postLeaveCategory,
     deleteUser,
+    deleteUserAndRevokeSocial,
     getUnreadNewsisExist,
     updateUnreadNews,
     deleteNews,
