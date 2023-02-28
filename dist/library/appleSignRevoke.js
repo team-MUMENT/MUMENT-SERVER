@@ -16,6 +16,9 @@ const axios_1 = __importDefault(require("axios"));
 const config_1 = __importDefault(require("../config"));
 const serviceReturnConstant_1 = __importDefault(require("../modules/serviceReturnConstant"));
 require('dotenv').config();
+/**
+ * 애플 탈퇴 시 연동 해제
+ */
 const appleSignRevoke = (appleAccessToken) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         yield axios_1.default.post('https://appleid.apple.com/auth/revoke', {

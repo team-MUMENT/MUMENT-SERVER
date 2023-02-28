@@ -243,9 +243,9 @@ const deleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
  */
 const deleteUserAndRevokeSocial = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = req.body.userId;
-    const { appleAccessToken } = req.body;
+    const { socialAccessToken } = req.body;
     try {
-        const data = yield services_1.UserService.deleteUserAndRevokeSocial(userId, appleAccessToken);
+        const data = yield services_1.UserService.deleteUserAndRevokeSocial(userId, socialAccessToken);
         switch (data) {
             case serviceReturnConstant_1.default.NO_USER:
                 return res.status(statusCode_1.default.BAD_REQUEST).send(util_1.default.fail(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.NO_USER_ID));
