@@ -39,6 +39,8 @@ router.get('/news', auth_1.default, controllers_1.UserController.getNewsList);
 router.post('/leave-category', [
     (0, express_validator_1.body)('leaveCategoryId').toInt().isInt(),
 ], auth_1.default, controllers_1.UserController.postLeaveCategory);
+// 유저 탈퇴 후 소셜 로그인까지 끊기 (NEW)
+router.post('/leave', auth_1.default, controllers_1.UserController.deleteUserAndRevokeSocial);
 // 유저 탈퇴
 router.delete('/', auth_1.default, controllers_1.UserController.deleteUser);
 // 프로필 설정 완료 조회

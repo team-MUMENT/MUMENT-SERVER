@@ -4,19 +4,19 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 // 이용약관
-const tos = 'https://destiny-plum-124.notion.site/55167e54a5a94da1898e45f654c03299';
+const tos = 'https://mument.notion.site/e7a00b7c6220497b94258b891153a0a2';
 // 개인정보처리방침
-const privacy = 'https://destiny-plum-124.notion.site/45172b6e18e44ec0b97a65ff2d528f2f';
+const privacy = 'https://mument.notion.site/689acf1520aa4ff3b87ba5240986faa6';
 // 자주묻는 질문 
-const faq = 'https://destiny-plum-124.notion.site/318c4f5609b94d24babb6e3b25fdd46a';
+const faq = 'https://mument.notion.site/cd28e4be15a144f58e2ce24609451b43';
 // 문의하기 
 const contact = 'https://docs.google.com/forms/d/e/1FAIpQLSfUS-k64fjUzNElSp4hEuLkcjZm5r2tR4428VaNbGc_IDx4Vw/viewform';
 // 앱 정보
-const appInfo = 'https://destiny-plum-124.notion.site/1e307b334f7649c4b38444fa783c4ff8';
+const appInfo = 'https://mument.notion.site/076260dcd8a94f5d9fc31216f8b687a8';
 // 뮤멘트 소개
-const introduction = 'https://destiny-plum-124.notion.site/Team-Mument-0e435810c49342318ed1dff405455b69';
+const introduction = 'https://mument.notion.site/Team-Mument-301ccd1726024fb192d41e14db39a482';
 // 오픈소스 라이선스
-const license = "https://destiny-plum-124.notion.site/73e77fe21ecd4aa3a26d6237166d60d2";
+const license = "https://mument.notion.site/15f48eb814da4eca9abcf7c83bd1c753";
 exports.default = {
     tos,
     privacy,
