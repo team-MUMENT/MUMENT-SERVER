@@ -644,7 +644,7 @@ append-field@^1.0.0:
 
 apple-auth@^1.0.7:
   version "1.0.7"
-  resolved "https://registry.npmjs.org/apple-auth/-/apple-auth-1.0.7.tgz"
+  resolved "https://registry.yarnpkg.com/apple-auth/-/apple-auth-1.0.7.tgz#6730c9ac8e585e181f0335ef8c7ebf9095bf86d3"
   integrity sha512-vfJqy4KtT5KHflxBSemc0mkWuy2GU2wHWaZ6xVWUjPmiXkJcLj5jB3IeCbDLF4wN+ZStjOQXZWfGwccBjclVlA==
   dependencies:
     axios "^0.21.1"
