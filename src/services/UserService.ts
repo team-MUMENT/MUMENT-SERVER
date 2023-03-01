@@ -27,7 +27,7 @@ import { ReportRestrictResponseDto } from '../interfaces/user/ReportRestrictResp
 import { NoticeInfoRDB } from '../interfaces/mument/NoticeInfoRDB';
 import pushHandler from '../library/pushHandler';
 import { NoticePushResponseDto } from '../interfaces/user/NoticePushResponseDto';
-import { BooleanBaseResponseDto } from '../interfaces/common/BooleanBaseResponseDto';
+import { HomeNewsOfficialDto } from '../interfaces/common/HomeNewsOfficialDto';
 import { LoginWebviewLinkDto, MypageWebviewLinkDto, VersionDto } from '../interfaces/user/WebviewLinkDto';
 import WebViewLinkDummy from '../modules/db/WebViewLink';
 import appleSignRevoke from '../library/appleSignRevoke';
@@ -682,7 +682,7 @@ const getIsReportRestrictedUser = async (userId: number): Promise<ReportRestrict
 /**
  * 소식창에 안읽은 알림이 있는지 조회
  */
-const getUnreadNewsisExist = async (userId: number): Promise<BooleanBaseResponseDto> => {
+const getUnreadNewsisExist = async (userId: number): Promise<HomeNewsOfficialDto> => {
     const pool: any = await poolPromise;
     const connection = await pool.getConnection();
 
@@ -695,16 +695,38 @@ const getUnreadNewsisExist = async (userId: number): Promise<BooleanBaseResponse
             WHERE user_id=? AND is_deleted=0 AND is_read=0 AND created_at BETWEEN ? AND ?
         `;
 
-        const data = await connection.query(selectNewsQeury, [
+        const newNewsList = await connection.query(selectNewsQeury, [
             userId,  comparedDate, dayjs(curr).format()
         ]);
 
-        if (data.length > 0) return { exist: true };
-        else return { exist: false };
+        // 소식창 New 여부
+        let exist = false;
+        if (newNewsList.length > 0) exist = true;
+
+        const officialIdList: number[] = [];
+
+        const getOfficialQuery = `
+            SELECT * FROM official_user;
+        `;
+
+        const officialResult: {id: number, user_id: number}[] = await connection.query(getOfficialQuery);
+
+        for await (const user of officialResult) {
+            officialIdList.push(user.user_id);
+        };
+
+        const data = {
+            exist: exist,
+            officialIdList
+        };
+
+        return data;
 
     } catch (error) {
         console.log(error);
         throw error;
+    } finally {
+        connection.release();
     }
 };
 
