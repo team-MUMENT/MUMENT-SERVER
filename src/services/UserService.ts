@@ -550,7 +550,7 @@ const deleteUser = async (userId: number): Promise<Number | UserDeleteResponseDt
 /** 
  * 유저 탈퇴 처리 후 소셜 로그인 연동 끊기 (NEW)
 */
-const deleteUserAndRevokeSocial = async (userId: number, socialAccessToken: string | undefined | null): Promise<Number | UserDeleteResponseDto> => {
+const deleteUserAndRevokeSocial = async (userId: number, socialToken: string | undefined | null): Promise<Number | UserDeleteResponseDto> => {
     const pool: any = await poolPromise;
     const connection = await pool.getConnection();
     
@@ -592,14 +592,10 @@ const deleteUserAndRevokeSocial = async (userId: number, socialAccessToken: stri
             updatedAt: user.updated_at,
         }
 
-        // // 방법1) apple 유저 - 서비스 연동 끊기 (authorization code를 받을 경우 - access token생성 필요)
-        // if (user.provider === 'apple' && typeof authorizationCode == 'string') {
-        //     const appleAccessToken = await appleAuth.accessToken(authorizationCode);
-        // }
-
-        // 방법2) apple 유저 - 서비스 연동 끊기 (access token을 받을 경우)
-        if (user.provider === 'apple' && typeof socialAccessToken == 'string') {
-            const appleRevokeResult: number = await appleSignRevoke.appleSignRevoke(socialAccessToken); 
+        
+        if (user.provider === 'apple' && typeof socialToken == 'string') {
+            // apple 유저 - 서비스 연동 끊기 (refresh token을 받을 경우)
+            const appleRevokeResult: number = await appleSignRevoke.appleSignRevoke(socialToken); 
             
             if (appleRevokeResult === constant.APPLE_SIGN_REVOKE_SUCCESS) {
                 return data;
