@@ -319,7 +319,7 @@ const getIsReportRestrictedUser = async (req: Request, res: Response) => {
 
 /**
  *  @ROUTE GET /news/exist
- *  @DESC 소식창에 안읽은 알림이 있는지 조회합니다. 
+ *  @DESC 소식창에 안읽은 알림이 있는지 조회합니다. + 공식 계정의 id 리스트도 함께 조회합니다.
  */
 const getUnreadNewsisExist = async (req: Request, res: Response) => {
     const userId: number = req.body.userId;

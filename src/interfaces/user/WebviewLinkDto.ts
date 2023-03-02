@@ -10,3 +10,7 @@ export interface MypageWebviewLinkDto {
     introduction: string; // 뮤멘트 소개 URL
     license: string; // 오픈소스 라이선스 URL
 }
+
+export interface VersionDto {
+    version: string; // 최신 버전
+}
