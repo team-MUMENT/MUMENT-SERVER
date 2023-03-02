@@ -17,7 +17,7 @@ const path = require('path');
 /**
 * 로그인/회원가입
 */
-const login = async (provider: string, authenticationCode: string, fcm_token: string): Promise<AuthTokenResponseDto | number> => {
+const login = async (provider: string, authenticationCode: string, fcmToken: string, appleRefreshToken: string): Promise<AuthTokenResponseDto | number> => {
     const pool: any = await poolPromise;
     const connection = await pool.getConnection();
     
@@ -157,9 +157,18 @@ const login = async (provider: string, authenticationCode: string, fcm_token: st
 
         await connection.query(updateTokenQuery, [
             refreshToken,
-            fcm_token === undefined ? null : fcm_token,
+            fcmToken === undefined ? null : fcmToken,
             user.id,
         ]);
+
+
+        // apple 요청 시 apple refresh token 존재하면 저장
+        if (typeof appleRefreshToken == 'string' && provider == 'apple') {
+            await connection.query( `INSERT INTO apple_user_refresh (user_id, apple_refresh_token) VALUES(?, ?);`, [
+                user.id,
+                appleRefreshToken
+            ]);
+        }
 
         await connection.commit();
 
