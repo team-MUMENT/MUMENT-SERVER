@@ -23,7 +23,7 @@ const path = require('path');
 /**
 * 로그인/회원가입
 */
-const login = (provider, authenticationCode, fcm_token) => __awaiter(void 0, void 0, void 0, function* () {
+const login = (provider, authenticationCode, fcmToken, appleRefreshToken) => __awaiter(void 0, void 0, void 0, function* () {
     const pool = yield db_1.default;
     const connection = yield pool.getConnection();
     // authentication code가 없는 경우
@@ -136,9 +136,16 @@ const login = (provider, authenticationCode, fcm_token) => __awaiter(void 0, voi
         `;
         yield connection.query(updateTokenQuery, [
             refreshToken,
-            fcm_token === undefined ? null : fcm_token,
+            fcmToken === undefined ? null : fcmToken,
             user.id,
         ]);
+        // apple 요청 시 apple refresh token 존재하면 저장
+        if (typeof appleRefreshToken == 'string' && provider == 'apple') {
+            yield connection.query(`INSERT INTO apple_user_refresh (user_id, apple_refresh_token) VALUES(?, ?);`, [
+                user.id,
+                appleRefreshToken
+            ]);
+        }
         yield connection.commit();
         // 새로 발급한 jwt token과 유저 id, 로그인/회원가입 타입 return
         const data = {
@@ -217,13 +224,22 @@ const logout = (userId) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // refresh, fcm token -> null로 update
         yield connection.query('UPDATE user SET refresh_token=?, fcm_token=? WHERE id=?', [null, null, userId]);
-        const logoutResult = yield connection.query('SELECT refresh_token, fcm_token FROM user WHERE id=?', [userId]);
+        const logoutResult = yield connection.query('SELECT provider, refresh_token, fcm_token FROM user WHERE id=?', [userId]);
         // user 데이터가 사라진 사람이면 뷰에서 나가야함
         if (logoutResult.length !== 1)
             return;
         // refresh, fcm token이 둘다 null이 되지 않으면 fail
         if (logoutResult[0].refresh_token || logoutResult[0].fcm_token) {
             return serviceReturnConstant_1.default.LOGOUT_FAIL;
+        }
+        // apple 유저의 경우 apple refresh token을 저장해뒀을 경우 제거
+        if (logoutResult[0].provider == 'apple') {
+            const appleRefreshToken = yield connection.query(`SELECT apple_refresh_token FROM apple_user_refresh WHERE user_id=?`, [
+                userId
+            ]);
+            if (appleRefreshToken.length > 0) {
+                yield connection.query(`DELETE FROM apple_user_refresh WHERE user_id=?;`, [userId]);
+            }
         }
         yield connection.commit();
     }
