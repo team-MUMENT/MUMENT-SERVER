@@ -265,7 +265,7 @@ const logout = async (userId: string): Promise<void | number> => {
         );
 
         const logoutResult = await connection.query(
-            'SELECT refresh_token, fcm_token FROM user WHERE id=?', 
+            'SELECT provider, refresh_token, fcm_token FROM user WHERE id=?', 
             [userId]
         );
 
@@ -275,6 +275,19 @@ const logout = async (userId: string): Promise<void | number> => {
         // refresh, fcm token이 둘다 null이 되지 않으면 fail
         if (logoutResult[0].refresh_token || logoutResult[0].fcm_token) {
             return constant.LOGOUT_FAIL;
+        }
+
+        // apple 유저의 경우 apple refresh token을 저장해뒀을 경우 제거
+        if (logoutResult[0].provider == 'apple') {
+            
+             const appleRefreshToken: string[] = await connection.query(
+                `SELECT apple_refresh_token FROM apple_user_refresh WHERE user_id=?`, [
+                userId
+            ]);
+
+            if (appleRefreshToken.length > 0) {
+                await connection.query(`DELETE FROM apple_user_refresh WHERE user_id=?;`, [userId]);
+            } 
         }
 
         await connection.commit();
