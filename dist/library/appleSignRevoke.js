@@ -19,7 +19,7 @@ require('dotenv').config();
 /**
  * 애플 탈퇴 시 연동 해제
  */
-const appleSignRevoke = (appleAccessToken) => __awaiter(void 0, void 0, void 0, function* () {
+const appleSignRevoke = (appleRefreshToken) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         yield axios_1.default.post('https://appleid.apple.com/auth/revoke', {
             headers: {
@@ -28,8 +28,8 @@ const appleSignRevoke = (appleAccessToken) => __awaiter(void 0, void 0, void 0, 
             data: {
                 'client_id': process.env.APPLE_SERVICE_ID,
                 'client_secret': config_1.default.appleDeveloperToken,
-                'token': appleAccessToken,
-                'token_type_hint': 'access_token'
+                'token': appleRefreshToken,
+                'token_type_hint': 'refresh_token'
             }
         })
             .then(function (response) {
