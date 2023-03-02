@@ -269,10 +269,10 @@ const deleteUser = async (req: Request, res: Response) => {
  */
 const deleteUserAndRevokeSocial = async (req: Request, res: Response) => {
     const userId = req.body.userId;
-    const { socialAccessToken } = req.body;
+    const { socialToken } = req.body;
 
     try {
-        const data = await UserService.deleteUserAndRevokeSocial(userId, socialAccessToken);
+        const data = await UserService.deleteUserAndRevokeSocial(userId, socialToken);
 
         switch (data) {
             case constant.NO_USER:
