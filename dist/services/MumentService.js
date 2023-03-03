@@ -571,7 +571,7 @@ const getRandomMument = (userId) => __awaiter(void 0, void 0, void 0, function* 
             AND m.is_deleted = 0
             AND m.is_private = 0
             AND user.is_deleted = 0
-            AND user NOT IN ?
+            AND user NOT IN ${strBlockUserList}
         ORDER BY rand()
         LIMIT 3;
         `;
@@ -595,7 +595,7 @@ const getRandomMument = (userId) => __awaiter(void 0, void 0, void 0, function* 
                 }
             }
             tagTitle = tagTitle_1.tagRandomTitle[detailTag];
-            randomMumentList = yield pool_1.default.queryValue(getRandomMumentQuery, [detailTag, strBlockUserList]);
+            randomMumentList = yield pool_1.default.queryValue(getRandomMumentQuery, [detailTag]);
         }
         const mumentList = [];
         try {
@@ -823,11 +823,11 @@ const getAgainMument = (userId) => __awaiter(void 0, void 0, void 0, function* (
             AND mument.is_private = 0
             AND mument.is_first = 0
             AND user.is_deleted = 0
-            AND user.id NOT IN ?
+            AND user.id NOT IN ${strBlockUserList}
         ORDER BY rand()
         LIMIT 3;
         `;
-        let homeAgainResult = yield pool_1.default.queryValue(getAgainQuery, [strBlockUserList]);
+        let homeAgainResult = yield pool_1.default.query(getAgainQuery);
         if (homeAgainResult.length === 0) {
             const getAgainBackupQuery = `
             SELECT mument.id, music.id as music_id, music.name as music_name, music.artist, music.image as music_image, user.id as user_id, user.profile_id as user_name, user.image as user_image, mument.content, mument.created_at

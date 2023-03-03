@@ -643,7 +643,7 @@ const getRandomMument = async (userId: string): Promise<RandomMumentResponseDto>
             AND m.is_deleted = 0
             AND m.is_private = 0
             AND user.is_deleted = 0
-            AND user NOT IN ?
+            AND user NOT IN ${strBlockUserList}
         ORDER BY rand()
         LIMIT 3;
         `;
@@ -671,7 +671,7 @@ const getRandomMument = async (userId: string): Promise<RandomMumentResponseDto>
             }
             tagTitle = tagRandomTitle[detailTag as keyof typeof tagRandomTitle];
 
-            randomMumentList = await pools.queryValue(getRandomMumentQuery, [detailTag, strBlockUserList]);
+            randomMumentList = await pools.queryValue(getRandomMumentQuery, [detailTag]);
         }
 
         const mumentList: RandomMumentInterface[] = [];
@@ -926,12 +926,12 @@ const getAgainMument = async (userId: string): Promise<AgainMumentResponseDto | 
             AND mument.is_private = 0
             AND mument.is_first = 0
             AND user.is_deleted = 0
-            AND user.id NOT IN ?
+            AND user.id NOT IN ${strBlockUserList}
         ORDER BY rand()
         LIMIT 3;
         `;
 
-        let homeAgainResult = await pools.queryValue(getAgainQuery, [strBlockUserList]);
+        let homeAgainResult = await pools.query(getAgainQuery);
 
 
         if (homeAgainResult.length === 0) {
