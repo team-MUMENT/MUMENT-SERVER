@@ -409,7 +409,6 @@ const checkDuplicateName = async (profileId: string): Promise<boolean> => {
             SELECT *
             FROM user
             WHERE profile_id = ?
-                AND is_deleted = 0
         ) as is_duplicate;
         `;
 
