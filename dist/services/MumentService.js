@@ -542,6 +542,9 @@ const getRandomMument = (userId) => __awaiter(void 0, void 0, void 0, function* 
         const blockUserList = [];
         // 자신이 차단한 유저 반환
         const blockUserResult = yield User_1.default.blockedUserList(userId);
+        for (const user of blockUserResult) {
+            blockUserList.push(user.exist);
+        }
         let strBlockUserList = '( 0 )';
         if (blockUserResult.length != 0) {
             strBlockUserList = '(' + blockUserList.toString() + ')';
@@ -809,6 +812,9 @@ const getAgainMument = (userId) => __awaiter(void 0, void 0, void 0, function* (
         const blockUserList = [];
         // 자신이 차단한 유저 반환
         const blockUserResult = yield User_1.default.blockedUserList(userId);
+        for (const user of blockUserResult) {
+            blockUserList.push(user.exist);
+        }
         let strBlockUserList = '( 0 )';
         if (blockUserResult.length != 0) {
             strBlockUserList = '(' + blockUserList.toString() + ')';
