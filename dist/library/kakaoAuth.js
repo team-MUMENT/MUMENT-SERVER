@@ -76,6 +76,7 @@ const getKakaoProfile = (kakaoAccessToken) => __awaiter(void 0, void 0, void 0, 
  * @DESC 카카오 연결끊기
  */
 const unlinkKakao = (kakaoAccessToken) => __awaiter(void 0, void 0, void 0, function* () {
+    let result = serviceReturnConstant_1.default.KAKAO_UNLINK_SUCCESS;
     try {
         yield axios({
             method: 'post',
@@ -86,15 +87,15 @@ const unlinkKakao = (kakaoAccessToken) => __awaiter(void 0, void 0, void 0, func
         }).catch((error) => {
             console.log('카카오 연결끊기 실패: ');
             console.log(error);
-            return serviceReturnConstant_1.default.KAKAO_UNLINK_FAIL;
+            result = serviceReturnConstant_1.default.KAKAO_UNLINK_FAIL;
         });
+        return result;
     }
     catch (error) {
         console.log('카카오 연결끊기 에러');
         console.log(error);
         throw error;
     }
-    return serviceReturnConstant_1.default.KAKAO_UNLINK_SUCCESS;
 });
 exports.default = {
     getKakaoToken,
