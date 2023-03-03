@@ -52,7 +52,6 @@ export default {
     jwtSecret: process.env.JWT_SECRET as string,
     jwtAlgo: process.env.JWT_ALGO as string,
 
-
     /**
      * S3 access key
      */
@@ -60,13 +59,11 @@ export default {
     s3SecretKey: process.env.S3_SECRET_KEY as string,
     bucketName: process.env.BUCKET_NAME as string,
 
-
     /**
      * Push alarm
      */
     noticePushAlarmImage: process.env.NOTICE_PUSH_ALARM_IMAGE as string,
     likePushAlarmImage: process.env.LIKE_PUSH_ALARM_IMAGE as string,
-
 
     /**
      * apple music

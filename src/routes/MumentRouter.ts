@@ -35,16 +35,16 @@ router.delete('/:mumentId/like', [
 ], auth, MumentController.deleteLike);
 
 // 랜덤 뮤멘트
-router.get('/random', MumentController.getRandomMument);
+router.get('/random', auth, MumentController.getRandomMument);
 
 // 오늘의 뮤멘트
-router.get('/today', MumentController.getTodayMument);
+router.get('/today', auth, MumentController.getTodayMument);
 
 // 배너
 router.get('/banner', auth, MumentController.getBanner);
 
 // 다시 들은 뮤멘트
-router.get('/again', MumentController.getAgainMument);
+router.get('/again', auth, MumentController.getAgainMument);
 
 // 공시자항 리스트
 router.get('/notice', MumentController.getNoticeList);

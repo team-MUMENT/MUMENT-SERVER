@@ -535,9 +535,20 @@ const deleteLike = (mumentId, userId) => __awaiter(void 0, void 0, void 0, funct
     }
 });
 // 랜덤 태그, 뮤멘트 조회
-const getRandomMument = () => __awaiter(void 0, void 0, void 0, function* () {
+const getRandomMument = (userId) => __awaiter(void 0, void 0, void 0, function* () {
     var e_4, _d;
     try {
+        // 차단한 유저 리스트 조회
+        const blockUserList = [];
+        // 자신이 차단한 유저 반환
+        const blockUserResult = yield User_1.default.blockedUserList(userId);
+        for (const user of blockUserResult) {
+            blockUserList.push(user.exist);
+        }
+        let strBlockUserList = '( 0 )';
+        if (blockUserResult.length != 0) {
+            strBlockUserList = '(' + blockUserList.toString() + ')';
+        }
         // 난수 생성 함수
         const createRandomNum = (min, max) => {
             return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -563,6 +574,7 @@ const getRandomMument = () => __awaiter(void 0, void 0, void 0, function* () {
             AND m.is_deleted = 0
             AND m.is_private = 0
             AND user.is_deleted = 0
+            AND user.id NOT IN ${strBlockUserList}
         ORDER BY rand()
         LIMIT 3;
         `;
@@ -628,12 +640,23 @@ const getRandomMument = () => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 // 오늘의 뮤멘트 조회
-const getTodayMument = () => __awaiter(void 0, void 0, void 0, function* () {
+const getTodayMument = (userId) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        // 차단한 유저 리스트 조회
+        const blockUserList = [];
+        // 자신이 차단한 유저 반환
+        const blockUserResult = yield User_1.default.blockedUserList(userId);
+        for (const user of blockUserResult) {
+            blockUserList.push(user.exist);
+        }
+        let strBlockUserList = '( 0 )';
+        if (blockUserResult.length != 0) {
+            strBlockUserList = '(' + blockUserList.toString() + ')';
+        }
         // 리퀘스트 받아온 시간 판단 후 당일 자정으로 수정
         const todayDate = (0, dayjs_1.default)().hour(0).minute(0).second(0).millisecond(0).format('YYYY-MM-DD');
         const getTodayMumentQuery = `
-        SELECT mument.*, ht.display_date, music.id as music_id, music.name, music.artist, music.image, user.profile_id as user_name, user.image as user_image
+        SELECT mument.*, ht.display_date, music.id as music_id, music.name, music.artist, music.image, user.id as user_id, user.profile_id as user_name, user.image as user_image
         FROM home_today as ht
         JOIN mument
             ON mument.id = ht.mument_id
@@ -644,11 +667,12 @@ const getTodayMument = () => __awaiter(void 0, void 0, void 0, function* () {
         WHERE ht.display_date = ?
             AND mument.is_deleted = 0
             AND mument.is_private = 0
-            AND user.is_deleted = 0;
+            AND user.is_deleted = 0
+            AND user_id NOT IN ${strBlockUserList};
         `;
         let getTodayMumentResult = [];
         getTodayMumentResult = yield pool_1.default.queryValue(getTodayMumentQuery, [todayDate]);
-        // 결과가 0일 경우에는 백업데이터 조회
+        // 결과가 0이거나 차단한 유저의 뮤멘트일 경우
         if (getTodayMumentResult.length === 0) {
             const getBackUpMumentQuery = `
             SELECT mument.*, ht.display_date, music.id as music_id, music.name, music.artist, music.image, user.profile_id as user_name, user.image as user_image
@@ -782,8 +806,20 @@ const getBanner = (userId) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 // 다시 들은 곡의 뮤멘트 조회
-const getAgainMument = () => __awaiter(void 0, void 0, void 0, function* () {
+const getAgainMument = (userId) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        // 차단한 유저 리스트 조회
+        const blockUserList = [];
+        // 자신이 차단한 유저 반환
+        const blockUserResult = yield User_1.default.blockedUserList(userId);
+        for (const user of blockUserResult) {
+            blockUserList.push(user.exist);
+        }
+        let strBlockUserList = '( 0 )';
+        if (blockUserResult.length != 0) {
+            strBlockUserList = '(' + blockUserList.toString() + ')';
+        }
+        ;
         const getAgainQuery = `
         SELECT mument.id, music.id as music_id, music.name as music_name, music.artist, music.image as music_image, user.id as user_id, user.profile_id as user_name, user.image as user_image, mument.content, mument.created_at
         FROM home_again as ha
@@ -797,6 +833,7 @@ const getAgainMument = () => __awaiter(void 0, void 0, void 0, function* () {
             AND mument.is_private = 0
             AND mument.is_first = 0
             AND user.is_deleted = 0
+            AND user_id NOT IN ${strBlockUserList}
         ORDER BY rand()
         LIMIT 3;
         `;

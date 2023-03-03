@@ -239,8 +239,9 @@ const deleteLike = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
  * @DESC get random tag and tag matched random three muments
  */
 const getRandomMument = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userId = req.body.userId;
     try {
-        const data = yield services_1.MumentService.getRandomMument();
+        const data = yield services_1.MumentService.getRandomMument(userId);
         if (!data) {
             return res.status(statusCode_1.default.NO_CONTENT).send(util_1.default.success(statusCode_1.default.NO_CONTENT, responseMessage_1.default.RANDOM_TAG_FAIL));
         }
@@ -258,8 +259,9 @@ const getRandomMument = (req, res) => __awaiter(void 0, void 0, void 0, function
  * @DESC get today's mument
  */
 const getTodayMument = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userId = req.body.userId;
     try {
-        const data = yield services_1.MumentService.getTodayMument();
+        const data = yield services_1.MumentService.getTodayMument(userId);
         // 조회는 성공했으나 결과값이 없을 경우
         if (data === serviceReturnConstant_1.default.NO_HOME_CONTENT) {
             return res.status(statusCode_1.default.NO_CONTENT).send(util_1.default.success(statusCode_1.default.NO_CONTENT, responseMessage_1.default.GET_TODAY_MUMENT_SUCCESS));
@@ -301,8 +303,9 @@ const getBanner = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
  * @DESC get today's again tagged mument list
  */
 const getAgainMument = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userId = req.body.userId;
     try {
-        const data = yield services_1.MumentService.getAgainMument();
+        const data = yield services_1.MumentService.getAgainMument(userId);
         if (data === serviceReturnConstant_1.default.NO_HOME_CONTENT) {
             return res.status(statusCode_1.default.NO_CONTENT).send(util_1.default.success(statusCode_1.default.NO_CONTENT, responseMessage_1.default.GET_AGAIN_MUMENT_SUCCESS));
         }

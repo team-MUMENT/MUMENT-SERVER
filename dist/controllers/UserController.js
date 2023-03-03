@@ -253,6 +253,8 @@ const deleteUserAndRevokeSocial = (req, res) => __awaiter(void 0, void 0, void 0
                 return res.status(statusCode_1.default.BAD_REQUEST).send(util_1.default.fail(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.DELETE_USER_FAIL));
             case serviceReturnConstant_1.default.APPLE_SIGN_REVOKE_FAIL:
                 return res.status(statusCode_1.default.FORBIDDEN).send(util_1.default.fail(statusCode_1.default.FORBIDDEN, responseMessage_1.default.APPLE_SIGN_REVOKE_FAIL));
+            case serviceReturnConstant_1.default.FAIL_SOCIAL_AUTH:
+                return res.status(statusCode_1.default.BAD_REQUEST).send(util_1.default.fail(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.DELETE_USER_FAIL));
         }
         return res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.DELETE_USER_SUCCESS, data));
     }
@@ -282,7 +284,7 @@ const getIsReportRestrictedUser = (req, res) => __awaiter(void 0, void 0, void 0
 });
 /**
  *  @ROUTE GET /news/exist
- *  @DESC 소식창에 안읽은 알림이 있는지 조회합니다.
+ *  @DESC 소식창에 안읽은 알림이 있는지 조회합니다. + 공식 계정의 id 리스트도 함께 조회합니다.
  */
 const getUnreadNewsisExist = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = req.body.userId;

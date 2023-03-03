@@ -72,8 +72,33 @@ const getKakaoProfile = (kakaoAccessToken) => __awaiter(void 0, void 0, void 0, 
         throw error;
     }
 });
+/**
+ * @DESC 카카오 연결끊기
+ */
+const unlinkKakao = (kakaoAccessToken) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        yield axios({
+            method: 'post',
+            url: 'https://kapi.kakao.com/v1/user/unlink',
+            headers: {
+                'Authorization': 'Bearer ' + kakaoAccessToken,
+            }
+        }).catch((error) => {
+            console.log('카카오 연결끊기 실패: ');
+            console.log(error);
+            return serviceReturnConstant_1.default.KAKAO_UNLINK_FAIL;
+        });
+    }
+    catch (error) {
+        console.log('카카오 연결끊기 에러');
+        console.log(error);
+        throw error;
+    }
+    return serviceReturnConstant_1.default.KAKAO_UNLINK_SUCCESS;
+});
 exports.default = {
     getKakaoToken,
-    getKakaoProfile
+    getKakaoProfile,
+    unlinkKakao
 };
 //# sourceMappingURL=kakaoAuth.js.map
