@@ -17,6 +17,7 @@ const constant = {
     NO_NOTICE: -17,
     CREATE_NOTICE_FAIL: -18,
     WRONG_QUERYSTRING: -19,
+    FAIL_SOCIAL_AUTH: -20,
     // apple
     NO_IDENTITY_TOKEN_SUB: -50,
     APPLE_UNAUTHORIZED: -51,
@@ -28,6 +29,8 @@ const constant = {
     INVALID_AUTHENTICATION_CODE: -61,
     NO_KAKAO_REFRESH_TOKEN: -62,
     LOGOUT_FAIL: -63,
+    KAKAO_UNLINK_SUCCESS: -64,
+    KAKAO_UNLINK_FAIL: -65,
     // jwt token
     TOKEN_EXPIRED: -100,
     TOKEN_INVALID: -101,

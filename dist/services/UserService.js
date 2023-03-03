@@ -30,6 +30,7 @@ const cardTagList_1 = __importDefault(require("../modules/cardTagList"));
 const pushHandler_1 = __importDefault(require("../library/pushHandler"));
 const WebViewLink_1 = __importDefault(require("../modules/db/WebViewLink"));
 const appleSignRevoke_1 = __importDefault(require("../library/appleSignRevoke"));
+const kakaoAuth_1 = __importDefault(require("../library/kakaoAuth"));
 const fs = require('fs');
 const AppleAuth = require('apple-auth');
 // 경로 기준 - dist폴더를 현재위치의 기준으로 쓴 것임
@@ -356,7 +357,6 @@ const checkDuplicateName = (profileId) => __awaiter(void 0, void 0, void 0, func
             SELECT *
             FROM user
             WHERE profile_id = ?
-                AND is_deleted = 0
         ) as is_duplicate;
         `;
         const checkResult = yield pool_1.default.queryValue(checkQuery, [profileId]);
@@ -530,13 +530,19 @@ const deleteUserAndRevokeSocial = (userId, socialToken) => __awaiter(void 0, voi
                 return serviceReturnConstant_1.default.APPLE_SIGN_REVOKE_FAIL;
             }
         }
-        else {
-            /**
-            *  kakao 유저 - 서비스 연동 끊기
-            */
+        else if (user.provider === 'kakao' && typeof socialToken == 'string') {
+            // 카카오 유저 - 서비스 연결끊기 (access token 넘겨받음)
+            const kakaoUnlinkResult = yield kakaoAuth_1.default.unlinkKakao(socialToken);
+            if (kakaoUnlinkResult === serviceReturnConstant_1.default.KAKAO_UNLINK_SUCCESS) {
+                return data;
+            }
+            else {
+                yield connection.rollback();
+                return serviceReturnConstant_1.default.KAKAO_UNLINK_FAIL;
+            }
         }
         yield connection.commit();
-        return data;
+        return serviceReturnConstant_1.default.FAIL_SOCIAL_AUTH;
     }
     catch (error) {
         console.log(error);
@@ -599,6 +605,7 @@ const getIsReportRestrictedUser = (userId) => __awaiter(void 0, void 0, void 0, 
  * 소식창에 안읽은 알림이 있는지 조회
  */
 const getUnreadNewsisExist = (userId) => __awaiter(void 0, void 0, void 0, function* () {
+    var e_1, _b;
     const pool = yield db_1.default;
     const connection = yield pool.getConnection();
     try {
@@ -608,24 +615,51 @@ const getUnreadNewsisExist = (userId) => __awaiter(void 0, void 0, void 0, funct
             SELECT * FROM news 
             WHERE user_id=? AND is_deleted=0 AND is_read=0 AND created_at BETWEEN ? AND ?
         `;
-        const data = yield connection.query(selectNewsQeury, [
+        const newNewsList = yield connection.query(selectNewsQeury, [
             userId, comparedDate, (0, dayjs_1.default)(curr).format()
         ]);
-        if (data.length > 0)
-            return { exist: true };
-        else
-            return { exist: false };
+        // 소식창 New 여부
+        let exist = false;
+        if (newNewsList.length > 0)
+            exist = true;
+        const officialIdList = [];
+        const getOfficialQuery = `
+            SELECT * FROM official_user;
+        `;
+        const officialResult = yield connection.query(getOfficialQuery);
+        try {
+            for (var officialResult_1 = __asyncValues(officialResult), officialResult_1_1; officialResult_1_1 = yield officialResult_1.next(), !officialResult_1_1.done;) {
+                const user = officialResult_1_1.value;
+                officialIdList.push(user.user_id);
+            }
+        }
+        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+        finally {
+            try {
+                if (officialResult_1_1 && !officialResult_1_1.done && (_b = officialResult_1.return)) yield _b.call(officialResult_1);
+            }
+            finally { if (e_1) throw e_1.error; }
+        }
+        ;
+        const data = {
+            exist: exist,
+            officialIdList
+        };
+        return data;
     }
     catch (error) {
         console.log(error);
         throw error;
+    }
+    finally {
+        connection.release();
     }
 });
 /**
  * 소식창 새로운 알림 읽음 처리
  */
 const updateUnreadNews = (userId, unreadNews) => { var unreadNews_1, unreadNews_1_1; return __awaiter(void 0, void 0, void 0, function* () {
-    var e_1, _a;
+    var e_2, _a;
     const pool = yield db_1.default;
     const connection = yield pool.getConnection();
     connection.beginTransaction(); //롤백을 위해 필요함
@@ -644,12 +678,12 @@ const updateUnreadNews = (userId, unreadNews) => { var unreadNews_1, unreadNews_
                 }
             }
         }
-        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+        catch (e_2_1) { e_2 = { error: e_2_1 }; }
         finally {
             try {
                 if (unreadNews_1_1 && !unreadNews_1_1.done && (_a = unreadNews_1.return)) yield _a.call(unreadNews_1);
             }
-            finally { if (e_1) throw e_1.error; }
+            finally { if (e_2) throw e_2.error; }
         }
         yield connection.commit();
     }
@@ -853,6 +887,14 @@ const getWebviewLink = (page) => __awaiter(void 0, void 0, void 0, function* () 
             return {
                 tos: WebViewLink_1.default.tos,
                 privacy: WebViewLink_1.default.privacy
+            };
+        }
+        else if (page === 'version') {
+            // 최신 버전 조회            
+            const getVersionResult = yield pool_1.default.query(`SELECT ver FROM version ORDER BY created_at DESC LIMIT 1`);
+            const version = getVersionResult[0].ver;
+            return {
+                version: version
             };
         }
         else {

@@ -27,10 +27,11 @@ import { ReportRestrictResponseDto } from '../interfaces/user/ReportRestrictResp
 import { NoticeInfoRDB } from '../interfaces/mument/NoticeInfoRDB';
 import pushHandler from '../library/pushHandler';
 import { NoticePushResponseDto } from '../interfaces/user/NoticePushResponseDto';
-import { BooleanBaseResponseDto } from '../interfaces/common/BooleanBaseResponseDto';
-import { LoginWebviewLinkDto, MypageWebviewLinkDto } from '../interfaces/user/WebviewLinkDto';
+import { HomeNewsOfficialDto } from '../interfaces/common/HomeNewsOfficialDto';
+import { LoginWebviewLinkDto, MypageWebviewLinkDto, VersionDto } from '../interfaces/user/WebviewLinkDto';
 import WebViewLinkDummy from '../modules/db/WebViewLink';
 import appleSignRevoke from '../library/appleSignRevoke';
+import kakaoAuth from '../library/kakaoAuth';
 
 const fs = require('fs');
 const AppleAuth = require('apple-auth');
@@ -408,7 +409,6 @@ const checkDuplicateName = async (profileId: string): Promise<boolean> => {
             SELECT *
             FROM user
             WHERE profile_id = ?
-                AND is_deleted = 0
         ) as is_duplicate;
         `;
 
@@ -620,17 +620,21 @@ const deleteUserAndRevokeSocial = async (userId: number, socialToken: string | u
                 await connection.rollback();
                 return constant.APPLE_SIGN_REVOKE_FAIL;
             }
+        } else if (user.provider === 'kakao' && typeof socialToken == 'string') {
+            // 카카오 유저 - 서비스 연결끊기 (access token 넘겨받음)
+            const kakaoUnlinkResult: number = await kakaoAuth.unlinkKakao(socialToken);
 
-        } else {
-            /**
-            *  kakao 유저 - 서비스 연동 끊기
-            */ 
-
+            if (kakaoUnlinkResult === constant.KAKAO_UNLINK_SUCCESS) {
+                return data;
+            } else {
+                await connection.rollback();
+                return constant.KAKAO_UNLINK_FAIL;
+            }
         }
 
         await connection.commit();
 
-        return data;
+        return constant.FAIL_SOCIAL_AUTH;
 
     } catch (error) {
         console.log(error);
@@ -700,7 +704,7 @@ const getIsReportRestrictedUser = async (userId: number): Promise<ReportRestrict
 /**
  * 소식창에 안읽은 알림이 있는지 조회
  */
-const getUnreadNewsisExist = async (userId: number): Promise<BooleanBaseResponseDto> => {
+const getUnreadNewsisExist = async (userId: number): Promise<HomeNewsOfficialDto> => {
     const pool: any = await poolPromise;
     const connection = await pool.getConnection();
 
@@ -713,16 +717,38 @@ const getUnreadNewsisExist = async (userId: number): Promise<BooleanBaseResponse
             WHERE user_id=? AND is_deleted=0 AND is_read=0 AND created_at BETWEEN ? AND ?
         `;
 
-        const data = await connection.query(selectNewsQeury, [
+        const newNewsList = await connection.query(selectNewsQeury, [
             userId,  comparedDate, dayjs(curr).format()
         ]);
 
-        if (data.length > 0) return { exist: true };
-        else return { exist: false };
+        // 소식창 New 여부
+        let exist = false;
+        if (newNewsList.length > 0) exist = true;
+
+        const officialIdList: number[] = [];
+
+        const getOfficialQuery = `
+            SELECT * FROM official_user;
+        `;
+
+        const officialResult: {id: number, user_id: number}[] = await connection.query(getOfficialQuery);
+
+        for await (const user of officialResult) {
+            officialIdList.push(user.user_id);
+        };
+
+        const data = {
+            exist: exist,
+            officialIdList
+        };
+
+        return data;
 
     } catch (error) {
         console.log(error);
         throw error;
+    } finally {
+        connection.release();
     }
 };
 
@@ -968,7 +994,7 @@ const getUser = async (userId: string): Promise<UserResponseDto | number> => {
 /** 
  * 웹뷰 링크 조회
 */
-const getWebviewLink = async (page: string): Promise<LoginWebviewLinkDto | MypageWebviewLinkDto | number> => {
+const getWebviewLink = async (page: string): Promise<LoginWebviewLinkDto | MypageWebviewLinkDto | VersionDto | number> => {
     try {
         if (page === 'mypage') {
              // [마이페이지] 웹뷰 조회
@@ -984,6 +1010,15 @@ const getWebviewLink = async (page: string): Promise<LoginWebviewLinkDto | Mypag
             return {
                 tos: WebViewLinkDummy.tos,
                 privacy: WebViewLinkDummy.privacy
+            };
+        } else if (page === 'version'){
+            // 최신 버전 조회            
+            const getVersionResult = await pools.query(`SELECT ver FROM version ORDER BY created_at DESC LIMIT 1`);
+
+            const version = getVersionResult[0].ver;
+
+            return {
+                version: version
             };
         } else {
             return constant.WRONG_QUERYSTRING;
