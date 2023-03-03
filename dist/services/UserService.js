@@ -522,6 +522,7 @@ const deleteUserAndRevokeSocial = (userId, socialToken) => __awaiter(void 0, voi
             if (appleRevokeResult === serviceReturnConstant_1.default.APPLE_SIGN_REVOKE_SUCCESS) {
                 // apple refresh token DB에서 제거
                 yield connection.query(`DELETE FROM apple_user_refresh WHERE user_id=?;`, [user.id]);
+                yield connection.commit();
                 return data;
             }
             else {
@@ -534,6 +535,7 @@ const deleteUserAndRevokeSocial = (userId, socialToken) => __awaiter(void 0, voi
             // 카카오 유저 - 서비스 연결끊기 (access token 넘겨받음)
             const kakaoUnlinkResult = yield kakaoAuth_1.default.unlinkKakao(socialToken);
             if (kakaoUnlinkResult === serviceReturnConstant_1.default.KAKAO_UNLINK_SUCCESS) {
+                yield connection.commit();
                 return data;
             }
             else {
@@ -541,7 +543,6 @@ const deleteUserAndRevokeSocial = (userId, socialToken) => __awaiter(void 0, voi
                 return serviceReturnConstant_1.default.KAKAO_UNLINK_FAIL;
             }
         }
-        yield connection.commit();
         return serviceReturnConstant_1.default.FAIL_SOCIAL_AUTH;
     }
     catch (error) {
