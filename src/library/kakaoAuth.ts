@@ -70,6 +70,7 @@ const getKakaoProfile = async (kakaoAccessToken: string) => {
  * @DESC 카카오 연결끊기
  */
 const unlinkKakao = async (kakaoAccessToken: string) => {
+    let result = constant.KAKAO_UNLINK_SUCCESS;
     try {
         await axios({
             method: 'post',
@@ -80,14 +81,15 @@ const unlinkKakao = async (kakaoAccessToken: string) => {
         }).catch((error: Error)=> {
             console.log('카카오 연결끊기 실패: ');
             console.log(error);
-            return constant.KAKAO_UNLINK_FAIL;
+            result = constant.KAKAO_UNLINK_FAIL;
         });
+
+        return result;
     } catch (error) {
         console.log('카카오 연결끊기 에러');
         console.log(error);
         throw error;
     }
-    return constant.KAKAO_UNLINK_SUCCESS;
 }
 
 export default {

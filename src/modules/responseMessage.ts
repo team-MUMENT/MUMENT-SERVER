@@ -81,6 +81,7 @@ const message = {
     INVALID_AUTHENTICATION_CODE: '잘못된 AUTHENTICATION CODE 입니다.',
     LOGOUT_FAIL: '로그아웃 실패',
     APPLE_SIGN_REVOKE_FAIL: '애플 연동 해제에 실패했습니다.',
+    KAKAO_UNLINK_FAIL: '카카오 연결 해제에 실패했습니다.',
     
     //JWT
     NULL_VALUE_TOKEN: 'request-header에 토큰이 없습니다',
