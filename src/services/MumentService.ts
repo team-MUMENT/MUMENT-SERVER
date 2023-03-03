@@ -609,6 +609,10 @@ const getRandomMument = async (userId: string): Promise<RandomMumentResponseDto>
         // 자신이 차단한 유저 반환
         const blockUserResult = await userDB.blockedUserList(userId);
 
+        for (const user of blockUserResult) {
+            blockUserList.push(user.exist);
+        }
+
         let strBlockUserList = '( 0 )';
 
         if (blockUserResult.length != 0) {
@@ -911,6 +915,10 @@ const getAgainMument = async (userId: string): Promise<AgainMumentResponseDto | 
 
         // 자신이 차단한 유저 반환
         const blockUserResult = await userDB.blockedUserList(userId);
+
+        for (const user of blockUserResult) {
+            blockUserList.push(user.exist);
+        }
 
         let strBlockUserList = '( 0 )';
 
