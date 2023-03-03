@@ -23,9 +23,9 @@ const slackWebHook_1 = __importDefault(require("../library/slackWebHook"));
  * @DESC match user profileId and password
  */
 const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { provider, authentication_code, fcm_token } = req.body;
+    const { provider, authentication_code, fcm_token, apple_refresh_token } = req.body;
     try {
-        const data = yield services_1.AuthService.login(provider, authentication_code, fcm_token);
+        const data = yield services_1.AuthService.login(provider, authentication_code, fcm_token, apple_refresh_token);
         switch (data) {
             case serviceReturnConstant_1.default.NO_AUTHENTICATION_CODE: {
                 // 공통 - authentication code가 없는 경우
