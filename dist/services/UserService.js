@@ -30,6 +30,7 @@ const cardTagList_1 = __importDefault(require("../modules/cardTagList"));
 const pushHandler_1 = __importDefault(require("../library/pushHandler"));
 const WebViewLink_1 = __importDefault(require("../modules/db/WebViewLink"));
 const appleSignRevoke_1 = __importDefault(require("../library/appleSignRevoke"));
+const kakaoAuth_1 = __importDefault(require("../library/kakaoAuth"));
 const fs = require('fs');
 const AppleAuth = require('apple-auth');
 // 경로 기준 - dist폴더를 현재위치의 기준으로 쓴 것임
@@ -530,13 +531,19 @@ const deleteUserAndRevokeSocial = (userId, socialToken) => __awaiter(void 0, voi
                 return serviceReturnConstant_1.default.APPLE_SIGN_REVOKE_FAIL;
             }
         }
-        else {
-            /**
-            *  kakao 유저 - 서비스 연동 끊기
-            */
+        else if (user.provider === 'kakao' && typeof socialToken == 'string') {
+            // 카카오 유저 - 서비스 연결끊기 (access token 넘겨받음)
+            const kakaoUnlinkResult = yield kakaoAuth_1.default.unlinkKakao(socialToken);
+            if (kakaoUnlinkResult === serviceReturnConstant_1.default.KAKAO_UNLINK_SUCCESS) {
+                return data;
+            }
+            else {
+                yield connection.rollback();
+                return serviceReturnConstant_1.default.KAKAO_UNLINK_FAIL;
+            }
         }
         yield connection.commit();
-        return data;
+        return serviceReturnConstant_1.default.FAIL_SOCIAL_AUTH;
     }
     catch (error) {
         console.log(error);
