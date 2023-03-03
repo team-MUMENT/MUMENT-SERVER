@@ -31,6 +31,7 @@ import { HomeNewsOfficialDto } from '../interfaces/common/HomeNewsOfficialDto';
 import { LoginWebviewLinkDto, MypageWebviewLinkDto, VersionDto } from '../interfaces/user/WebviewLinkDto';
 import WebViewLinkDummy from '../modules/db/WebViewLink';
 import appleSignRevoke from '../library/appleSignRevoke';
+import kakaoAuth from '../library/kakaoAuth';
 
 const fs = require('fs');
 const AppleAuth = require('apple-auth');
@@ -604,11 +605,21 @@ const deleteUserAndRevokeSocial = async (userId: number, socialToken: string | u
                 await connection.rollback();
                 return constant.APPLE_SIGN_REVOKE_FAIL;
             }
+        } else if (user.provider === 'kakao' && typeof socialToken == 'string') {
+            // 카카오 유저 - 서비스 연결끊기 (access token 넘겨받음)
+            const kakaoUnlinkResult: number = await kakaoAuth.unlinkKakao(socialToken);
+
+            if (kakaoUnlinkResult === constant.KAKAO_UNLINK_SUCCESS) {
+                return data;
+            } else {
+                await connection.rollback();
+                return constant.KAKAO_UNLINK_FAIL;
+            }
         }
 
         await connection.commit();
 
-        return data;
+        return constant.FAIL_SOCIAL_AUTH;
 
     } catch (error) {
         console.log(error);
