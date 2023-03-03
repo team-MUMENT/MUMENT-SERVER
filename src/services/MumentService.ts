@@ -643,7 +643,7 @@ const getRandomMument = async (userId: string): Promise<RandomMumentResponseDto>
             AND m.is_deleted = 0
             AND m.is_private = 0
             AND user.is_deleted = 0
-            AND user NOT IN ${strBlockUserList}
+            AND user.id NOT IN ${strBlockUserList}
         ORDER BY rand()
         LIMIT 3;
         `;
@@ -719,6 +719,12 @@ const getTodayMument = async (userId: string): Promise<TodayMumentResponseDto | 
             blockUserList.push(user.exist);
         }
 
+        let strBlockUserList = '( 0 )';
+
+        if (blockUserResult.length != 0) {
+            strBlockUserList = '(' + blockUserList.toString() + ')';
+        }
+
         // 리퀘스트 받아온 시간 판단 후 당일 자정으로 수정
         const todayDate = dayjs().hour(0).minute(0).second(0).millisecond(0).format('YYYY-MM-DD');
 
@@ -734,16 +740,15 @@ const getTodayMument = async (userId: string): Promise<TodayMumentResponseDto | 
         WHERE ht.display_date = ?
             AND mument.is_deleted = 0
             AND mument.is_private = 0
-            AND user.is_deleted = 0;
+            AND user.is_deleted = 0
+            AND user_id NOT IN ${strBlockUserList};
         `;
 
         let getTodayMumentResult = [];
         getTodayMumentResult = await pools.queryValue(getTodayMumentQuery, [todayDate]);
 
-        const isBlockedUser = blockUserList.indexOf(getTodayMumentResult[0].userId);
-
         // 결과가 0이거나 차단한 유저의 뮤멘트일 경우
-        if (getTodayMumentResult.length === 0 || !isBlockedUser) {
+        if (getTodayMumentResult.length === 0) {
             const getBackUpMumentQuery = `
             SELECT mument.*, ht.display_date, music.id as music_id, music.name, music.artist, music.image, user.profile_id as user_name, user.image as user_image
             FROM home_today as ht
@@ -926,7 +931,7 @@ const getAgainMument = async (userId: string): Promise<AgainMumentResponseDto | 
             AND mument.is_private = 0
             AND mument.is_first = 0
             AND user.is_deleted = 0
-            AND user.id NOT IN ${strBlockUserList}
+            AND user_id NOT IN ${strBlockUserList}
         ORDER BY rand()
         LIMIT 3;
         `;
