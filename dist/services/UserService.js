@@ -357,7 +357,6 @@ const checkDuplicateName = (profileId) => __awaiter(void 0, void 0, void 0, func
             SELECT *
             FROM user
             WHERE profile_id = ?
-                AND is_deleted = 0
         ) as is_duplicate;
         `;
         const checkResult = yield pool_1.default.queryValue(checkQuery, [profileId]);

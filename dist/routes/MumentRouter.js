@@ -31,13 +31,13 @@ router.delete('/:mumentId/like', [
     (0, express_validator_1.param)('mumentId').toInt().isInt()
 ], auth_1.default, controllers_1.MumentController.deleteLike);
 // 랜덤 뮤멘트
-router.get('/random', controllers_1.MumentController.getRandomMument);
+router.get('/random', auth_1.default, controllers_1.MumentController.getRandomMument);
 // 오늘의 뮤멘트
-router.get('/today', controllers_1.MumentController.getTodayMument);
+router.get('/today', auth_1.default, controllers_1.MumentController.getTodayMument);
 // 배너
 router.get('/banner', auth_1.default, controllers_1.MumentController.getBanner);
 // 다시 들은 뮤멘트
-router.get('/again', controllers_1.MumentController.getAgainMument);
+router.get('/again', auth_1.default, controllers_1.MumentController.getAgainMument);
 // 공시자항 리스트
 router.get('/notice', controllers_1.MumentController.getNoticeList);
 // 공시자항 상세보기
