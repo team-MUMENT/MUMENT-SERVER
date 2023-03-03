@@ -266,8 +266,10 @@ const deleteLike = async (req: Request, res: Response) => {
  * @DESC get random tag and tag matched random three muments
  */
 const getRandomMument = async (req: Request, res: Response) => {
+    const userId = req.body.userId;
+
     try {
-        const data = await MumentService.getRandomMument();
+        const data = await MumentService.getRandomMument(userId);
 
         if (!data) {
             return res.status(statusCode.NO_CONTENT).send(util.success(statusCode.NO_CONTENT, message.RANDOM_TAG_FAIL));
@@ -289,8 +291,10 @@ const getRandomMument = async (req: Request, res: Response) => {
  * @DESC get today's mument
  */
 const getTodayMument = async (req: Request, res: Response) => {
+    const userId = req.body.userId;
+
     try {
-        const data = await MumentService.getTodayMument();
+        const data = await MumentService.getTodayMument(userId);
 
         // 조회는 성공했으나 결과값이 없을 경우
         if (data === constant.NO_HOME_CONTENT) {
@@ -339,8 +343,10 @@ const getBanner = async (req: Request, res: Response) => {
  * @DESC get today's again tagged mument list
  */
 const getAgainMument = async (req: Request, res: Response) => {
+    const userId = req.body.userId;
+
     try {
-        const data = await MumentService.getAgainMument();
+        const data = await MumentService.getAgainMument(userId);
 
         if (data === constant.NO_HOME_CONTENT) {
             return res.status(statusCode.NO_CONTENT).send(util.success(statusCode.NO_CONTENT, message.GET_AGAIN_MUMENT_SUCCESS));
