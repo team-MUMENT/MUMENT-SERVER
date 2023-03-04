@@ -16,10 +16,10 @@ const axios_1 = __importDefault(require("axios"));
 const config_1 = __importDefault(require("../config"));
 const serviceReturnConstant_1 = __importDefault(require("../modules/serviceReturnConstant"));
 // Apple Music Api 곡 검색 최대 50개 가져오기
-const searchMusic = (searchKeyword, offset) => __awaiter(void 0, void 0, void 0, function* () {
+const searchMusic = (searchKeyword, limit, offset) => __awaiter(void 0, void 0, void 0, function* () {
     const token = `Bearer ${config_1.default.appleDeveloperToken}`;
     let musicList = [];
-    yield axios_1.default.get(`https://api.music.apple.com/v1/catalog/kr/search?types=songs&limit=25&offset=${offset}&term=`
+    yield axios_1.default.get(`https://api.music.apple.com/v1/catalog/kr/search?types=songs&limit=${limit}&offset=${offset}&term=`
         + encodeURI(searchKeyword), {
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
@@ -48,8 +48,7 @@ const searchMusic = (searchKeyword, offset) => __awaiter(void 0, void 0, void 0,
                         'image': imageUrl
                     };
                     return result;
-                })
-                    .filter((music) => music);
+                });
             }
         });
     })
