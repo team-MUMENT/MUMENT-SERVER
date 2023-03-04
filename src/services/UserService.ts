@@ -32,6 +32,7 @@ import { LoginWebviewLinkDto, MypageWebviewLinkDto, VersionDto } from '../interf
 import WebViewLinkDummy from '../modules/db/WebViewLink';
 import appleSignRevoke from '../library/appleSignRevoke';
 import kakaoAuth from '../library/kakaoAuth';
+import appleSignIn from '../library/appleSignIn';
 
 const fs = require('fs');
 const AppleAuth = require('apple-auth');
@@ -506,11 +507,11 @@ const deleteUser = async (userId: number): Promise<Number | UserDeleteResponseDt
         // 유저 탈퇴
         const deleteUserQuery = `
         UPDATE user
-        SET is_deleted = 1
+        SET is_deleted = 1, refresh_token=?, fcm_token=?
         WHERE id = ?
             AND is_deleted = 0;
         `;
-        await connection.query(deleteUserQuery, [userId]);
+        await connection.query(deleteUserQuery, [null, null, userId]);
 
         // 삭제되었는지 확인
         const getUserQuery = `
@@ -564,11 +565,12 @@ const deleteUserAndRevokeSocial = async (userId: number, socialToken: string | u
         // 유저 탈퇴
         const deleteUserQuery = `
         UPDATE user
-        SET is_deleted = 1
+        SET is_deleted = 1, refresh_token=?, fcm_token=?
         WHERE id = ?
             AND is_deleted = 0;
         `;
-        await connection.query(deleteUserQuery, [userId]);
+        await connection.query(deleteUserQuery, [null, null, userId]);
+
 
         // 삭제되었는지 확인
         const getUserQuery = `
@@ -583,7 +585,7 @@ const deleteUserAndRevokeSocial = async (userId: number, socialToken: string | u
         if (!user.is_deleted) return constant.DELETE_FAIL;
 
 
-        const isDeleted = user.isDeleted? true : false;
+        const isDeleted = user.is_deleted ? true : false;
 
         const data: UserDeleteResponseDto = {
             id: user.id,
@@ -594,8 +596,9 @@ const deleteUserAndRevokeSocial = async (userId: number, socialToken: string | u
 
         
         if (user.provider === 'apple' && typeof socialToken == 'string' && socialToken.length > 0) {
-            // apple 유저 - 서비스 연동 끊기 (access token 넘겨받음)
-            const appleRevokeResult: number = await appleSignRevoke.appleSignRevoke(socialToken); 
+
+            // apple 유저 - 서비스 연동 끊기 (apple refresh token 이용)
+            const appleRevokeResult: number = await appleSignRevoke.appleSignRefreshRevoke(socialToken);
             
             if (appleRevokeResult === constant.APPLE_SIGN_REVOKE_SUCCESS) {
                 await connection.commit();
