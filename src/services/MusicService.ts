@@ -324,6 +324,7 @@ const getMusicListBySearch = async (keyword: string): Promise<MusicResponseDto[]
     try {        
         // 곡 검색 첫 페이지 개수가 25개 이상일 경우만 검색 2회 요청
         const page1 = await appleMusic.searchMusic(keyword, 0);
+
         if (page1.length < 25) return page1;
         
         const page2 = await appleMusic.searchMusic(keyword, 25);
