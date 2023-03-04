@@ -26,6 +26,8 @@ const constant = {
     APPLE_INTERNAL_SERVER_ERROR: -51, // 애플 API 서버 에러났을 때
     APPLE_SIGN_REVOKE_SUCCESS: -52, // 애플 탈퇴 시 서비스 연결 끊기 성공
     APPLE_SIGN_REVOKE_FAIL: -53, // 애플 탈퇴 시 서비스 연결 끊기 실패
+    GET_APPLE_TOKEN_SUCCESS: -54, // 애플 토큰 얻기 성공
+    GET_APPLE_TOKEN_FAIL: -55, // 애플 토큰 얻기 실패
 
     // kakao
     NO_AUTHENTICATION_CODE: -60, // authenticationCode가 클라이언트로부터 넘어오지 않았을 때

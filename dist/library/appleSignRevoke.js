@@ -13,25 +13,56 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const axios_1 = __importDefault(require("axios"));
-const config_1 = __importDefault(require("../config"));
 const serviceReturnConstant_1 = __importDefault(require("../modules/serviceReturnConstant"));
+const qs = require('qs');
 require('dotenv').config();
-/**
- * 애플 탈퇴 시 연동 해제
- */
-const appleSignRevoke = (appleAccessToken) => __awaiter(void 0, void 0, void 0, function* () {
+const getAppleRefreshToken = (authorizationCode) => __awaiter(void 0, void 0, void 0, function* () {
+    const data = {
+        'client_id': process.env.APPLE_BUNDLE_ID,
+        'client_secret': process.env.APPLE_DEVELOPER_TOKEN_NEW,
+        'code': authorizationCode,
+        'grant_type': 'authorization_code'
+    };
     try {
-        yield axios_1.default.post('https://appleid.apple.com/auth/revoke', {
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            data: {
-                'client_id': process.env.APPLE_SERVICE_ID,
-                'client_secret': config_1.default.appleDeveloperToken,
-                'token': appleAccessToken,
-                'token_type_hint': 'access_token'
-            }
+        const result = yield axios_1.default.post('https://appleid.apple.com/auth/token', qs.stringify(data))
+            .then(function (response) {
+            return __awaiter(this, void 0, void 0, function* () {
+                if (response.status == 200) {
+                    return response.data.refresh_token;
+                }
+                else {
+                    return null;
+                }
+            });
         })
+            .catch(function (error) {
+            return __awaiter(this, void 0, void 0, function* () {
+                console.log('애플 토큰 얻기 error', error);
+                return null;
+            });
+        });
+        return result;
+    }
+    catch (error) {
+        console.log("애플 리프레시 토큰 axios error", error);
+        throw error;
+    }
+});
+/**
+ * 애플 탈퇴 시 연동 해제 - refreshToken 이용
+ */
+const appleSignRefreshRevoke = (authorizationCode) => __awaiter(void 0, void 0, void 0, function* () {
+    const appleRefreshTokenResult = yield getAppleRefreshToken(authorizationCode);
+    if (!appleRefreshTokenResult)
+        return serviceReturnConstant_1.default.GET_APPLE_TOKEN_FAIL;
+    const data = {
+        'client_id': process.env.APPLE_BUNDLE_ID,
+        'client_secret': process.env.APPLE_DEVELOPER_TOKEN_NEW,
+        'token': appleRefreshTokenResult,
+        'token_type_hint': 'refresh_token'
+    };
+    try {
+        const resultConstant = yield axios_1.default.post('https://appleid.apple.com/auth/revoke', qs.stringify(data))
             .then(function (response) {
             return __awaiter(this, void 0, void 0, function* () {
                 if (response.status == 200) {
@@ -48,7 +79,7 @@ const appleSignRevoke = (appleAccessToken) => __awaiter(void 0, void 0, void 0, 
                 return serviceReturnConstant_1.default.APPLE_INTERNAL_SERVER_ERROR;
             });
         });
-        return serviceReturnConstant_1.default.APPLE_SIGN_REVOKE_SUCCESS;
+        return resultConstant;
     }
     catch (error) {
         console.log('애플 탈퇴 연동 끊기 error');
@@ -57,6 +88,7 @@ const appleSignRevoke = (appleAccessToken) => __awaiter(void 0, void 0, void 0, 
     }
 });
 exports.default = {
-    appleSignRevoke,
+    getAppleRefreshToken,
+    appleSignRefreshRevoke,
 };
 //# sourceMappingURL=appleSignRevoke.js.map
