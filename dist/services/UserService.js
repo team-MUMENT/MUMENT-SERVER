@@ -437,11 +437,11 @@ const deleteUser = (userId) => __awaiter(void 0, void 0, void 0, function* () {
         // 유저 탈퇴
         const deleteUserQuery = `
         UPDATE user
-        SET is_deleted = 1
+        SET is_deleted = 1, refresh_token=?, fcm_token=?
         WHERE id = ?
             AND is_deleted = 0;
         `;
-        yield connection.query(deleteUserQuery, [userId]);
+        yield connection.query(deleteUserQuery, [null, null, userId]);
         // 삭제되었는지 확인
         const getUserQuery = `
         SELECT id, profile_id, is_deleted, updated_at
@@ -486,11 +486,11 @@ const deleteUserAndRevokeSocial = (userId, socialToken) => __awaiter(void 0, voi
         // 유저 탈퇴
         const deleteUserQuery = `
         UPDATE user
-        SET is_deleted = 1
+        SET is_deleted = 1, refresh_token=?, fcm_token=?
         WHERE id = ?
             AND is_deleted = 0;
         `;
-        yield connection.query(deleteUserQuery, [userId]);
+        yield connection.query(deleteUserQuery, [null, null, userId]);
         // 삭제되었는지 확인
         const getUserQuery = `
         SELECT id, profile_id, is_deleted, updated_at, provider
@@ -501,7 +501,7 @@ const deleteUserAndRevokeSocial = (userId, socialToken) => __awaiter(void 0, voi
         const user = getUserResult[0];
         if (!user.is_deleted)
             return serviceReturnConstant_1.default.DELETE_FAIL;
-        const isDeleted = user.isDeleted ? true : false;
+        const isDeleted = user.is_deleted ? true : false;
         const data = {
             id: user.id,
             userName: user.profile_id,
@@ -509,8 +509,8 @@ const deleteUserAndRevokeSocial = (userId, socialToken) => __awaiter(void 0, voi
             updatedAt: user.updated_at,
         };
         if (user.provider === 'apple' && typeof socialToken == 'string' && socialToken.length > 0) {
-            // apple 유저 - 서비스 연동 끊기 (access token 넘겨받음)
-            const appleRevokeResult = yield appleSignRevoke_1.default.appleSignRevoke(socialToken);
+            // apple 유저 - 서비스 연동 끊기 (apple refresh token 이용)
+            const appleRevokeResult = yield appleSignRevoke_1.default.appleSignRefreshRevoke(socialToken);
             if (appleRevokeResult === serviceReturnConstant_1.default.APPLE_SIGN_REVOKE_SUCCESS) {
                 yield connection.commit();
                 return data;
