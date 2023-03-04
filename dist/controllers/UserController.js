@@ -253,6 +253,8 @@ const deleteUserAndRevokeSocial = (req, res) => __awaiter(void 0, void 0, void 0
                 return res.status(statusCode_1.default.BAD_REQUEST).send(util_1.default.fail(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.DELETE_USER_FAIL));
             case serviceReturnConstant_1.default.APPLE_SIGN_REVOKE_FAIL:
                 return res.status(statusCode_1.default.FORBIDDEN).send(util_1.default.fail(statusCode_1.default.FORBIDDEN, responseMessage_1.default.APPLE_SIGN_REVOKE_FAIL));
+            case serviceReturnConstant_1.default.KAKAO_UNLINK_FAIL:
+                return res.status(statusCode_1.default.FORBIDDEN).send(util_1.default.fail(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.KAKAO_UNLINK_FAIL));
             case serviceReturnConstant_1.default.FAIL_SOCIAL_AUTH:
                 return res.status(statusCode_1.default.BAD_REQUEST).send(util_1.default.fail(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.DELETE_USER_FAIL));
         }
