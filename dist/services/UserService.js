@@ -508,20 +508,10 @@ const deleteUserAndRevokeSocial = (userId, socialToken) => __awaiter(void 0, voi
             isDeleted: isDeleted,
             updatedAt: user.updated_at,
         };
-        if (user.provider === 'apple') {
-            /**
-             *  apple 유저 - 서비스 연동 끊기
-             */
-            //refresh token 가지고있으면 가져오기, 없으면 실패 response 보내기
-            const appleRefreshToken = yield connection.query(`SELECT apple_refresh_token FROM apple_user_refresh WHERE user_id=?`, [
-                user.id
-            ]);
-            if (appleRefreshToken.length === 0)
-                return serviceReturnConstant_1.default.APPLE_SIGN_REVOKE_FAIL;
-            const appleRevokeResult = yield appleSignRevoke_1.default.appleSignRevoke(appleRefreshToken[0]);
+        if (user.provider === 'apple' && typeof socialToken == 'string' && socialToken.length > 0) {
+            // apple 유저 - 서비스 연동 끊기 (access token 넘겨받음)
+            const appleRevokeResult = yield appleSignRevoke_1.default.appleSignRevoke(socialToken);
             if (appleRevokeResult === serviceReturnConstant_1.default.APPLE_SIGN_REVOKE_SUCCESS) {
-                // apple refresh token DB에서 제거
-                yield connection.query(`DELETE FROM apple_user_refresh WHERE user_id=?;`, [user.id]);
                 yield connection.commit();
                 return data;
             }
