@@ -37,9 +37,13 @@ const searchMusic = (searchKeyword, offset) => __awaiter(void 0, void 0, void 0,
                 if (response.status == 500)
                     return serviceReturnConstant_1.default.APPLE_INTERNAL_SERVER_ERROR;
                 const appleMusicList = response.data.results.songs.data;
-                musicList = yield appleMusicList.map((music) => {
+                musicList = yield appleMusicList
+                    .map((music) => {
                     let imageUrl = music.attributes.artwork.url;
                     imageUrl = imageUrl.replace('{w}x{h}', '400x400'); //앨범 이미지 크기 400으로 지정
+                    // 연령제한 거르기
+                    if (music.attributes.hasOwnProperty('contentRating') && music.attributes.contentRating == 'explicit')
+                        return;
                     const result = {
                         '_id': music.id,
                         'name': music.attributes.name,
@@ -47,7 +51,8 @@ const searchMusic = (searchKeyword, offset) => __awaiter(void 0, void 0, void 0,
                         'image': imageUrl
                     };
                     return result;
-                });
+                })
+                    .filter((music) => music);
             }
             return musicList;
         });

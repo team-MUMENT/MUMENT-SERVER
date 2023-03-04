@@ -28,18 +28,23 @@ const searchMusic = async (searchKeyword: string, offset: number) => {
 
                     const appleMusicList = response.data.results.songs.data; 
 
-                    musicList =  await appleMusicList.map((music: any) => {
-                        let imageUrl = music.attributes.artwork.url;
-                        imageUrl = imageUrl.replace('{w}x{h}', '400x400'); //앨범 이미지 크기 400으로 지정
+                    musicList =  await appleMusicList
+                        .map((music: any) => {
+                            let imageUrl = music.attributes.artwork.url;
+                            imageUrl = imageUrl.replace('{w}x{h}', '400x400'); //앨범 이미지 크기 400으로 지정
 
-                        const result: MusicResponseDto = {
-                            '_id': music.id,
-                            'name': music.attributes.name,
-                            'artist': music.attributes.artistName,
-                            'image': imageUrl
-                        };
-                        return result;
-                    });
+                            // 연령제한 거르기
+                            if (music.attributes.hasOwnProperty('contentRating') && music.attributes.contentRating == 'explicit') return;
+                            const result: MusicResponseDto = {
+                                '_id': music.id,
+                                'name': music.attributes.name,
+                                'artist': music.attributes.artistName,
+                                'image': imageUrl
+                            };
+
+                            return result;
+                        })
+                        .filter((music: MusicResponseDto | null) => music);
                 }
                 
                 return musicList;
@@ -51,6 +56,7 @@ const searchMusic = async (searchKeyword: string, offset: number) => {
 
             return musicList;
 };
+
 
 export default {
     searchMusic,
