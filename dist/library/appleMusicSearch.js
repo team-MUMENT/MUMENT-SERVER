@@ -30,12 +30,9 @@ const searchMusic = (searchKeyword, offset) => __awaiter(void 0, void 0, void 0,
         return __awaiter(this, void 0, void 0, function* () {
             /* apple api에서 받을 수 있는 3개 status code 대응 - 200, 401, 500*/
             if (response.data.results.hasOwnProperty('songs')) {
-                // 401 - A response indicating an incorrect Authorization header
-                if (response.status == 401)
-                    return serviceReturnConstant_1.default.APPLE_UNAUTHORIZED;
-                // 500 - indicating an error occurred on the apple music server
-                if (response.status == 500)
-                    return serviceReturnConstant_1.default.APPLE_INTERNAL_SERVER_ERROR;
+                //if (response.status == 401 || response.status == 500) return constant.APPLE_UNAUTHORIZED;
+                if (response.status == 401 || response.status == 500)
+                    return;
                 const appleMusicList = response.data.results.songs.data;
                 musicList = yield appleMusicList
                     .map((music) => {
@@ -54,7 +51,6 @@ const searchMusic = (searchKeyword, offset) => __awaiter(void 0, void 0, void 0,
                 })
                     .filter((music) => music);
             }
-            return musicList;
         });
     })
         .catch(function (error) {
