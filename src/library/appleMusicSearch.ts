@@ -4,11 +4,11 @@ import { MusicResponseDto } from "../interfaces/music/MusicResponseDto";
 import constant from "../modules/serviceReturnConstant";
 
 // Apple Music Api 곡 검색 최대 50개 가져오기
-const searchMusic = async (searchKeyword: string, offset: number) => {
+const searchMusic = async (searchKeyword: string, limit: number, offset: number) => {
     const token = `Bearer ${config.appleDeveloperToken as string}`;
     let musicList: MusicResponseDto[] = [];
 
-    await axios.get(`https://api.music.apple.com/v1/catalog/kr/search?types=songs&limit=25&offset=${offset}&term=`
+    await axios.get(`https://api.music.apple.com/v1/catalog/kr/search?types=songs&limit=${limit}&offset=${offset}&term=`
                 + encodeURI(searchKeyword), {
                     headers: {
                       'Content-Type': 'application/x-www-form-urlencoded',
@@ -33,16 +33,16 @@ const searchMusic = async (searchKeyword: string, offset: number) => {
 
                             // 연령제한 거르기
                             if (music.attributes.hasOwnProperty('contentRating') && music.attributes.contentRating == 'explicit') return;
-                                const result: MusicResponseDto = {
-                                    '_id': music.id,
-                                    'name': music.attributes.name,
-                                    'artist': music.attributes.artistName,
-                                    'image': imageUrl
-                                };
+                            
+                            const result: MusicResponseDto = {
+                                '_id': music.id,
+                                'name': music.attributes.name,
+                                'artist': music.attributes.artistName,
+                                'image': imageUrl
+                            };
 
                             return result;
-                        })
-                        .filter((music: MusicResponseDto | null) => music);
+                        });
                 }
             })
             .catch(async function (error) {

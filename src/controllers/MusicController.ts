@@ -97,14 +97,6 @@ const getMusicListBySearch = async (req: Request, res: Response) => {
     try {
         const data = await MusicService.getMusicListBySearch(keyword as string);
 
-        if (data == constant.APPLE_UNAUTHORIZED) {
-            return res.status(statusCode.UNAUTHORIZED).send(util.fail(statusCode.UNAUTHORIZED, message.APPLE_TOKEN_UNAUTHORIZED));
-        }
-
-        if (data == constant.APPLE_INTERNAL_SERVER_ERROR) {
-            return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.APPLE_SERVER_INTERNAL_ERROR));
-        }
-
         res.status(statusCode.OK).send(util.success(statusCode.OK, message.SEARCH_MUSIC_LIST_SUCCESS, data));
     } catch (error: any) {
         console.log(error);
