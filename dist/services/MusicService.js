@@ -190,6 +190,7 @@ const getMumentList = (musicId, userId, isLikeOrder) => __awaiter(void 0, void 0
                     AND mument.user_id NOT IN ${strBlockUserList}
                     AND mument.is_deleted = 0  
                     AND (is_private = 0 OR (user.id = ? AND is_private = 1))
+                    AND user.is_deleted = 0
                 ORDER BY mument.like_count DESC;
                 `;
                 originalMumentList = yield connection.query(getMumentListQuery, [musicId, userId]);
@@ -205,6 +206,7 @@ const getMumentList = (musicId, userId, isLikeOrder) => __awaiter(void 0, void 0
                     AND mument.user_id NOT IN ${strBlockUserList}
                     AND mument.is_deleted = 0  
                     AND (is_private = 0 OR (user.id = ? AND is_private = 1))
+                    AND user.is_deleted = 0
                 ORDER BY mument.created_at DESC;
                 `;
                 originalMumentList = yield connection.query(getMumentListQuery, [musicId, userId]);

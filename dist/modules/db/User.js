@@ -38,6 +38,12 @@ const userInfo = (userId) => __awaiter(void 0, void 0, void 0, function* () {
     const user = yield pool_1.default.queryValue(query, [userId]);
     return user[0];
 });
+// userId로 유저 레코드 가져오기 new
+const userData = (userId) => __awaiter(void 0, void 0, void 0, function* () {
+    const query = 'SELECT * FROM user WHERE id=? AND is_deleted=0'; //탈퇴하지 않은 유저
+    const user = yield pool_1.default.queryValue(query, [userId]);
+    return user;
+});
 // userId로 탈퇴한 유저 포함 레코드 가져오기
 const userInfoIncludeLeave = (userId) => __awaiter(void 0, void 0, void 0, function* () {
     const query = 'SELECT * FROM user WHERE id=?';
@@ -105,6 +111,7 @@ const isBlockedUser = (userId, mumentId) => __awaiter(void 0, void 0, void 0, fu
 });
 exports.default = {
     userInfo,
+    userData,
     userInfoIncludeLeave,
     myMumentList,
     myLikeMumentList,

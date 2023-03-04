@@ -31,11 +31,6 @@ const pushHandler_1 = __importDefault(require("../library/pushHandler"));
 const WebViewLink_1 = __importDefault(require("../modules/db/WebViewLink"));
 const appleSignRevoke_1 = __importDefault(require("../library/appleSignRevoke"));
 const kakaoAuth_1 = __importDefault(require("../library/kakaoAuth"));
-const fs = require('fs');
-const AppleAuth = require('apple-auth');
-// 경로 기준 - dist폴더를 현재위치의 기준으로 쓴 것임
-const appleConfig = fs.readFileSync('src/config/apple/AppleConfig.json');
-const appleAuth = new AppleAuth(appleConfig, fs.readFileSync('src/config/apple/AuthKey.p8').toString(), 'text');
 /**
  * 내가 작성한 뮤멘트 리스트
  */
@@ -277,7 +272,7 @@ const getBlockedUserList = (userId) => __awaiter(void 0, void 0, void 0, functio
         const selectBlockQuery = `
             SELECT blocked_user_id as id, user.profile_id, user.image FROM block
             JOIN user ON block.blocked_user_id=user.id
-            WHERE block.user_id=?;
+            WHERE block.user_id=? AND user.is_deleted=0;
         `;
         const blockedUserList = yield pool_1.default.queryValue(selectBlockQuery, [
             userId

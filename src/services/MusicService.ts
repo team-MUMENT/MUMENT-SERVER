@@ -195,6 +195,7 @@ const getMumentList = async (musicId: string, userId: string, isLikeOrder: boole
                     AND mument.user_id NOT IN ${strBlockUserList}
                     AND mument.is_deleted = 0  
                     AND (is_private = 0 OR (user.id = ? AND is_private = 1))
+                    AND user.is_deleted = 0
                 ORDER BY mument.like_count DESC;
                 `;
                 originalMumentList = await connection.query(getMumentListQuery, [musicId, userId]);
@@ -210,6 +211,7 @@ const getMumentList = async (musicId: string, userId: string, isLikeOrder: boole
                     AND mument.user_id NOT IN ${strBlockUserList}
                     AND mument.is_deleted = 0  
                     AND (is_private = 0 OR (user.id = ? AND is_private = 1))
+                    AND user.is_deleted = 0
                 ORDER BY mument.created_at DESC;
                 `;
                 originalMumentList = await connection.query(getMumentListQuery, [musicId, userId]);

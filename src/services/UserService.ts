@@ -32,14 +32,6 @@ import { LoginWebviewLinkDto, MypageWebviewLinkDto, VersionDto } from '../interf
 import WebViewLinkDummy from '../modules/db/WebViewLink';
 import appleSignRevoke from '../library/appleSignRevoke';
 import kakaoAuth from '../library/kakaoAuth';
-import appleSignIn from '../library/appleSignIn';
-
-const fs = require('fs');
-const AppleAuth = require('apple-auth');
-
-// 경로 기준 - dist폴더를 현재위치의 기준으로 쓴 것임
-const appleConfig = fs.readFileSync('src/config/apple/AppleConfig.json');
-const appleAuth = new AppleAuth(appleConfig, fs.readFileSync('src/config/apple/AuthKey.p8').toString(), 'text');
 
 
 /**
@@ -315,7 +307,7 @@ const getBlockedUserList = async (userId: number): Promise<UserResponseDto[] | n
         const selectBlockQuery = `
             SELECT blocked_user_id as id, user.profile_id, user.image FROM block
             JOIN user ON block.blocked_user_id=user.id
-            WHERE block.user_id=?;
+            WHERE block.user_id=? AND user.is_deleted=0;
         `;
         const blockedUserList: UserResponseDto[] = await pools.queryValue(selectBlockQuery, [
             userId
