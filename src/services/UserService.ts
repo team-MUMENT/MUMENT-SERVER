@@ -612,7 +612,7 @@ const deleteUserAndRevokeSocial = async (userId: number, socialToken: string | u
 
                 // apple refresh token DB에서 제거
                 await connection.query(`DELETE FROM apple_user_refresh WHERE user_id=?;`, [user.id]);
-
+                await connection.commit();
                 return data;
             } else {
 
@@ -625,14 +625,13 @@ const deleteUserAndRevokeSocial = async (userId: number, socialToken: string | u
             const kakaoUnlinkResult: number = await kakaoAuth.unlinkKakao(socialToken);
 
             if (kakaoUnlinkResult === constant.KAKAO_UNLINK_SUCCESS) {
+                await connection.commit();
                 return data;
             } else {
                 await connection.rollback();
                 return constant.KAKAO_UNLINK_FAIL;
             }
         }
-
-        await connection.commit();
 
         return constant.FAIL_SOCIAL_AUTH;
 
