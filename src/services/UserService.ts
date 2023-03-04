@@ -593,33 +593,21 @@ const deleteUserAndRevokeSocial = async (userId: number, socialToken: string | u
         }
 
         
-        if (user.provider === 'apple') {
-           /**
-            *  apple 유저 - 서비스 연동 끊기
-            */
-
-            //refresh token 가지고있으면 가져오기, 없으면 실패 response 보내기
-            const appleRefreshToken: string[] = await connection.query(
-                `SELECT apple_refresh_token FROM apple_user_refresh WHERE user_id=?`, [
-                user.id
-            ]);
-            if (appleRefreshToken.length === 0) return constant.APPLE_SIGN_REVOKE_FAIL;
-
-            
-            const appleRevokeResult: number = await appleSignRevoke.appleSignRevoke(appleRefreshToken[0]); 
+        if (user.provider === 'apple' && typeof socialToken == 'string' && socialToken.length > 0) {
+            // apple 유저 - 서비스 연동 끊기 (access token 넘겨받음)
+            const appleRevokeResult: number = await appleSignRevoke.appleSignRevoke(socialToken); 
             
             if (appleRevokeResult === constant.APPLE_SIGN_REVOKE_SUCCESS) {
-
-                // apple refresh token DB에서 제거
-                await connection.query(`DELETE FROM apple_user_refresh WHERE user_id=?;`, [user.id]);
                 await connection.commit();
                 return data;
-            } else {
 
+            } else {
                 // 애플 연동 해제 실패 시 데이터 rollback
                 await connection.rollback();
                 return constant.APPLE_SIGN_REVOKE_FAIL;
+
             }
+            
         } else if (user.provider === 'kakao' && typeof socialToken == 'string') {
             // 카카오 유저 - 서비스 연결끊기 (access token 넘겨받음)
             const kakaoUnlinkResult: number = await kakaoAuth.unlinkKakao(socialToken);
@@ -627,9 +615,11 @@ const deleteUserAndRevokeSocial = async (userId: number, socialToken: string | u
             if (kakaoUnlinkResult === constant.KAKAO_UNLINK_SUCCESS) {
                 await connection.commit();
                 return data;
+
             } else {
                 await connection.rollback();
                 return constant.KAKAO_UNLINK_FAIL;
+
             }
         }
 
