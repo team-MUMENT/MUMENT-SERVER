@@ -20,11 +20,9 @@ const searchMusic = async (searchKeyword: string, offset: number) => {
                 /* apple api에서 받을 수 있는 3개 status code 대응 - 200, 401, 500*/       
 
                 if (response.data.results.hasOwnProperty('songs')) {
-                    // 401 - A response indicating an incorrect Authorization header
-                    if (response.status == 401) return constant.APPLE_UNAUTHORIZED;
 
-                    // 500 - indicating an error occurred on the apple music server
-                    if (response.status == 500) return constant.APPLE_INTERNAL_SERVER_ERROR;
+                    //if (response.status == 401 || response.status == 500) return constant.APPLE_UNAUTHORIZED;
+                    if (response.status == 401 || response.status == 500) return;
 
                     const appleMusicList = response.data.results.songs.data; 
 
@@ -35,19 +33,17 @@ const searchMusic = async (searchKeyword: string, offset: number) => {
 
                             // 연령제한 거르기
                             if (music.attributes.hasOwnProperty('contentRating') && music.attributes.contentRating == 'explicit') return;
-                            const result: MusicResponseDto = {
-                                '_id': music.id,
-                                'name': music.attributes.name,
-                                'artist': music.attributes.artistName,
-                                'image': imageUrl
-                            };
+                                const result: MusicResponseDto = {
+                                    '_id': music.id,
+                                    'name': music.attributes.name,
+                                    'artist': music.attributes.artistName,
+                                    'image': imageUrl
+                                };
 
                             return result;
                         })
                         .filter((music: MusicResponseDto | null) => music);
                 }
-                
-                return musicList;
             })
             .catch(async function (error) {
                 console.log('곡검색 애플 error', error);
