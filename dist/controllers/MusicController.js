@@ -95,12 +95,6 @@ const getMusicListBySearch = (req, res) => __awaiter(void 0, void 0, void 0, fun
     const { keyword } = req.query;
     try {
         const data = yield services_1.MusicService.getMusicListBySearch(keyword);
-        if (data == serviceReturnConstant_1.default.APPLE_UNAUTHORIZED) {
-            return res.status(statusCode_1.default.UNAUTHORIZED).send(util_1.default.fail(statusCode_1.default.UNAUTHORIZED, responseMessage_1.default.APPLE_TOKEN_UNAUTHORIZED));
-        }
-        if (data == serviceReturnConstant_1.default.APPLE_INTERNAL_SERVER_ERROR) {
-            return res.status(statusCode_1.default.BAD_REQUEST).send(util_1.default.fail(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.APPLE_SERVER_INTERNAL_ERROR));
-        }
         res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.SEARCH_MUSIC_LIST_SUCCESS, data));
     }
     catch (error) {

@@ -317,12 +317,29 @@ const getMumentList = (musicId, userId, isLikeOrder) => __awaiter(void 0, void 0
  */
 const getMusicListBySearch = (keyword) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        // 곡 검색 첫 페이지 개수가 25개 이상일 경우만 검색 2회 요청
-        const page1 = yield appleMusicSearch_1.default.searchMusic(keyword, 0);
-        if (page1.length < 25)
-            return page1;
-        const page2 = yield appleMusicSearch_1.default.searchMusic(keyword, 25);
-        return page1.concat(page2);
+        // 곡 검색 결과 최대 50개까지 반환하기
+        let result = [];
+        let leftNum = 50; // 남은 결과 개수
+        let page = 25; // 페이지 당 띄울 개수
+        let offset = 0; // 검색 시작 지점
+        // 곡 검색이 계속 가능하지만 결과 50개가 모였거나 곡 검색 시 빈배열 반환 받으면 끝
+        while (leftNum > 0) {
+            let searchResult = [];
+            if (leftNum >= page) {
+                searchResult = yield appleMusicSearch_1.default.searchMusic(keyword, page, offset);
+                offset += page;
+            }
+            else {
+                searchResult = yield appleMusicSearch_1.default.searchMusic(keyword, leftNum, offset);
+                offset += leftNum;
+            }
+            // 검색 결과가 더이상 없다면 break
+            if (searchResult.length === 0)
+                break;
+            result = result.concat(searchResult.filter((music) => music));
+            leftNum -= result.length;
+        }
+        return result;
     }
     catch (error) {
         console.log(error);
