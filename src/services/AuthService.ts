@@ -8,16 +8,11 @@ import kakaoAuth from '../library/kakaoAuth';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import jwtHandler from '../library/jwtHandler';
 
-const fs = require('fs');
-const AppleAuth = require('apple-auth');
-const path = require('path');
-
-
 
 /**
 * 로그인/회원가입
 */
-const login = async (provider: string, authenticationCode: string, fcmToken: string, appleRefreshToken: string): Promise<AuthTokenResponseDto | number> => {
+const login = async (provider: string, authenticationCode: string, fcmToken: string): Promise<AuthTokenResponseDto | number> => {
     const pool: any = await poolPromise;
     const connection = await pool.getConnection();
     
@@ -161,15 +156,6 @@ const login = async (provider: string, authenticationCode: string, fcmToken: str
             user.id,
         ]);
 
-
-        // apple 요청 시 apple refresh token 존재하면 저장
-        if (typeof appleRefreshToken == 'string' && provider == 'apple') {
-            await connection.query( `INSERT INTO apple_user_refresh (user_id, apple_refresh_token) VALUES(?, ?);`, [
-                user.id,
-                appleRefreshToken
-            ]);
-        }
-
         await connection.commit();
 
         // 새로 발급한 jwt token과 유저 id, 로그인/회원가입 타입 return
@@ -265,7 +251,7 @@ const logout = async (userId: string): Promise<void | number> => {
         );
 
         const logoutResult = await connection.query(
-            'SELECT provider, refresh_token, fcm_token FROM user WHERE id=?', 
+            'SELECT refresh_token, fcm_token FROM user WHERE id=?',
             [userId]
         );
 
@@ -275,19 +261,6 @@ const logout = async (userId: string): Promise<void | number> => {
         // refresh, fcm token이 둘다 null이 되지 않으면 fail
         if (logoutResult[0].refresh_token || logoutResult[0].fcm_token) {
             return constant.LOGOUT_FAIL;
-        }
-
-        // apple 유저의 경우 apple refresh token을 저장해뒀을 경우 제거
-        if (logoutResult[0].provider == 'apple') {
-            
-             const appleRefreshToken: string[] = await connection.query(
-                `SELECT apple_refresh_token FROM apple_user_refresh WHERE user_id=?`, [
-                userId
-            ]);
-
-            if (appleRefreshToken.length > 0) {
-                await connection.query(`DELETE FROM apple_user_refresh WHERE user_id=?;`, [userId]);
-            } 
         }
 
         await connection.commit();
