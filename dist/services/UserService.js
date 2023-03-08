@@ -31,14 +31,6 @@ const pushHandler_1 = __importDefault(require("../library/pushHandler"));
 const WebViewLink_1 = __importDefault(require("../modules/db/WebViewLink"));
 const appleSignRevoke_1 = __importDefault(require("../library/appleSignRevoke"));
 const kakaoAuth_1 = __importDefault(require("../library/kakaoAuth"));
-<<<<<<< HEAD
-const fs = require('fs');
-const AppleAuth = require('apple-auth');
-// 경로 기준 - dist폴더를 현재위치의 기준으로 쓴 것임
-const appleConfig = fs.readFileSync('src/config/apple/AppleConfig.json');
-const appleAuth = new AppleAuth(appleConfig, fs.readFileSync('src/config/apple/AuthKey.p8').toString(), 'text');
-=======
->>>>>>> fc10543d79d011bf11099da9965c6143276c7f33
 /**
  * 내가 작성한 뮤멘트 리스트
  */

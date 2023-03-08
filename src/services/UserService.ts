@@ -593,12 +593,6 @@ const deleteUserAndRevokeSocial = async (userId: number, socialToken: string | u
             const appleRevokeResult: number = await appleSignRevoke.appleSignRefreshRevoke(socialToken);
             
             if (appleRevokeResult === constant.APPLE_SIGN_REVOKE_SUCCESS) {
-<<<<<<< HEAD
-
-                // apple refresh token DB에서 제거
-                await connection.query(`DELETE FROM apple_user_refresh WHERE user_id=?;`, [user.id]);
-=======
->>>>>>> fc10543d79d011bf11099da9965c6143276c7f33
                 await connection.commit();
                 return data;
 
