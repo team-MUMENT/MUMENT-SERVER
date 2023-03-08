@@ -195,6 +195,7 @@ const getMumentList = async (musicId: string, userId: string, isLikeOrder: boole
                     AND mument.user_id NOT IN ${strBlockUserList}
                     AND mument.is_deleted = 0  
                     AND (is_private = 0 OR (user.id = ? AND is_private = 1))
+                    AND user.is_deleted = 0
                 ORDER BY mument.like_count DESC;
                 `;
                 originalMumentList = await connection.query(getMumentListQuery, [musicId, userId]);
@@ -210,6 +211,7 @@ const getMumentList = async (musicId: string, userId: string, isLikeOrder: boole
                     AND mument.user_id NOT IN ${strBlockUserList}
                     AND mument.is_deleted = 0  
                     AND (is_private = 0 OR (user.id = ? AND is_private = 1))
+                    AND user.is_deleted = 0
                 ORDER BY mument.created_at DESC;
                 `;
                 originalMumentList = await connection.query(getMumentListQuery, [musicId, userId]);
@@ -318,15 +320,35 @@ const getMumentList = async (musicId: string, userId: string, isLikeOrder: boole
 /**
  * 곡 검색 - apple music api 사용 곡 검색 / 최대 50개까지 곡 리스트 반환 가능
  */
-const getMusicListBySearch = async (keyword: string): Promise<MusicResponseDto[] | number | void> => {
+const getMusicListBySearch = async (keyword: string): Promise<MusicResponseDto[]> => {
     try {        
-        // 곡 검색 첫 페이지 개수가 25개 이상일 경우만 검색 2회 요청
-        const page1 = await appleMusic.searchMusic(keyword, 0);
-        if (page1.length < 25) return page1;
-        
-        const page2 = await appleMusic.searchMusic(keyword, 25);
+        // 곡 검색 결과 최대 50개까지 반환하기
+        let result: MusicResponseDto[] = [];
+        let leftNum: number = 50; // 남은 결과 개수
+        let page: number = 25; // 페이지 당 띄울 개수
+        let offset: number = 0; // 검색 시작 지점
 
-        return page1.concat(page2);
+        // 곡 검색이 계속 가능하지만 결과 50개가 모였거나 곡 검색 시 빈배열 반환 받으면 끝
+        while(leftNum > 0) {
+            let searchResult: MusicResponseDto[] = [];
+            
+            if (leftNum >= page) {
+                searchResult = await appleMusic.searchMusic(keyword, page, offset);
+                offset += page;
+            } else {
+                searchResult = await appleMusic.searchMusic(keyword, leftNum, offset);
+                offset += leftNum;
+            }
+
+            // 검색 결과가 더이상 없다면 break
+            if (searchResult.length === 0) break;
+
+            result = result.concat(searchResult.filter((music: MusicResponseDto | null) => music));
+            leftNum -= result.length;
+            
+        }
+ 
+        return result;
     } catch (error) {
         console.log(error);
         throw error;

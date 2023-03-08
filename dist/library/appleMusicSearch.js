@@ -16,10 +16,10 @@ const axios_1 = __importDefault(require("axios"));
 const config_1 = __importDefault(require("../config"));
 const serviceReturnConstant_1 = __importDefault(require("../modules/serviceReturnConstant"));
 // Apple Music Api 곡 검색 최대 50개 가져오기
-const searchMusic = (searchKeyword, offset) => __awaiter(void 0, void 0, void 0, function* () {
+const searchMusic = (searchKeyword, limit, offset) => __awaiter(void 0, void 0, void 0, function* () {
     const token = `Bearer ${config_1.default.appleDeveloperToken}`;
     let musicList = [];
-    yield axios_1.default.get(`https://api.music.apple.com/v1/catalog/kr/search?types=songs&limit=25&offset=${offset}&term=`
+    yield axios_1.default.get(`https://api.music.apple.com/v1/catalog/kr/search?types=songs&limit=${limit}&offset=${offset}&term=`
         + encodeURI(searchKeyword), {
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
@@ -30,16 +30,17 @@ const searchMusic = (searchKeyword, offset) => __awaiter(void 0, void 0, void 0,
         return __awaiter(this, void 0, void 0, function* () {
             /* apple api에서 받을 수 있는 3개 status code 대응 - 200, 401, 500*/
             if (response.data.results.hasOwnProperty('songs')) {
-                // 401 - A response indicating an incorrect Authorization header
-                if (response.status == 401)
-                    return serviceReturnConstant_1.default.APPLE_UNAUTHORIZED;
-                // 500 - indicating an error occurred on the apple music server
-                if (response.status == 500)
-                    return serviceReturnConstant_1.default.APPLE_INTERNAL_SERVER_ERROR;
+                //if (response.status == 401 || response.status == 500) return constant.APPLE_UNAUTHORIZED;
+                if (response.status == 401 || response.status == 500)
+                    return;
                 const appleMusicList = response.data.results.songs.data;
-                musicList = yield appleMusicList.map((music) => {
+                musicList = yield appleMusicList
+                    .map((music) => {
                     let imageUrl = music.attributes.artwork.url;
                     imageUrl = imageUrl.replace('{w}x{h}', '400x400'); //앨범 이미지 크기 400으로 지정
+                    // 연령제한 거르기
+                    if (music.attributes.hasOwnProperty('contentRating') && music.attributes.contentRating == 'explicit')
+                        return;
                     const result = {
                         '_id': music.id,
                         'name': music.attributes.name,
@@ -49,7 +50,6 @@ const searchMusic = (searchKeyword, offset) => __awaiter(void 0, void 0, void 0,
                     return result;
                 });
             }
-            return musicList;
         });
     })
         .catch(function (error) {

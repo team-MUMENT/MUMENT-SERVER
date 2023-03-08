@@ -122,8 +122,10 @@ const getMument = (mumentId, userId) => __awaiter(void 0, void 0, void 0, functi
             return serviceReturnConstant_1.default.PRIVATE_MUMENT;
         // 사용자가 이 뮤멘트에 좋아요 눌렀으면 1, 아니면 0
         const isLiked = yield Mument_1.default.isLiked(mumentId, userId);
-        // 사용자 정보 가져오기 - 탈퇴한 사용자 포함해서 프로필 정보 가져옴
-        const user = yield User_1.default.userInfoIncludeLeave(mument.user_id.toString());
+        // 사용자 정보 가져오기 - 탈퇴한 유저 막기
+        const user = yield User_1.default.userData(mument.user_id.toString());
+        if (user.length === 0)
+            return serviceReturnConstant_1.default.NO_MUMENT;
         // 뮤멘트 히스토리 개수 - 뮤멘트의 작성자가 해당 곡에 쓴 뮤멘트 개수
         const historyCount = yield Mument_1.default.mumentHistoryCount(mument.music_id.toString(), mument.user_id.toString(), userId);
         // 작성 시간
@@ -134,9 +136,9 @@ const getMument = (mumentId, userId) => __awaiter(void 0, void 0, void 0, functi
         const feelingTag = tagList.feelingTag;
         const data = {
             user: {
-                _id: user.id,
-                image: user.image,
-                name: user.profile_id,
+                _id: user[0].id,
+                image: user[0].image,
+                name: user[0].profile_id,
             },
             isFirst: Boolean(mument.is_first),
             impressionTag: impressionTag,
@@ -252,6 +254,7 @@ const getMumentHistory = (userId, musicId, writerId, orderBy) => __awaiter(void 
             WHERE mument.music_id = ?
                 AND mument.user_id = ?
                 AND mument.is_deleted = 0
+                AND user.is_deleted = 0
             ORDER BY created_at ${orderBy};
             `;
             getMumentListResult = yield connection.query(getMumentListQuery, [userId, musicId, writerId]);
@@ -271,11 +274,11 @@ const getMumentHistory = (userId, musicId, writerId, orderBy) => __awaiter(void 
                 AND mument.user_id = ?
                 AND mument.is_private = 0
                 AND mument.is_deleted = 0
+                AND user.is_deleted = 0
             ORDER BY created_at ${orderBy}
             `;
             getMumentListResult = yield connection.query(getMumentListQuery, [userId, musicId, writerId]);
         }
-        //출력
         // 해당 유저가 작성한 뮤멘트가 없을 경우 리턴
         if (getMumentListResult.length === 0) {
             const data = {
@@ -1006,6 +1009,7 @@ const getLikeUserList = (mumentId, userId, limit, offset) => __awaiter(void 0, v
             ON mument.like.user_id = user.id
         WHERE mument.like.mument_id = ?
             AND mument.like.user_id NOT IN ${strBlockUserList}
+            AND user.is_deleted = 0
         ORDER BY mument.like.created_at DESC
         LIMIT ? OFFSET ?;
         `;

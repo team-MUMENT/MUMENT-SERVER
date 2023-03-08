@@ -31,11 +31,14 @@ const pushHandler_1 = __importDefault(require("../library/pushHandler"));
 const WebViewLink_1 = __importDefault(require("../modules/db/WebViewLink"));
 const appleSignRevoke_1 = __importDefault(require("../library/appleSignRevoke"));
 const kakaoAuth_1 = __importDefault(require("../library/kakaoAuth"));
+<<<<<<< HEAD
 const fs = require('fs');
 const AppleAuth = require('apple-auth');
 // 경로 기준 - dist폴더를 현재위치의 기준으로 쓴 것임
 const appleConfig = fs.readFileSync('src/config/apple/AppleConfig.json');
 const appleAuth = new AppleAuth(appleConfig, fs.readFileSync('src/config/apple/AuthKey.p8').toString(), 'text');
+=======
+>>>>>>> fc10543d79d011bf11099da9965c6143276c7f33
 /**
  * 내가 작성한 뮤멘트 리스트
  */
@@ -277,7 +280,7 @@ const getBlockedUserList = (userId) => __awaiter(void 0, void 0, void 0, functio
         const selectBlockQuery = `
             SELECT blocked_user_id as id, user.profile_id, user.image FROM block
             JOIN user ON block.blocked_user_id=user.id
-            WHERE block.user_id=?;
+            WHERE block.user_id=? AND user.is_deleted=0;
         `;
         const blockedUserList = yield pool_1.default.queryValue(selectBlockQuery, [
             userId
@@ -437,11 +440,11 @@ const deleteUser = (userId) => __awaiter(void 0, void 0, void 0, function* () {
         // 유저 탈퇴
         const deleteUserQuery = `
         UPDATE user
-        SET is_deleted = 1
+        SET is_deleted = 1, refresh_token=?, fcm_token=?
         WHERE id = ?
             AND is_deleted = 0;
         `;
-        yield connection.query(deleteUserQuery, [userId]);
+        yield connection.query(deleteUserQuery, [null, null, userId]);
         // 삭제되었는지 확인
         const getUserQuery = `
         SELECT id, profile_id, is_deleted, updated_at
@@ -486,11 +489,11 @@ const deleteUserAndRevokeSocial = (userId, socialToken) => __awaiter(void 0, voi
         // 유저 탈퇴
         const deleteUserQuery = `
         UPDATE user
-        SET is_deleted = 1
+        SET is_deleted = 1, refresh_token=?, fcm_token=?
         WHERE id = ?
             AND is_deleted = 0;
         `;
-        yield connection.query(deleteUserQuery, [userId]);
+        yield connection.query(deleteUserQuery, [null, null, userId]);
         // 삭제되었는지 확인
         const getUserQuery = `
         SELECT id, profile_id, is_deleted, updated_at, provider
@@ -501,27 +504,17 @@ const deleteUserAndRevokeSocial = (userId, socialToken) => __awaiter(void 0, voi
         const user = getUserResult[0];
         if (!user.is_deleted)
             return serviceReturnConstant_1.default.DELETE_FAIL;
-        const isDeleted = user.isDeleted ? true : false;
+        const isDeleted = user.is_deleted ? true : false;
         const data = {
             id: user.id,
             userName: user.profile_id,
             isDeleted: isDeleted,
             updatedAt: user.updated_at,
         };
-        if (user.provider === 'apple') {
-            /**
-             *  apple 유저 - 서비스 연동 끊기
-             */
-            //refresh token 가지고있으면 가져오기, 없으면 실패 response 보내기
-            const appleRefreshToken = yield connection.query(`SELECT apple_refresh_token FROM apple_user_refresh WHERE user_id=?`, [
-                user.id
-            ]);
-            if (appleRefreshToken.length === 0)
-                return serviceReturnConstant_1.default.APPLE_SIGN_REVOKE_FAIL;
-            const appleRevokeResult = yield appleSignRevoke_1.default.appleSignRevoke(appleRefreshToken[0]);
+        if (user.provider === 'apple' && typeof socialToken == 'string' && socialToken.length > 0) {
+            // apple 유저 - 서비스 연동 끊기 (apple refresh token 이용)
+            const appleRevokeResult = yield appleSignRevoke_1.default.appleSignRefreshRevoke(socialToken);
             if (appleRevokeResult === serviceReturnConstant_1.default.APPLE_SIGN_REVOKE_SUCCESS) {
-                // apple refresh token DB에서 제거
-                yield connection.query(`DELETE FROM apple_user_refresh WHERE user_id=?;`, [user.id]);
                 yield connection.commit();
                 return data;
             }

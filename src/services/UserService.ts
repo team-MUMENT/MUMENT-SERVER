@@ -33,13 +33,6 @@ import WebViewLinkDummy from '../modules/db/WebViewLink';
 import appleSignRevoke from '../library/appleSignRevoke';
 import kakaoAuth from '../library/kakaoAuth';
 
-const fs = require('fs');
-const AppleAuth = require('apple-auth');
-
-// 경로 기준 - dist폴더를 현재위치의 기준으로 쓴 것임
-const appleConfig = fs.readFileSync('src/config/apple/AppleConfig.json');
-const appleAuth = new AppleAuth(appleConfig, fs.readFileSync('src/config/apple/AuthKey.p8').toString(), 'text');
-
 
 /**
  * 내가 작성한 뮤멘트 리스트
@@ -314,7 +307,7 @@ const getBlockedUserList = async (userId: number): Promise<UserResponseDto[] | n
         const selectBlockQuery = `
             SELECT blocked_user_id as id, user.profile_id, user.image FROM block
             JOIN user ON block.blocked_user_id=user.id
-            WHERE block.user_id=?;
+            WHERE block.user_id=? AND user.is_deleted=0;
         `;
         const blockedUserList: UserResponseDto[] = await pools.queryValue(selectBlockQuery, [
             userId
@@ -506,11 +499,11 @@ const deleteUser = async (userId: number): Promise<Number | UserDeleteResponseDt
         // 유저 탈퇴
         const deleteUserQuery = `
         UPDATE user
-        SET is_deleted = 1
+        SET is_deleted = 1, refresh_token=?, fcm_token=?
         WHERE id = ?
             AND is_deleted = 0;
         `;
-        await connection.query(deleteUserQuery, [userId]);
+        await connection.query(deleteUserQuery, [null, null, userId]);
 
         // 삭제되었는지 확인
         const getUserQuery = `
@@ -564,11 +557,12 @@ const deleteUserAndRevokeSocial = async (userId: number, socialToken: string | u
         // 유저 탈퇴
         const deleteUserQuery = `
         UPDATE user
-        SET is_deleted = 1
+        SET is_deleted = 1, refresh_token=?, fcm_token=?
         WHERE id = ?
             AND is_deleted = 0;
         `;
-        await connection.query(deleteUserQuery, [userId]);
+        await connection.query(deleteUserQuery, [null, null, userId]);
+
 
         // 삭제되었는지 확인
         const getUserQuery = `
@@ -583,7 +577,7 @@ const deleteUserAndRevokeSocial = async (userId: number, socialToken: string | u
         if (!user.is_deleted) return constant.DELETE_FAIL;
 
 
-        const isDeleted = user.isDeleted? true : false;
+        const isDeleted = user.is_deleted ? true : false;
 
         const data: UserDeleteResponseDto = {
             id: user.id,
@@ -593,33 +587,28 @@ const deleteUserAndRevokeSocial = async (userId: number, socialToken: string | u
         }
 
         
-        if (user.provider === 'apple') {
-           /**
-            *  apple 유저 - 서비스 연동 끊기
-            */
+        if (user.provider === 'apple' && typeof socialToken == 'string' && socialToken.length > 0) {
 
-            //refresh token 가지고있으면 가져오기, 없으면 실패 response 보내기
-            const appleRefreshToken: string[] = await connection.query(
-                `SELECT apple_refresh_token FROM apple_user_refresh WHERE user_id=?`, [
-                user.id
-            ]);
-            if (appleRefreshToken.length === 0) return constant.APPLE_SIGN_REVOKE_FAIL;
-
-            
-            const appleRevokeResult: number = await appleSignRevoke.appleSignRevoke(appleRefreshToken[0]); 
+            // apple 유저 - 서비스 연동 끊기 (apple refresh token 이용)
+            const appleRevokeResult: number = await appleSignRevoke.appleSignRefreshRevoke(socialToken);
             
             if (appleRevokeResult === constant.APPLE_SIGN_REVOKE_SUCCESS) {
+<<<<<<< HEAD
 
                 // apple refresh token DB에서 제거
                 await connection.query(`DELETE FROM apple_user_refresh WHERE user_id=?;`, [user.id]);
+=======
+>>>>>>> fc10543d79d011bf11099da9965c6143276c7f33
                 await connection.commit();
                 return data;
-            } else {
 
+            } else {
                 // 애플 연동 해제 실패 시 데이터 rollback
                 await connection.rollback();
                 return constant.APPLE_SIGN_REVOKE_FAIL;
+
             }
+            
         } else if (user.provider === 'kakao' && typeof socialToken == 'string') {
             // 카카오 유저 - 서비스 연결끊기 (access token 넘겨받음)
             const kakaoUnlinkResult: number = await kakaoAuth.unlinkKakao(socialToken);
@@ -627,9 +616,11 @@ const deleteUserAndRevokeSocial = async (userId: number, socialToken: string | u
             if (kakaoUnlinkResult === constant.KAKAO_UNLINK_SUCCESS) {
                 await connection.commit();
                 return data;
+
             } else {
                 await connection.rollback();
                 return constant.KAKAO_UNLINK_FAIL;
+
             }
         }
 
