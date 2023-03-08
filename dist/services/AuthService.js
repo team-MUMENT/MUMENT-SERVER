@@ -232,9 +232,53 @@ const logout = (userId) => __awaiter(void 0, void 0, void 0, function* () {
         connection.release();
     }
 });
+// 어드민 로그인
+const adminLogin = (id, userName, provider) => __awaiter(void 0, void 0, void 0, function* () {
+    const pool = yield db_1.default;
+    const connection = yield pool.getConnection();
+    try {
+        const findUserQuery = `
+        SELECT *
+        FROM user
+        WHERE id = ?
+            AND profile_id = ?
+            AND provider = ?
+            AND is_deleted = 0;
+        `;
+        const userResult = yield connection.query(findUserQuery, [id, userName, provider]);
+        if (userResult.length === 0)
+            return serviceReturnConstant_1.default.NO_USER;
+        const user = userResult[0];
+        const accessToken = jwtHandler_1.default.accessSign(user);
+        const refreshToken = jwtHandler_1.default.refreshSign(user);
+        const updateRefreshTokenQuery = `
+        UPDATE user
+        SET refresh_token = ?
+        WHERE id = ?
+            AND profile_id = ?
+            AND is_deleted = 0;
+        `;
+        yield connection.query(updateRefreshTokenQuery, [refreshToken, id, userName]);
+        const data = {
+            _id: user.id,
+            type: 'login',
+            accessToken,
+            refreshToken,
+        };
+        return data;
+    }
+    catch (error) {
+        console.log(error);
+        throw error;
+    }
+    finally {
+        connection.release();
+    }
+});
 exports.default = {
     login,
     getNewAccessToken,
     logout,
+    adminLogin,
 };
 //# sourceMappingURL=AuthService.js.map

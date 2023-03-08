@@ -16,6 +16,7 @@ const statusCode_1 = __importDefault(require("../modules/statusCode"));
 const responseMessage_1 = __importDefault(require("../modules/responseMessage"));
 const util_1 = __importDefault(require("../modules/util"));
 const serviceReturnConstant_1 = __importDefault(require("../modules/serviceReturnConstant"));
+const express_validator_1 = require("express-validator");
 const services_1 = require("../services");
 const slackWebHook_1 = __importDefault(require("../library/slackWebHook"));
 /**
@@ -107,9 +108,35 @@ const logout = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         return res.status(statusCode_1.default.INTERNAL_SERVER_ERROR).send(util_1.default.fail(statusCode_1.default.INTERNAL_SERVER_ERROR, responseMessage_1.default.INTERNAL_SERVER_ERROR));
     }
 });
+/**
+ * @ROUTE Post /auth/admin/login
+ * @DESC 어드민 로그인 - id와 userName, provider만 받아 로그인 진행
+ */
+const adminLogin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const error = (0, express_validator_1.validationResult)(req);
+    if (!error.isEmpty()) {
+        return res.status(statusCode_1.default.BAD_REQUEST).send(util_1.default.fail(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.BAD_REQUEST));
+    }
+    const { id, userName, provider } = req.body;
+    try {
+        const data = yield services_1.AuthService.adminLogin(id, userName, provider);
+        if (data === serviceReturnConstant_1.default.NO_USER) {
+            return res.status(statusCode_1.default.BAD_REQUEST).send(util_1.default.fail(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.NO_USER_ID));
+        }
+        ;
+        return res.status(statusCode_1.default.OK).send(util_1.default.success(statusCode_1.default.OK, responseMessage_1.default.ADMIN_LOGIN_SUCCESS, data));
+    }
+    catch (error) {
+        console.log(error);
+        const slackMessage = slackWebHook_1.default.slackErrorMessage(error.stack);
+        slackWebHook_1.default.sendMessage(slackMessage);
+        return res.status(statusCode_1.default.INTERNAL_SERVER_ERROR).send(util_1.default.fail(statusCode_1.default.INTERNAL_SERVER_ERROR, responseMessage_1.default.INTERNAL_SERVER_ERROR));
+    }
+});
 exports.default = {
     login,
     getNewAccessToken,
     logout,
+    adminLogin,
 };
 //# sourceMappingURL=AuthController.js.map

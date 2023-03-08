@@ -1,4 +1,5 @@
 import poolPromise from '../loaders/db'
+import pools from '../modules/pool';
 
 import { AuthTokenResponseDto } from '../interfaces/auth/AuthTokenResponseDto';
 import constant from '../modules/serviceReturnConstant';
@@ -273,10 +274,59 @@ const logout = async (userId: string): Promise<void | number> => {
     }
 };
 
+// 어드민 로그인
+const adminLogin = async (id: number, userName: string, provider: string): Promise<AuthTokenResponseDto | number> => {
+    const pool: any = await poolPromise;
+    const connection = await pool.getConnection();
+    
+    try {
+        const findUserQuery = `
+        SELECT *
+        FROM user
+        WHERE id = ?
+            AND profile_id = ?
+            AND provider = ?
+            AND is_deleted = 0;
+        `;
 
+        const userResult = await connection.query(findUserQuery, [id, userName, provider]);
+
+        if (userResult.length === 0) return constant.NO_USER;
+        
+        const user = userResult[0];
+
+        const accessToken = jwtHandler.accessSign(user);
+        const refreshToken = jwtHandler.refreshSign(user);
+
+        const updateRefreshTokenQuery = `
+        UPDATE user
+        SET refresh_token = ?
+        WHERE id = ?
+            AND profile_id = ?
+            AND is_deleted = 0;
+        `;
+
+        await connection.query(updateRefreshTokenQuery, [refreshToken, id, userName]);
+
+        const data: AuthTokenResponseDto = {
+            _id: user.id,
+            type: 'login',
+            accessToken,
+            refreshToken,
+        };
+
+        return data;
+    } catch (error) {
+        console.log(error);
+        throw error;
+    } finally {
+        connection.release();
+    }
+}
 
 export default {
     login,
     getNewAccessToken,
     logout,
+    adminLogin,
 };
