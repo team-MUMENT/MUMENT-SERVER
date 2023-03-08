@@ -3,6 +3,7 @@ import statusCode from '../modules/statusCode';
 import message from '../modules/responseMessage';
 import util from '../modules/util';
 import constant from '../modules/serviceReturnConstant';
+import { validationResult } from 'express-validator';
 import { AuthService } from '../services';
 import slackWebHook, { SlackMessageFormat } from '../library/slackWebHook';
 import { AuthTokenResponseDto } from '../interfaces/auth/AuthTokenResponseDto';
@@ -107,9 +108,39 @@ const logout = async (req: Request, res: Response) => {
     }
 };
 
+/**
+ * @ROUTE Post /auth/admin/login
+ * @DESC 어드민 로그인 - id와 userName, provider만 받아 로그인 진행
+ */
+const adminLogin = async (req: Request, res: Response) => {
+    const error = validationResult(req);
+    if (!error.isEmpty()) {
+        return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.BAD_REQUEST));
+    }
+
+    const { id, userName, provider } = req.body;
+    
+    try {
+        const data = await AuthService.adminLogin(id, userName, provider);
+
+        if (data === constant.NO_USER) {
+            return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.NO_USER_ID));
+        };
+
+        return res.status(statusCode.OK).send(util.success(statusCode.OK, message.ADMIN_LOGIN_SUCCESS, data));
+    } catch (error: any) {
+        console.log(error);
+
+        const slackMessage: SlackMessageFormat = slackWebHook.slackErrorMessage(error.stack);
+        slackWebHook.sendMessage(slackMessage);
+        
+        return res.status(statusCode.INTERNAL_SERVER_ERROR).send(util.fail(statusCode.INTERNAL_SERVER_ERROR, message.INTERNAL_SERVER_ERROR));
+    }
+};
 
 export default {
     login,
     getNewAccessToken,
     logout,
+    adminLogin,
 };
