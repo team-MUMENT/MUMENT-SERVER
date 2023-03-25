@@ -978,7 +978,7 @@ const getUser = async (userId: string): Promise<UserResponseDto | number> => {
 /** 
  * 웹뷰 링크 조회
 */
-const getWebviewLink = async (page: string): Promise<LoginWebviewLinkDto | MypageWebviewLinkDto | VersionDto | number> => {
+const getWebviewLink = async (page: string, os: string): Promise<LoginWebviewLinkDto | MypageWebviewLinkDto | VersionDto | number> => {
     try {
         if (page === 'mypage') {
              // [마이페이지] 웹뷰 조회
@@ -996,8 +996,14 @@ const getWebviewLink = async (page: string): Promise<LoginWebviewLinkDto | Mypag
                 privacy: WebViewLinkDummy.privacy
             };
         } else if (page === 'version'){
-            // 최신 버전 조회            
-            const getVersionResult = await pools.query(`SELECT ver FROM version ORDER BY created_at DESC LIMIT 1`);
+            // os별로 최신 버전 조회
+            let getVersionResult = null;
+
+            if (os === 'AOS') {
+                getVersionResult = await pools.query(`SELECT ver FROM version WHERE os = 'AOS' ORDER BY created_at DESC LIMIT 1;`);
+            } else {
+                getVersionResult = await pools.query(`SELECT ver FROM version WHERE os = 'iOS' ORDER BY created_at DESC LIMIT 1`);
+            }
 
             const version = getVersionResult[0].ver;
 
