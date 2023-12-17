@@ -6,6 +6,8 @@ import { ServiceAccount } from 'firebase-admin';
 import serviceAccount from '../src/config/serviceAccountKey.json';
 import serviceAccountRelease from '../src/config/serviceAccountKeyRelease.json';
 
+const functions = require("firebase-functions");
+
 require('dotenv').config();
 
 const serviceAccountEnv = process.env.NODE_ENV == 'production' ? serviceAccountRelease : serviceAccount;
@@ -23,6 +25,7 @@ if (admin.apps.length === 0) {
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+
 
 // router
 app.use(routes);
@@ -42,6 +45,23 @@ app.use(function (err: ErrorType, req: Request, res: Response, next: NextFunctio
     res.render('error');
 });
 
+// Express 앱을 Firebase Function으로 변환
+module.exports = functions
+    .runWith({
+        timeoutSeconds: 300, // 요청처리 300초 지나면 timeout
+        memory: "512MB", // 서버 할당 memory
+    })
+    .region("asia-northeast3")
+    .https.onRequest(async (req: any, res: any) => {
+        
+        // API 요청 디버깅용
+        console.log("\n\n", "[api]", `[${req.method.toUpperCase()}]`, req.originalUrl, req.body);
+
+        return app(req, res);
+    });
+
+
+ /** 
 app.listen(process.env.PORT, () => {
     console.log(`
     ################################################
@@ -54,3 +74,4 @@ app.listen(process.env.PORT, () => {
 });
 
 export default app;
+*/
