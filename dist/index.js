@@ -66,10 +66,10 @@ app.use(function (err, req, res, next) {
     res.render('error');
 });
 // Express 앱을 Firebase Function으로 변환
-module.exports = functions
+const api = functions
     .runWith({
     timeoutSeconds: 300,
-    memory: "512MB", // 서버 할당 memory
+    memory: "512MB",
 })
     .region("asia-northeast3")
     .https.onRequest((req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -77,6 +77,10 @@ module.exports = functions
     console.log("\n\n", "[api]", `[${req.method.toUpperCase()}]`, req.originalUrl, req.body);
     return app(req, res);
 }));
+// Firebase Function으로 변환된 모듈을 export
+module.exports = {
+    api,
+};
 /**
 app.listen(process.env.PORT, () => {
    console.log(`

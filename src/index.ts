@@ -46,20 +46,23 @@ app.use(function (err: ErrorType, req: Request, res: Response, next: NextFunctio
 });
 
 // Express 앱을 Firebase Function으로 변환
-module.exports = functions
+  const api = functions
     .runWith({
-        timeoutSeconds: 300, // 요청처리 300초 지나면 timeout
-        memory: "512MB", // 서버 할당 memory
+      timeoutSeconds: 300,
+      memory: "512MB",
     })
     .region("asia-northeast3")
     .https.onRequest(async (req: any, res: any) => {
-        
-        // API 요청 디버깅용
-        console.log("\n\n", "[api]", `[${req.method.toUpperCase()}]`, req.originalUrl, req.body);
+      // API 요청 디버깅용
+      console.log("\n\n", "[api]", `[${req.method.toUpperCase()}]`, req.originalUrl, req.body);
 
-        return app(req, res);
-    });
-
+      return app(req, res);
+  });
+  
+  // Firebase Function으로 변환된 모듈을 export
+  module.exports = {
+    api,
+  };
 
  /** 
 app.listen(process.env.PORT, () => {
