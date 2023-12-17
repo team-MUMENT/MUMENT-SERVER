@@ -856,7 +856,7 @@ const getUser = (userId) => __awaiter(void 0, void 0, void 0, function* () {
 /**
  * 웹뷰 링크 조회
 */
-const getWebviewLink = (page) => __awaiter(void 0, void 0, void 0, function* () {
+const getWebviewLink = (page, os) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         if (page === 'mypage') {
             // [마이페이지] 웹뷰 조회
@@ -876,8 +876,14 @@ const getWebviewLink = (page) => __awaiter(void 0, void 0, void 0, function* () 
             };
         }
         else if (page === 'version') {
-            // 최신 버전 조회            
-            const getVersionResult = yield pool_1.default.query(`SELECT ver FROM version ORDER BY created_at DESC LIMIT 1`);
+            // os별로 최신 버전 조회
+            let getVersionResult = null;
+            if (os === 'AOS') {
+                getVersionResult = yield pool_1.default.query(`SELECT ver FROM version WHERE os = 'AOS' ORDER BY created_at DESC LIMIT 1;`);
+            }
+            else {
+                getVersionResult = yield pool_1.default.query(`SELECT ver FROM version WHERE os = 'iOS' ORDER BY created_at DESC LIMIT 1`);
+            }
             const version = getVersionResult[0].ver;
             return {
                 version: version

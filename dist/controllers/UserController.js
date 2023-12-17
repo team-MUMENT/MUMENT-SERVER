@@ -429,11 +429,11 @@ const getUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
  *  @DESC 웹뷰 링크를 가져옵니다.
  */
 const getWebviewLink = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    let { page } = req.query;
+    let { page, os } = req.query;
     try {
         if (page === undefined)
             page = 'login';
-        const data = yield services_1.UserService.getWebviewLink(page);
+        const data = yield services_1.UserService.getWebviewLink(page, os);
         if (data === serviceReturnConstant_1.default.WRONG_QUERYSTRING) {
             return res.status(statusCode_1.default.BAD_REQUEST).send(util_1.default.fail(statusCode_1.default.BAD_REQUEST, responseMessage_1.default.BAD_REQUEST));
         }

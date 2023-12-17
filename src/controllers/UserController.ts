@@ -499,11 +499,11 @@ const getUser = async (req: Request, res: Response) => {
  *  @DESC 웹뷰 링크를 가져옵니다.
  */
 const getWebviewLink = async (req: Request, res: Response) => {
-    let { page } = req.query;
+    let { page, os } = req.query;
 
     try {
         if (page === undefined) page = 'login';
-        const data = await UserService.getWebviewLink(page as string);
+        const data = await UserService.getWebviewLink(page as string, os as string);
         
         if (data === constant.WRONG_QUERYSTRING) {
             return res.status(statusCode.BAD_REQUEST).send(util.fail(statusCode.BAD_REQUEST, message.BAD_REQUEST));
